@@ -1,0 +1,34 @@
+
+.img-loading {
+    position: fixed;
+    width: 3em;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translate(0, -50%);
+    z-index: 99999;
+}
+.css-loading {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 2em;
+    height: 2em;
+    margin-top: -1em;
+    margin-left: -1em;
+    border-radius: 100%;
+    border: .1em solid #666;
+    border-bottom-color: transparent;
+    background: transparent;
+    animation: rotate 0.75s 0s linear infinite;
+    animation-fill-mode: both;
+    z-index: 99999;
+}
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}

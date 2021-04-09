@@ -1,0 +1,76 @@
+{
+    "name": "mizar",
+    "version": "0.0.1",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/amwenjie/mizar.git"
+    },
+    "author": "wenjie",
+    "description": "react服务端渲染同构框架",
+    "dependencies": {
+        "axios": "~0.21.1",
+        "bluebird": "~3.7.2",
+        "cookie-parser": "~1.4.5",
+        "compression": "~1.7.4",
+        "es6-promise": "~4.2.8",
+        "express": "~4.17.1",
+        "express-http-proxy": "~1.6.2",
+        "fs-extra": "~9.0.1",
+        "history": "~4.6.1",
+        "md5": "~2.2.1",
+        "node-mocks-http": "~1.10.1",
+        "body-parser": "~1.19.0",
+        "query-string": "~6.13.8"
+    },
+    "peerDependencies": {
+        "react": "~17.0.1",
+        "react-dom": "~17.0.1",
+        "react-redux": "~7.2.2",
+        "react-router-config": "~5.1.1",
+        "react-router-dom": "~5.2.0",
+        "redux": "~4.0.5",
+        "redux-thunk": "~2.3.0"
+    },
+    "devDependencies": {
+        "@types/body-parser": "~1.16.0",
+        "@types/bluebird": "~3.5.3",
+        "@types/compression": "~1.7.0",
+        "@types/cookie-parser": "~1.4.2",
+        "@types/express": "~4.0.34",
+        "@types/express-http-proxy": "~1.6.1",
+        "@types/fs-extra": "~9.0.6",
+        "@types/mocha": "~2.2.34",
+        "@types/node": "~14.14.20",
+        "@types/react": "~17.0.0",
+        "@types/react-dom": "~17.0.0",
+        "@types/react-redux": "~7.1.15",
+        "@types/react-router-config": "~5.0.2",
+        "@types/react-router-dom": "~5.1.7",
+        "mizar-ssrframe-tool": "~0.0.15",
+        "tslib": "~2.1.0",
+        "typescript": "~4.1.3"
+    },
+    "scripts": {
+        "build": "PackageBuild",
+        "buildp": "PackageBuild --publish",
+        "buildpt": "ProjectPublishTest",
+        "devbuild": "ProjectBuildWatcher",
+        "debug": "ProjectBuild --watch --runServer",
+        "test": "ProjectToolsTest"
+    },
+    "browserslist": [
+        "Android 2.3",
+        "Android >= 4",
+        "Chrome >= 20",
+        "Firefox >= 24",
+        "Explorer >= 8",
+        "iOS >= 6",
+        "Opera >= 12",
+        "Safari >= 6"
+    ],
+    "customConfig": {
+        "tslint": {
+            "disable": false
+        }
+    }
+}
