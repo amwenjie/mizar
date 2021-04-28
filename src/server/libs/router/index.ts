@@ -1,4 +1,7 @@
 import * as Express from "express";
+import { getLogger } from "../../../iso/libs/utils/getLogger";
+
+const logger = getLogger("server/libs/router/index");
 
 export class Router {
     protected router: Express.Router = Express.Router();
@@ -13,7 +16,7 @@ export class Router {
      */
     public setRouter() {
         // 用于注册Router
-        console.warn("未重载setRouter方法");
+        logger.warn("未重载setRouter方法");
     }
 }
 

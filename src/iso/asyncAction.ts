@@ -1,5 +1,5 @@
 import { getLogger } from "./libs/utils/getLogger";
-const logger = getLogger("iso.asyncAction")
+const logger = getLogger("iso/asyncAction");
 
 export default actionFn => (...args) => async dispatch => {
     try {

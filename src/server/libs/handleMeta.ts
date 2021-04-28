@@ -1,5 +1,8 @@
 import * as fs from "fs-extra";
 import * as Path from "path";
+import { getLogger } from "../../iso/libs/utils/getLogger";
+
+const logger = getLogger("server/libs/handleMeta");
 
 export default function handleMeta(getMeta, publicPath) {
     let finalMeta = { favicon: "", styles: [], scripts: [], metas: [], links: [] };
@@ -47,16 +50,16 @@ export default function handleMeta(getMeta, publicPath) {
     assetsConfigMainfestJson["vendor.js.map"] && finalMeta.scripts.push(assetsConfigMainfestJson["vendor.js.map"]);
     delete assetsConfigMainfestJson["vendor.js.map"];
     for (let key in assetsConfigMainfestJson) {
-        if (/^src\/public\//i.test(key)) {
+        if (/^public\//i.test(key)) {
             continue;
         }
-        if (/\.css$|\.css\.map$/.test(key)) {
+        if (/\.css$|\.css\.map$/.test(key) && !finalMeta.styles.includes(assetsConfigMainfestJson[key])) {
             finalMeta.styles.push(assetsConfigMainfestJson[key]);
-        } else if (/\.js$|\.js\.map$/.test(key)) {
+        } else if (/\.js$|\.js\.map$/.test(key) && !finalMeta.scripts.includes(assetsConfigMainfestJson[key])) {
             finalMeta.scripts.push(assetsConfigMainfestJson[key]);
         }
     }
-    console.info("finalMeta: ", finalMeta);
+    logger.info("finalMeta: ", finalMeta);
     return finalMeta;
 }
 

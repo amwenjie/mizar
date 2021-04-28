@@ -15,7 +15,7 @@ import { getPublicPath } from "../../util/getConfig";
 import { IProxyConfig } from "../../interface";
 import Router from "./index";
 
-const logger = getLogger("server.router.index");
+const logger = getLogger("server/libs/router/pageRouter");
 
 export default class PageRouter extends Router {
     private meta;

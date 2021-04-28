@@ -92,11 +92,11 @@ export class WebServer {
      * 关闭该web服务器
      */
     public close() {
-        console.warn(this.name, "close", "port", this.port);
+        logger.warn(this.name, "close", "port", this.port);
     }
 
     public setStatic(staticRootPath, staticOptions = {}) {
-        console.info("setStatic recieve staticRootPath: ", staticRootPath);
+        logger.info("setStatic recieve staticRootPath: ", staticRootPath);
         this.staticRootPath = staticRootPath;
         this.staticOptions = staticOptions;
         return this;
@@ -149,7 +149,8 @@ export class WebServer {
                 reject(e);
             });
             this.server.on("listening", () => {
-                resolve("server starup successful, listen at port:" + this.port);
+                logger.info("server starup successful, listen at port: " + this.port);
+                resolve("");
             });
             this.server.listen({port: this.port});
         });

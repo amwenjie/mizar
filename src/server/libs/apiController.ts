@@ -1,7 +1,7 @@
 import state from "../../iso/libs/state";
 import { getLogger } from "../../iso/libs/utils/getLogger";
 
-const logger = getLogger("server.lib.apiController");
+const logger = getLogger("server/libs/apiController");
 
 export default async (req, res, next = logger.error) => {
     logger.info("api req.path", req.path);

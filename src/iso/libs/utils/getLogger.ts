@@ -8,17 +8,17 @@ class Logger {
     }
 
     public log(...args: any[]) {
-        if (!state.isDebug) {
+        if (state.isDebug) {
             console.log(this.suffix, ...args);
         }
     }
     public info(...args: any[]) {
-        if (!state.isDebug) {
-            console.info(this.suffix, ...args);
+        if (state.isDebug) {
+            console.log(this.suffix, ...args);
         }
     }
     public warn(...args: any[]) {
-        if (!state.isDebug) {
+        if (state.isDebug) {
             console.warn(this.suffix, ...args);
         }
     }

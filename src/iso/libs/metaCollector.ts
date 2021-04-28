@@ -5,7 +5,7 @@ import { getStore } from "../getStore";
 import appState from "./state";
 import { getLogger } from "./utils/getLogger";
 
-const logger = getLogger("iso.libs.metaCollector");
+const logger = getLogger("iso/libs/metaCollector");
 
 const finalReducer = {};
 const reducerComponentMap = {};
@@ -81,7 +81,7 @@ async function getSinglePreloadData(component, reducer, request, query, urlParam
             logger.error("获取初始数据失败", e);
         }
     } else {
-        console.info("no getInitialData.");
+        logger.info("no getInitialData.");
     }
     let initialState = reducer(undefined, {});
     initialState = typeof initialState === "object" ? initialState : {};
