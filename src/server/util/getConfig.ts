@@ -22,7 +22,7 @@ export function getPort(): number {
 }
 
 export function getCDN(): string {
-    return packageJSON.cdn || '/';
+    return getCustomConf().cdn || '/';
 }
 
 export function getCustomConf(): ICustomConfig {

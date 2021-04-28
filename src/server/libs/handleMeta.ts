@@ -13,7 +13,7 @@ export default function handleMeta(getMeta, publicPath) {
         meta = getMeta;
     }
     finalMeta = Object.assign({}, meta);
-    const assetsConfigMainfestJson = fs.readJSONSync(Path.resolve("./assetsConfigMainfest.json"));
+    const assetsConfigMainfestJson = fs.readJSONSync(Path.resolve("./assetsMainfest.json"));
     const getFinalPath = handleRelativePath(publicPath);
     finalMeta.favicon = getFinalPath(finalMeta.favicon || "favicon.ico");
     if (finalMeta.styles) {
