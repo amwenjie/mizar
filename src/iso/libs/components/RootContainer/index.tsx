@@ -1,20 +1,19 @@
 import * as React from "react";
 
 interface IRootContainerProps {
-    initialState: any;
-    publicPath: string;
-    children: any;
-    meta: {
-        title: string;
-        keywords: string;
-        description: string;
-        favicon: string;
-        styles: any[];
-        scripts: any[];
-        links: any[];
-        metas: any[];
-        isMobile: boolean;
-        uiDesignWidth: number;
+    initialState?: any;
+    publicPath?: string;
+    children?: any;
+    meta?: {
+        title?: string;
+        keywords?: string;
+        description?: string;
+        favicon?: string;
+        styles?: any[];
+        scripts?: any[];
+        links?: any[];
+        metas?: any[];
+        calcRootFontSize?: number | (() => void)
     };
 }
 
@@ -30,8 +29,7 @@ export default class RootContainer extends React.Component<IRootContainerProps, 
             scripts,
             links,
             metas,
-            isMobile,
-            uiDesignWidth,
+            calcRootFontSize,
         } = this.props.meta;
 
         const viewport = "width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1,user-scalable=no";
@@ -53,23 +51,36 @@ export default class RootContainer extends React.Component<IRootContainerProps, 
                     {links}
                     {styles && styles.map((style) => <link rel="stylesheet" key={style} href={style} type="text/css" />)}
                     {
-                        isMobile ?
-                            <script dangerouslySetInnerHTML={{
-                                __html: `(function () {
-                                    function setRootFontSize() {
-                                        var rootElement = document.documentElement;
-                                        var styleElement = document.createElement("style");
-                                        var dpr = Number(window.devicePixelRatio.toFixed(5)) || 1;
-                                        var rootFontSize = rootElement.clientWidth / ${uiDesignWidth / 100};
-                                        rootElement.setAttribute("data-dpr", dpr.toString());
-                                        rootElement.firstElementChild.appendChild(styleElement);
-                                        styleElement.innerHTML = "html{font-size:" + rootFontSize + "px!important;}";
-                                    }
-                                    setRootFontSize();
-                                    window.addEventListener("resize", setRootFontSize);
-                                })();`,
-                            }}></script>
-                            : ""
+                        typeof calcRootFontSize === "number"
+                            ? <script dangerouslySetInnerHTML={{
+                                    __html: ['(function () {',
+                                        'function setRootFontSize() {',
+                                        'var rootElement = document.documentElement;',
+                                        'var styleElement = document.createElement("style");',
+                                        'var dpr = Number(window.devicePixelRatio.toFixed(5)) || 1;',
+                                        'var rootFontSize = rootElement.clientWidth / ',
+                                        calcRootFontSize / 100,
+                                        ';',
+                                        'rootElement.setAttribute("data-dpr", dpr.toString());',
+                                        'rootElement.firstElementChild.appendChild(styleElement);',
+                                        'styleElement.innerHTML = "html{font-size:" + rootFontSize + "px!important;}";',
+                                        '}',
+                                        'setRootFontSize();',
+                                        'window.addEventListener("resize", setRootFontSize);',
+                                        '})();'
+                                    ].join(''),
+                                }}></script>
+                            :
+                            (typeof calcRootFontSize === "function"
+                                ? <script dangerouslySetInnerHTML={{
+                                    __html: [
+                                        '(',
+                                        calcRootFontSize.toString(),
+                                        ')();'
+                                    ].join(''),
+                                }}></script>
+                                : ""
+                            )
                     }
                 </head>
                 <body>
@@ -77,11 +88,7 @@ export default class RootContainer extends React.Component<IRootContainerProps, 
                         {children}
                     </div>
                     <script dangerouslySetInnerHTML={{
-                        __html: `window.__INITIAL_STATE__ = ${JSON.stringify(initialState).replace(/</g, "\\u003c")}`,
-                    }}>
-                    </script>
-                    <script dangerouslySetInnerHTML={{
-                        __html: `window.publicPath=${JSON.stringify(publicPath)}`,
+                        __html: `window.publicPath=${JSON.stringify(publicPath)};\r\nwindow.__INITIAL_STATE__ = ${JSON.stringify(initialState).replace(/</g, "\\u003c")}`,
                     }}>
                     </script>
                     {scripts && scripts.map((script) => <script key={script} src={script} />)}
