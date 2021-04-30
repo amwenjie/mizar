@@ -7,12 +7,7 @@ let publicPath = "";
 export function getPublicPath(): string {
     if (publicPath === "") {
         const cdn = state.isDebug ? '/' : getCDN();
-        const assetPath = getAssetsPathPrefix();
-        if (assetPath) {
-            publicPath = `${cdn}${getAssetsPathPrefix()}/${getPackageName()}/client/`;
-        } else {
-            publicPath = `${cdn}${getPackageName()}/client/`;
-        }
+        publicPath = `${cdn}${getAssetsPathPrefix()}${getPackageName()}/client/`;
     }
     return publicPath;
 }
@@ -22,7 +17,7 @@ export function getPort(): number {
 }
 
 export function getCDN(): string {
-    return getCustomConf().cdn || '/';
+    return getCustomConf().cdn; //  || '/';
 }
 
 export function getCustomConf(): ICustomConfig {
@@ -30,7 +25,11 @@ export function getCustomConf(): ICustomConfig {
 }
 
 export function getAssetsPathPrefix(): string {
-    return getCustomConf().assetsPathPrefix || '';
+    let prefix = getCustomConf().assetsPathPrefix;
+    if (prefix && !prefix.endsWith("/")) {
+        prefix += "/";
+    }
+    return prefix || '';
 }
 
 export function getPackageName(): string {

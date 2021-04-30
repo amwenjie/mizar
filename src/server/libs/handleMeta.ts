@@ -1,6 +1,7 @@
 import * as fs from "fs-extra";
 import * as Path from "path";
 import { getLogger } from "../../iso/libs/utils/getLogger";
+import checkPositivePath from "../utils/checkPositivePath";
 
 const logger = getLogger("server/libs/handleMeta");
 
@@ -59,18 +60,15 @@ export default function handleMeta(getMeta, publicPath) {
             finalMeta.scripts.push(assetsConfigMainfestJson[key]);
         }
     }
-    logger.info("finalMeta: ", finalMeta);
+    logger.log("finalMeta: ", finalMeta);
     return finalMeta;
 }
 
 function handleRelativePath(publicPath) {
     return (path, assetsCategory = "") => {
-        if (!path.startsWith("http://") && !path.startsWith("https")) {
+        if (!checkPositivePath(path)) {
             // 是个相对路径
-            if (assetsCategory !== "" && !assetsCategory.endsWith("/")) {
-                assetsCategory = assetsCategory + "/";
-            }
-            return `${publicPath}${assetsCategory}${path}`;
+            return `${publicPath}${path}`;
         }
         return path;
     };

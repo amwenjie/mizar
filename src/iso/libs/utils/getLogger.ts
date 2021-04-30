@@ -13,9 +13,7 @@ class Logger {
         }
     }
     public info(...args: any[]) {
-        if (state.isDebug) {
-            console.log(this.suffix, ...args);
-        }
+        this.log(...args);
     }
     public warn(...args: any[]) {
         if (state.isDebug) {

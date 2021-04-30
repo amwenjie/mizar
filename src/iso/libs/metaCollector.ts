@@ -76,12 +76,12 @@ async function getSinglePreloadData(component, reducer, request, query, urlParam
     if (component.getInitialData) {
         try {
             initialData = await component.getInitialData(fetchWithRequestObject(request), query, urlParams);
-            // logger.info("getSinglePreloadData initialData", initialData);
+            // logger.log("getSinglePreloadData initialData", initialData);
         } catch (e) {
             logger.error("获取初始数据失败", e);
         }
     } else {
-        logger.info("no getInitialData.");
+        logger.log("no getInitialData.");
     }
     let initialState = reducer(undefined, {});
     initialState = typeof initialState === "object" ? initialState : {};

@@ -3,12 +3,15 @@ import * as Compression from "compression";
 import * as CookieParser from "cookie-parser";
 import * as Express from "express";
 import * as Http from "http";
+import * as net from "net";
+import * as internalIp from "internal-ip";
 import * as Path from "path";
 import * as ServeStatic from "serve-static";
 import "source-map-support/register";
-import { getPort } from "./util/getConfig";
+import { getPort, getPublicPath } from "./utils/getConfig";
 import { getLogger } from "../iso/libs/utils/getLogger";
-import setupExitSignals from "./util/setupExitSignals";
+import setupExitSignals from "./utils/setupExitSignals";
+import checkPositivePath from "./utils/checkPositivePath";
 
 const logger = getLogger("server/index");
 
@@ -21,38 +24,51 @@ interface IBodyParserOption {
 interface IStaticOption {
     path: string[];
     directory: string;
-    staticOption?: ServeStatic.ServeStaticOptions
+    staticOption?: ServeStatic.ServeStaticOptions;
+    isInternal?: true;
 }
 interface IWebServerOption {
     compress?: boolean;
     cookieParser?: boolean;
     bodyParser?: boolean | IBodyParserOption;
     headers?: string;
+    hostname?: "local-ip" | "local-ipv4" | "local-ipv6";
+    port?: number;
     middleware?: any;
     static?: IStaticOption[];
     onAfterSetupMiddleware?: () => void;
     onBeforeSetupMiddleware?: () => void;
     onServerClosed?: () => void;
+    onListening?: (server: net.Server) => void;
 }
 
-
-const defautlOptions: IWebServerOption = {
-    static: [],
-};
-
 export class WebServer {
+    private state = false;
     private options: any;
-    private port: number = null;
-    private router = null;
+    private routers: any[];
 
     protected name = "WebServer";
 
-    public server: Http.Server;
+    public server: net.Server;
     public app: Express.Express;
 
     constructor(options?: IWebServerOption) {
+        const defautlOptions: IWebServerOption = {
+            port: getPort(),
+        };
         this.options = Object.assign({}, defautlOptions, options);
         this.setupApp();
+        this.setHealthCheck();
+        this.errorEventHandler();
+        this.createServer();
+        setupExitSignals(this);
+    }
+
+    private checkServerStarted(): boolean {
+        if (this.state) {
+            logger.warn("server started, can not bootstrap or set router");
+        }
+        return this.state;
     }
 
     private setupApp() {
@@ -80,10 +96,31 @@ export class WebServer {
         // } else {
         this.server = Http.createServer(this.app);
         // }
-
-        this.server.on('error', (error) => {
-            throw error;
+        this.server.on("error", e => {
+            logger.error("server start error, please retry", e);
+            this.close();
         });
+        this.server.on("listening", () => {
+            this.state = true;
+            logger.log("server start successful, listening at port: " + this.options.port);
+            if (typeof this.options.onListening === "function") {
+                this.options.onListening(this.server);
+            }
+        });
+    }
+
+    private getInteralStatic(staticOption = {}) {
+        const staticRootPath = getPublicPath();
+        logger.log("setStatic recieve staticRootPath: ", staticRootPath);
+        const path = staticRootPath.replace(/\/$/, "");
+        const directory = Path.resolve(staticRootPath.replace(/^\//, ""));
+        logger.log("static path : ", path);
+        logger.log("static directory : ", directory);
+        return {
+            path: [path],
+            directory: directory,
+            staticOption,
+        };
     }
 
     /**
@@ -94,21 +131,6 @@ export class WebServer {
     //     this.close();
     // });
     // }
-
-    private ready() {
-        this.setMiddleware();
-        if (this.router !== null) {
-            // 业务
-            this.app.use(this.router.getRouter());
-        }
-        // this.app.set("port", this.port);
-        this.setHealthCheck();
-        this.errorEventHandler();
-
-        this.createServer();
-        setupExitSignals(this);
-        return this;
-    }
 
     private setHealthCheck() {
         this.app.get("/status", (req, res) => {
@@ -127,19 +149,31 @@ export class WebServer {
         });
     }
 
-    private async startup() {
-        return new Promise((resolve, reject) => {
-            this.server.on("error", e => {
-                logger.error("server start error, please retry", e);
-                this.close();
-                reject(e);
-            });
-            this.server.on("listening", () => {
-                logger.info("server starup successful, listen at port: " + this.port);
+    private async listen(port, hostname?: string) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                if (hostname === "local-ip") {
+                    hostname = await internalIp.v4() || await internalIp.v6() || "0.0.0.0";
+                } else if (hostname === "local-ipv4") {
+                    hostname = await internalIp.v4() || "0.0.0.0";
+                } else if (hostname === 'local-ipv6') {
+                    hostname = await internalIp.v6() || '::';
+                }
+                this.server.listen({
+                    port: port,
+                    host: hostname,
+                });
                 resolve("");
-            });
-            this.server.listen({ port: this.port });
+            } catch (e) {
+                reject(e);
+            }
         });
+    }
+
+    private setRouter() {
+        if (this.routers) {
+            this.routers.forEach(router => this.app.use(router));
+        }
     }
 
     /**
@@ -220,9 +254,7 @@ export class WebServer {
         //     runnableFeatures.push('proxy', 'middleware');
         // }
 
-        if (this.options.static) {
-            runnableFeatures.push('static');
-        }
+        runnableFeatures.push('static');
 
         if (this.options.middleware) {
             runnableFeatures.push('middleware');
@@ -339,12 +371,23 @@ export class WebServer {
     }
 
     private setupStaticFeature() {
+        if (Object.prototype.toString.call(this.options.static) !== "[object Array]") {
+            this.options.static = [];
+        }
+        const internalStatic = this.options.static[0];
+        let staticOption = {};
+        if (internalStatic && internalStatic.staticOption && internalStatic.isInternal) {
+            staticOption = internalStatic.staticOption;
+        }
+        this.options.static.splice(0, 0, this.getInteralStatic(staticOption));
         this.options.static.forEach(staticOption => {
             staticOption.path.forEach(path => {
-                this.app.use(
-                    path,
-                    Express.static(staticOption.directory, staticOption.staticOptions)
-                );
+                if (!checkPositivePath(path)) {
+                    this.app.use(
+                        path,
+                        Express.static(staticOption.directory, staticOption.staticOptions)
+                    );
+                }
             });
         });
     }
@@ -370,44 +413,37 @@ export class WebServer {
     //     });
     // }
 
-    /**
-     * 手动指定端口号
-     * @param port 端口号
-     */
-    public setPort(port: number) {
-        if (isNaN(Number(port)) || port === 0) {
-            throw new Error([
-                "WebServer.setPort illegal port: ",
-                port,
-                ",请检查package.json customConfig.port是否配置，或当前未处在项目目录下"
-            ].join(''));
-        }
-        this.port = port;
-        return this;
+    private ready() {
+        this.setMiddleware();
+        this.setRouter();
     }
 
     /**
      * 启动Web服务器
      */
     public async bootstrapAsync() {
-        await this.bootstrapAsyncBefore();
-        const port = getPort();
-        this.setPort(port);
-        // this.app.set("view engine", "ejs");
-        // this.app.set("views", Path.resolve("view"));
-        // this.setCloseHandle();
-        this.ready();
-
-        await this.startup();
-        logger.info(this.name, "bootstrapAsync", "port", this.port);
+        if (!this.checkServerStarted()) {
+            await this.bootstrapAsyncBefore();
+            this.ready();
+            // this.app.set("view engine", "ejs");
+            // this.app.set("views", Path.resolve("view"));
+            // this.setCloseHandle();
+            await this.listen(this.options.port, this.options.hostname);
+            logger.log(this.name, "bootstrapAsync", "port", this.options.port);
+        }
         return this;
     }
     /**
      * 挂载该Web服务器的router点
      * @param router
      */
-    public setRouter(router) {
-        this.router = router;
+    public useRouter(router) {
+        if (!this.checkServerStarted()) {
+            if (!this.routers) {
+                this.routers = [];
+            }
+            this.routers.push(router);
+        }
         return this;
     }
 
@@ -416,7 +452,8 @@ export class WebServer {
      */
     public close(cb?: () => void) {
         this.server.close(() => {
-            logger.warn(this.name, "close", "port", this.port);
+            this.state = false;
+            logger.warn(this.name, "close", "port", this.options.port);
             if (typeof this.options.onServerClosed === "function") {
                 this.options.onServerClosed();
             }
@@ -426,29 +463,29 @@ export class WebServer {
         });
     }
 
-    public setStatic(staticRootPath, staticOption = {}) {
-        logger.info("setStatic recieve staticRootPath: ", staticRootPath);
-        if (Object.prototype.toString.call(this.options.static) !== "[object Array]") {
-            this.options.static = [];
-        }
-        const path = staticRootPath.replace(/\/$/, "");
-        const directory = Path.resolve(staticRootPath.replace(/^\//, ""));
-        logger.info("static path : ", path);
-        logger.info("static directory : ", directory);
-        this.options.static.push({
-            path: [path],
-            directory: directory,
-            staticOption,
-        });
-        return this;
-    }
-
     /**
      * bootstrap before
      */
     protected async bootstrapAsyncBefore() {
         //
     }
+
+    // public setStatic(staticRootPath, staticOption = {}) {
+    //     logger.log("setStatic recieve staticRootPath: ", staticRootPath);
+    //     const path = staticRootPath.replace(/\/$/, "");
+    //     const directory = Path.resolve(staticRootPath.replace(/^\//, ""));
+    //     logger.log("static path : ", path);
+    //     logger.log("static directory : ", directory);
+    //     if (Object.prototype.toString.call(this.options.static) !== "[object Array]") {
+    //         this.options.static = [];
+    //     }
+    //     this.options.static.push({
+    //         path: [path],
+    //         directory: directory,
+    //         staticOption,
+    //     });
+    //     return this;
+    // }
 }
 
 export default WebServer;
