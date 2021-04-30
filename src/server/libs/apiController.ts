@@ -1,10 +1,14 @@
 import state from "../../iso/libs/state";
-import { getLogger } from "../../iso/libs/utils/getLogger";
+import getLogger from "../utils/getLogger";
 
-const logger = getLogger("server/libs/apiController");
+// import { getLogger } from "../../iso/libs/utils/getLogger";
+
+// const logger = getLogger("server/libs/apiController");
+
+const logger = getLogger().getLogger("server/libs/apiController");
 
 export default async (req, res, next = logger.error) => {
-    logger.log("api req.path", req.path);
+    logger.info("api req.path", req.path);
     const apiPath = req.path.replace(/^\//, "");
     const params = req.params;
     // 根据path找到并调用对应的api方法

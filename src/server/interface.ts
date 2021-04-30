@@ -7,6 +7,7 @@ export interface ICustomConfig {
     port: number;
     assetsPathPrefix?: string;
     cdn?: string;
+    logger?: string;
     tslint?: {
         disable: boolean;
     };

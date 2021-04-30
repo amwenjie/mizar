@@ -9,11 +9,10 @@ import * as Path from "path";
 import * as ServeStatic from "serve-static";
 import "source-map-support/register";
 import { getPort, getPublicPath } from "./utils/getConfig";
-import { getLogger } from "../iso/libs/utils/getLogger";
+import getLogger from "./utils/getLogger";
+// import { getLogger } from "../iso/libs/utils/getLogger";
 import setupExitSignals from "./utils/setupExitSignals";
 import checkPositivePath from "./utils/checkPositivePath";
-
-const logger = getLogger("server/index");
 
 interface IBodyParserOption {
     raw?: boolean | BodyParser.Options;
@@ -28,6 +27,7 @@ interface IStaticOption {
     isInternal?: true;
 }
 interface IWebServerOption {
+    access?: any;
     compress?: boolean;
     cookieParser?: boolean;
     bodyParser?: boolean | IBodyParserOption;
@@ -42,6 +42,10 @@ interface IWebServerOption {
     onListening?: (server: net.Server) => void;
 }
 
+const logger = getLogger();
+// const log = getLogger("server/index");
+
+const log = logger.getLogger("server/index");
 export class WebServer {
     private state = false;
     private options: any;
@@ -66,7 +70,7 @@ export class WebServer {
 
     private checkServerStarted(): boolean {
         if (this.state) {
-            logger.warn("server started, can not bootstrap or set router");
+            log.warn("server started, can not bootstrap or set router");
         }
         return this.state;
     }
@@ -97,12 +101,12 @@ export class WebServer {
         this.server = Http.createServer(this.app);
         // }
         this.server.on("error", e => {
-            logger.error("server start error, please retry", e);
+            log.error("server start error, please retry", e);
             this.close();
         });
         this.server.on("listening", () => {
             this.state = true;
-            logger.log("server start successful, listening at port: " + this.options.port);
+            log.info("server start successful, listening at port: " + this.options.port);
             if (typeof this.options.onListening === "function") {
                 this.options.onListening(this.server);
             }
@@ -111,11 +115,11 @@ export class WebServer {
 
     private getInteralStatic(staticOption = {}) {
         const staticRootPath = getPublicPath();
-        logger.log("setStatic recieve staticRootPath: ", staticRootPath);
+        log.info("setStatic recieve staticRootPath: ", staticRootPath);
         const path = staticRootPath.replace(/\/$/, "");
         const directory = Path.resolve(staticRootPath.replace(/^\//, ""));
-        logger.log("static path : ", path);
-        logger.log("static directory : ", directory);
+        log.info("static path : ", path);
+        log.info("static directory : ", directory);
         return {
             path: [path],
             directory: directory,
@@ -144,7 +148,7 @@ export class WebServer {
      */
     private errorEventHandler() {
         process.on("uncaughtException", (error) => {
-            logger.error(this.name, "errorEventHandler",
+            log.error(this.name, "errorEventHandler",
                 "UNCAUGHT_EXCEPTION", "!!!未处理的严重异常.被process.uncaughtException捕获!!!", error);
         });
     }
@@ -182,6 +186,11 @@ export class WebServer {
      */
     private setMiddleware() {
         const features = {
+            access: () => {
+                if (this.options.access) {
+                    this.setupAccessFeature();
+                }
+            },
             compress: () => {
                 if (this.options.compress) {
                     this.setupCompressFeature()
@@ -229,13 +238,18 @@ export class WebServer {
 
         const runnableFeatures = [];
 
-        // compress is placed last and uses unshift so that it will be the first middleware used
+        runnableFeatures.push('access');
+
         if (this.options.compress) {
             runnableFeatures.push('compress');
         }
 
         if (this.options.onBeforeSetupMiddleware) {
             runnableFeatures.push('onBeforeSetupMiddleware');
+        }
+
+        if (this.options.middleware) {
+            runnableFeatures.push('middleware');
         }
 
         if (this.options.cookieParser) {
@@ -256,9 +270,6 @@ export class WebServer {
 
         runnableFeatures.push('static');
 
-        if (this.options.middleware) {
-            runnableFeatures.push('middleware');
-        }
 
         // if (this.options.historyApiFallback) {
         //     runnableFeatures.push('historyApiFallback', 'middleware');
@@ -281,6 +292,14 @@ export class WebServer {
         runnableFeatures.forEach((feature) => {
             features[feature]();
         });
+    }
+
+    private setupAccessFeature() {
+        if (this.options.access) {
+            this.app.use(this.options.access);
+        } else {
+            this.app.use(logger.connectLogger(logger.getLogger("http"), { level: 'auto' }))
+        }
     }
 
     private setupMiddleware() {
@@ -429,7 +448,7 @@ export class WebServer {
             // this.app.set("views", Path.resolve("view"));
             // this.setCloseHandle();
             await this.listen(this.options.port, this.options.hostname);
-            logger.log(this.name, "bootstrapAsync", "port", this.options.port);
+            log.info(this.name, "bootstrapAsync", "port", this.options.port);
         }
         return this;
     }
@@ -453,7 +472,7 @@ export class WebServer {
     public close(cb?: () => void) {
         this.server.close(() => {
             this.state = false;
-            logger.warn(this.name, "close", "port", this.options.port);
+            log.warn(this.name, "close", "port", this.options.port);
             if (typeof this.options.onServerClosed === "function") {
                 this.options.onServerClosed();
             }
@@ -471,11 +490,11 @@ export class WebServer {
     }
 
     // public setStatic(staticRootPath, staticOption = {}) {
-    //     logger.log("setStatic recieve staticRootPath: ", staticRootPath);
+    //     log.info("setStatic recieve staticRootPath: ", staticRootPath);
     //     const path = staticRootPath.replace(/\/$/, "");
     //     const directory = Path.resolve(staticRootPath.replace(/^\//, ""));
-    //     logger.log("static path : ", path);
-    //     logger.log("static directory : ", directory);
+    //     log.info("static path : ", path);
+    //     log.info("static directory : ", directory);
     //     if (Object.prototype.toString.call(this.options.static) !== "[object Array]") {
     //         this.options.static = [];
     //     }

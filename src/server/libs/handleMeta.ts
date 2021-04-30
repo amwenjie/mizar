@@ -1,9 +1,11 @@
 import * as fs from "fs-extra";
 import * as Path from "path";
-import { getLogger } from "../../iso/libs/utils/getLogger";
+import getLogger from "../utils/getLogger";
+// import { getLogger } from "../../iso/libs/utils/getLogger";
 import checkPositivePath from "../utils/checkPositivePath";
 
-const logger = getLogger("server/libs/handleMeta");
+// const logger = getLogger("server/libs/handleMeta");
+const logger = getLogger().getLogger("server/libs/handleMeta");
 
 export default function handleMeta(getMeta, publicPath) {
     let finalMeta = { favicon: "", styles: [], scripts: [], metas: [], links: [] };
@@ -60,7 +62,7 @@ export default function handleMeta(getMeta, publicPath) {
             finalMeta.scripts.push(assetsConfigMainfestJson[key]);
         }
     }
-    logger.log("finalMeta: ", finalMeta);
+    logger.info("finalMeta: ", finalMeta);
     return finalMeta;
 }
 

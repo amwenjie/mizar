@@ -1,13 +1,15 @@
 import state from "../iso/libs/state";
-import { getLogger } from "../iso/libs/utils/getLogger";
+import getLogger from "./utils/getLogger";
+// import { getLogger } from "../iso/libs/utils/getLogger";
 import { getPublicPath } from "./utils/getConfig";
 import handleMeta from "./libs/handleMeta";
 import PageRouter from "./libs/router/pageRouter";
-const logger = getLogger("server/getRouter")
+const logger = getLogger().getLogger("server/getRouter");
+// const logger = getLogger("server/getRouter")
 
 export async function getAsyncRouter(pageRouter, getMeta, proxyConfig?): Promise<any> {
     if (!proxyConfig) {
-        logger.log("proxyConfig未传入，说明没有http代理业务");
+        logger.info("proxyConfig未传入，说明没有http代理业务");
     }
 
     const publicPath = getPublicPath();

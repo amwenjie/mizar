@@ -1,7 +1,9 @@
 import * as Express from "express";
-import { getLogger } from "../../../iso/libs/utils/getLogger";
+import getLogger from "../../utils/getLogger";
+// import { getLogger } from "../../../iso/libs/utils/getLogger";
 
-const logger = getLogger("server/libs/router/index");
+// const logger = getLogger("server/libs/router/index");
+const logger = getLogger().getLogger("server/libs/router/index");
 
 export class Router {
     protected router: Express.Router = Express.Router();
