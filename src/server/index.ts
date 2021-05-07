@@ -57,6 +57,10 @@ export class WebServer {
     public app: Express.Express;
 
     constructor(options?: IWebServerOption) {
+        const defaultPort = getPort();
+        if ((!options || !options.port) && !defaultPort) {
+            throw new Error("no port specified");
+        }
         const defautlOptions: IWebServerOption = {
             port: getPort(),
         };
@@ -106,7 +110,7 @@ export class WebServer {
         });
         this.server.on("listening", () => {
             this.state = true;
-            log.info("server start successful, listening at port: " + this.options.port);
+            console.log("server start successful, listening at port: " + this.options.port);
             if (typeof this.options.onListening === "function") {
                 this.options.onListening(this.server);
             }
