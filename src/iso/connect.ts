@@ -1,8 +1,8 @@
 import { connect as reduxConnect } from "react-redux";
 import { registerRedux } from "./libs/metaCollector";
-import { getLogger } from "./libs/utils/getLogger";
+import getLogger from "./utils/getLogger";
 
-const logger = getLogger("iso/connect");
+const logger = getLogger().getLogger("iso/connect");
 
 const componentEntityList = [];
 const reducerEntityList = [];

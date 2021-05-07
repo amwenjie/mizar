@@ -1,10 +1,22 @@
 import * as log4js from "log4js";
 
-let defaultLogger: any;
+interface IGetLogger {
+    getLogger(category?: string): ILogger;
+    [propName: string]: any;
+}
+interface ILogger {
+    info: (...args: any) => void;
+    log: (...args: any) => void;
+    warn: (...args: any) => void;
+    error: (...args: any) => void;
+    [propName: string]: any;
+}
+
+let defaultLogger: IGetLogger;
 
 let isConfigured = false;
 
-export function setLogger(logger) {
+export function setLogger(logger: IGetLogger) {
     if (isConfigured) {
         console.warn("logger has been used, can not set");
         return;

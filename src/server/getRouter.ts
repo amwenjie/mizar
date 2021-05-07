@@ -1,6 +1,6 @@
 import state from "../iso/libs/state";
 import getLogger from "./utils/getLogger";
-// import { getLogger } from "../iso/libs/utils/getLogger";
+// import { getLogger } from "../iso/utils/getLogger";
 import { getPublicPath } from "./utils/getConfig";
 import handleMeta from "./libs/handleMeta";
 import PageRouter from "./libs/router/pageRouter";

@@ -3,9 +3,9 @@ import * as config from "../../config";
 import { fetchWithRequestObject } from "../fetch";
 import { getStore } from "../getStore";
 import appState from "./state";
-import { getLogger } from "./utils/getLogger";
+import getLogger from "../utils/getLogger";
 
-const logger = getLogger("iso/libs/metaCollector");
+const logger = getLogger().getLogger("iso/libs/metaCollector");
 
 const finalReducer = {};
 const reducerComponentMap = {};

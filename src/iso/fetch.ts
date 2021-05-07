@@ -5,10 +5,10 @@ import * as config from "../config";
 import apiController from "../server/libs/apiController";
 import { getStore } from "./getStore";
 import * as loadingActions from "./libs/components/Loading/actions";
-import { getLogger } from "./libs/utils/getLogger";
+import getLogger from "./utils/getLogger";
 import isServer from "./libs/utils/isServer";
 
-const logger = getLogger("iso/fetch");
+const logger = getLogger().getLogger("iso/fetch");
 let loadingNumber = 0;
 
 export const fetchWithRequestObject = (httpRequest) => async (url, options?) => {

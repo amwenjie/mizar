@@ -11,7 +11,7 @@ import RootContainer from "../../../iso/libs/components/RootContainer";
 import RouteContainer from "../../../iso/libs/components/RouteContainer";
 import * as metaCollector from "../../../iso/libs/metaCollector";
 import getLogger from "../../utils/getLogger";
-// import { getLogger } from "../../../iso/libs/utils/getLogger";
+// import { getLogger } from "../../../iso/utils/getLogger";
 import { getPublicPath } from "../../utils/getConfig";
 import { IProxyConfig } from "../../interface";
 import Router from "./index";
