@@ -1,3 +1,4 @@
+import * as Express from "express";
 export interface IProxyConfig {
     urlPath: string;
     apiHost: string;
@@ -30,4 +31,10 @@ export interface ICustomConfig {
         templateMinify?: boolean;
         debugPort: number;
     };
+}
+interface IRouter {
+    router: Express.Router;
+    getRouter: () => Express.Router;
+    setRouter: () => void;
+    [propsName: string]: any;
 }

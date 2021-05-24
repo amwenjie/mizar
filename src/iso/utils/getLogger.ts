@@ -1,4 +1,4 @@
-import state from "../libs/state";
+import appState from "../libs/state";
 
 interface IGetLogger {
     getLogger(category?: string): ILogger;
@@ -24,7 +24,7 @@ class Logger {
     }
 
     public log(...args: any[]) {
-        if (state.isDebug) {
+        if (appState.isDebug) {
             console.log(this.suffix, ...args);
         }
     }
@@ -32,7 +32,7 @@ class Logger {
         this.log(...args);
     }
     public warn(...args: any[]) {
-        if (state.isDebug) {
+        if (appState.isDebug) {
             console.warn(this.suffix, ...args);
         }
     }

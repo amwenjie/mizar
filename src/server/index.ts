@@ -36,8 +36,6 @@ interface IWebServerOption {
     port?: number;
     middleware?: any;
     static?: IStaticOption[];
-    onAfterSetupMiddleware?: () => void;
-    onBeforeSetupMiddleware?: () => void;
     onServerClosed?: () => void;
     onListening?: (server: net.Server) => void;
 }
@@ -49,7 +47,7 @@ const log = logger.getLogger("server/index");
 export class WebServer {
     private state = false;
     private options: any;
-    private routers: any[];
+    private routers: (Express.RequestHandler | Express.ErrorRequestHandler)[];
 
     protected name = "WebServer";
 
@@ -191,9 +189,7 @@ export class WebServer {
     private setMiddleware() {
         const features = {
             access: () => {
-                if (this.options.access) {
-                    this.setupAccessFeature();
-                }
+                this.setupAccessFeature();
             },
             compress: () => {
                 if (this.options.compress) {
@@ -218,16 +214,6 @@ export class WebServer {
             static: () => {
                 this.setupStaticFeature();
             },
-            onBeforeSetupMiddleware: () => {
-                if (typeof this.options.onBeforeSetupMiddleware === 'function') {
-                    this.setupOnBeforeSetupMiddlewareFeature();
-                }
-            },
-            onAfterSetupMiddleware: () => {
-                if (typeof this.options.onAfterSetupMiddleware === 'function') {
-                    this.setupOnAfterSetupMiddlewareFeature();
-                }
-            },
             middleware: () => {
                 if (this.options.middleware) {
                     this.setupMiddleware();
@@ -248,14 +234,6 @@ export class WebServer {
             runnableFeatures.push('compress');
         }
 
-        if (this.options.onBeforeSetupMiddleware) {
-            runnableFeatures.push('onBeforeSetupMiddleware');
-        }
-
-        if (this.options.middleware) {
-            runnableFeatures.push('middleware');
-        }
-
         if (this.options.cookieParser) {
             runnableFeatures.push('cookieParser');
         }
@@ -274,6 +252,9 @@ export class WebServer {
 
         runnableFeatures.push('static');
 
+        if (this.options.middleware) {
+            runnableFeatures.push('middleware');
+        }
 
         // if (this.options.historyApiFallback) {
         //     runnableFeatures.push('historyApiFallback', 'middleware');
@@ -287,11 +268,6 @@ export class WebServer {
         //     runnableFeatures.push('staticServeIndex', 'staticWatch');
         // }
 
-        // runnableFeatures.push('magicHtml');
-
-        if (this.options.onAfterSetupMiddleware) {
-            runnableFeatures.push('onAfterSetupMiddleware');
-        }
 
         runnableFeatures.forEach((feature) => {
             features[feature]();
@@ -302,7 +278,7 @@ export class WebServer {
         if (this.options.access) {
             this.app.use(this.options.access);
         } else {
-            this.app.use(logger.connectLogger(logger.getLogger("http"), { level: 'auto' }))
+            this.app.use(logger.connectLogger(logger.getLogger("http"), { level: 'auto' }));
         }
     }
 
@@ -372,14 +348,6 @@ export class WebServer {
                 this.app.use(Express.urlencoded(urlencodedOpt));
             }
         }
-    }
-
-    private setupOnBeforeSetupMiddlewareFeature() {
-        this.options.onBeforeSetupMiddleware(this);
-    }
-
-    private setupOnAfterSetupMiddlewareFeature() {
-        this.options.onAfterSetupMiddleware(this);
     }
 
     private setupHeadersFeature() {

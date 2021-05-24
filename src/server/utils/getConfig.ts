@@ -1,12 +1,12 @@
 import * as fs from "fs-extra";
-import state from "../../iso/libs/state";
+import appState from "../../iso/libs/state";
 import { ICustomConfig } from "../interface";
 const packageJSON = fs.readJSONSync("./package.json");
 let publicPath = "";
 
 export function getPublicPath(): string {
     if (publicPath === "") {
-        const cdn = state.isDebug ? '/' : getCDN();
+        const cdn = appState.isDebug ? '/' : getCDN();
         publicPath = `${cdn}${getAssetsPathPrefix()}${getPackageName()}/client/`;
     }
     return publicPath;

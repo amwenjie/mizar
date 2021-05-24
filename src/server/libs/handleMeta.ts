@@ -44,14 +44,10 @@ export default function handleMeta(getMeta, publicPath) {
     if (!finalMeta.scripts) {
         finalMeta.scripts = [];
     }
-    finalMeta.scripts.push(assetsConfigMainfestJson["runtime.js"]);
-    delete assetsConfigMainfestJson["runtime.js"];
-    assetsConfigMainfestJson["runtime.js.map"] && finalMeta.scripts.push(assetsConfigMainfestJson["runtime.js.map"]);
-    delete assetsConfigMainfestJson["runtime.js.map"];
-    finalMeta.scripts.push(assetsConfigMainfestJson["vendor.js"]);
-    delete assetsConfigMainfestJson["vendor.js"];
-    assetsConfigMainfestJson["vendor.js.map"] && finalMeta.scripts.push(assetsConfigMainfestJson["vendor.js.map"]);
-    delete assetsConfigMainfestJson["vendor.js.map"];
+    finalMeta.scripts = finalMeta.scripts.concat(
+        handleSplitChunksAsset(assetsConfigMainfestJson),
+        handleDebugMapAsset(assetsConfigMainfestJson)
+    );
     for (let key in assetsConfigMainfestJson) {
         if (/^public\//i.test(key)) {
             continue;
@@ -74,4 +70,22 @@ function handleRelativePath(publicPath) {
         }
         return path;
     };
+}
+
+function handleSplitChunksAsset(assetsConfigMainfestJson) {
+    const splitChunksArr = [];
+    splitChunksArr.push(assetsConfigMainfestJson["runtime.js"]);
+    delete assetsConfigMainfestJson["runtime.js"];
+    splitChunksArr.push(assetsConfigMainfestJson["vendor.js"]);
+    delete assetsConfigMainfestJson["vendor.js"];
+    return splitChunksArr;
+}
+
+function handleDebugMapAsset(assetsConfigMainfestJson) {
+    const mapArr = [];
+    assetsConfigMainfestJson["runtime.js.map"] && mapArr.push(assetsConfigMainfestJson["runtime.js.map"]);
+    delete assetsConfigMainfestJson["runtime.js.map"];
+    assetsConfigMainfestJson["vendor.js.map"] && mapArr.push(assetsConfigMainfestJson["vendor.js.map"]);
+    delete assetsConfigMainfestJson["vendor.js.map"];
+    return mapArr;
 }

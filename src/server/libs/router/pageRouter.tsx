@@ -14,11 +14,28 @@ import getLogger from "../../utils/getLogger";
 // import { getLogger } from "../../../iso/utils/getLogger";
 import { getPublicPath } from "../../utils/getConfig";
 import { IProxyConfig } from "../../interface";
+import checkNotSSR from "../../utils/checkNotSSR";
+import appState from "../../../iso/libs/state";
 import Router from "./index";
 
 // const logger = getLogger("server/libs/router/pageRouter");
 const logger = getLogger().getLogger("server/libs/router/pageRouter");
 
+async function getSSRInitialData(matchedBranch, req): Promise<{preloadData: any, pageReducerName: string}> {
+    const initialData = await metaCollector.getInitialData(matchedBranch, req);
+    let preloadData: any = {};
+    let pageReducerName: string = "";
+    if (initialData.preloadData) {
+        preloadData = initialData.preloadData;
+    }
+    if (initialData.pageReducerName) {
+        pageReducerName = initialData.pageReducerName;
+    }
+    return {
+        preloadData,
+        pageReducerName,
+    };
+}
 export default class PageRouter extends Router {
     private meta;
     private proxyConfig;
@@ -26,13 +43,17 @@ export default class PageRouter extends Router {
     
     protected router: Express.Router = Express.Router();
 
-    public constructor(pageRouter, meta, proxyConfig?: IProxyConfig[]) {
+    public constructor(pageRouter, meta) {
         super();
-        this.setPageRouter(pageRouter, meta, proxyConfig);
+        this.setPageRouter(pageRouter, meta);
     }
 
     public setRouter() {
         this.router.use(async (req, res, next) => {
+            res.write("<!DOCTYPE html>");
+            res.on('finish', () => {
+                logger.info("响应完成.");
+            });
             try {
                 const originalUrl = req.originalUrl;
                 const path = this.getUrlPath(originalUrl);
@@ -45,52 +66,12 @@ export default class PageRouter extends Router {
                 if (!branch[0]) {
                     logger.warn(`not match any router branch. originalUrl: ${originalUrl}, path: ${path}`);
                     // 找不到匹配的页面，由express的404兜底
-                    next();
-                    return;
+                    return next();
                 }
-                const clientRouter = branch[0].route.clientRouter;
                 logger.info("match router branch.");
-                let preloadData = {};
-                let pageReducerName = "";
-                if ('_nossr' in req.query) {
-                    logger.info("请求参数携带_nossr的标志，跳过服务端首屏数据获取.");
-                } else {
-                    logger.info("准备进行首屏数据服务端获取.");
-                    const initialData = await metaCollector.getInitialData(branch[0], req);
-                    if (initialData) {
-                        if (initialData.preloadData) {
-                            preloadData = initialData.preloadData;
-                        }
-                        if (initialData.pageReducerName) {
-                            pageReducerName = initialData.pageReducerName;
-                        }
-                    }
-                    logger.info("首屏数据服务端获取完成，准备进行服务端渲染.");
-                }
-                const store = createStore(metaCollector.getRootReducer(), preloadData);
-                const initialState: any = store.getState() || {};
-                initialState[Loading.getReducerName(config.loadingId)] = this.meta.loading;
-                const meta = Object.assign({}, this.meta, this.getMeta(initialState[pageReducerName] || {}));
-                const publicPath = getPublicPath();
-                const Page = (<RootContainer
-                    initialState={initialState}
-                    meta={meta}
-                    publicPath={publicPath}>
-                    <Provider store={store}>
-                        <StaticRouter location={req.originalUrl} context={{}}>
-                            <RouteContainer pageRouter={clientRouter}>
-                                {renderRoutes(clientRouter)}
-                            </RouteContainer>
-                        </StaticRouter>
-                    </Provider>
-                </RootContainer>);
-                const htmlStream = ReactDomServer.renderToNodeStream(Page);
-                logger.info("渲染完成，准备响应页面给客户端");
-                res.write("<!DOCTYPE html>");
+                const Page = await this.getPageComponent(req, branch[0]);
+                const htmlStream = this.getPageRenderStream(Page);
                 htmlStream.pipe(res);
-                res.on('finish', () => {
-                    logger.info("响应完成.");
-                });
                 // logger.info("响应完成.");
                 // const htmlString = ReactDomServer.renderToString(Page);
                 // logger.info("渲染完成，准备响应页面给客户端");
@@ -99,20 +80,18 @@ export default class PageRouter extends Router {
                 // res.end(() => {
                 //     logger.info("响应完成.");
                 // });
-            } catch (e) {
-                res.write("<!DOCTYPE html><html><head><meta charset=\"UTF-8\" /></head><body>服务出错，稍后重试</body></html>", "utf8");
-                res.on('finish', () => {
-                    logger.info("响应完成.");
-                });
-                logger.error("服务端路由处理时出现异常:", e);
+                return;
+            } catch (err) {
+                this.getServerErrorPageStream().pipe(res);
+                logger.error("服务端路由处理时出现异常: ", err.message, " ; stack: ", err.stack);
             }
         });
     }
 
-    private setPageRouter(pageRouter, meta, proxyConfig: IProxyConfig[]) {
+    private setPageRouter(pageRouter, meta) {
         this.pageRouter = pageRouter;
         this.meta = meta;
-        this.proxyConfig = proxyConfig;
+        // this.proxyConfig = proxyConfig;
     }
 
     private getMeta(pageInitialState) {
@@ -131,5 +110,77 @@ export default class PageRouter extends Router {
 
     private getUrlPath(url) {
         return url.split("?")[0];
+    }
+
+    private async getPageComponent(req, matchedBranch): Promise<JSX.Element> {
+        const notSSR = checkNotSSR(req.query);
+        let children = null;
+        let initialState = {};
+        let meta = this.meta;
+        appState.isCSR = notSSR;
+        if (notSSR) {
+            logger.info("请求参数携带_nossr的标志，跳过服务端首屏数据获取.");
+        } else {
+            const clientRouter = matchedBranch.route.clientRouter;
+            let preloadData = {};
+            let pageReducerName = "";
+            logger.info("准备进行首屏数据服务端获取.");
+            const initialData = await getSSRInitialData(matchedBranch, req);
+            preloadData = initialData.preloadData;
+            pageReducerName = initialData.pageReducerName;
+            logger.info("首屏数据服务端获取完成，准备进行服务端渲染.");
+
+            const store = createStore(metaCollector.getRootReducer(), preloadData);
+            initialState = store.getState() || {};
+            initialState[Loading.getReducerName(config.loadingId)] = this.meta.loading;
+            meta = Object.assign({}, meta, this.getMeta(initialState[pageReducerName] || {}));
+
+            children = (<Provider store={store}>
+                <StaticRouter location={req.originalUrl} context={{}}>
+                    <RouteContainer pageRouter={clientRouter}>
+                        {renderRoutes(clientRouter)}
+                    </RouteContainer>
+                </StaticRouter>
+            </Provider>);
+        }
+        const publicPath = getPublicPath();
+        const Page = (<RootContainer
+            initialState={initialState}
+            meta={meta}
+            publicPath={publicPath}>
+            {children}
+        </RootContainer>);
+        logger.info("getPageComponent page: ")
+        logger.info(ReactDomServer.renderToString(Page));
+        return Page;
+    }
+
+    private getPageRenderStream(pageComponent): NodeJS.ReadableStream {
+        let htmlStream: NodeJS.ReadableStream;
+        try {
+            htmlStream = ReactDomServer.renderToNodeStream(pageComponent);
+            logger.info("渲染完成，准备响应页面给客户端");
+            // logger.info("响应完成.");
+            // const htmlString = ReactDomServer.renderToString(Page);
+            // logger.info("渲染完成，准备响应页面给客户端");
+            // res.write("<!DOCTYPE html>");
+            // res.write(htmlString, "utf8");
+            // res.end(() => {
+            //     logger.info("响应完成.");
+            // });
+        } catch (e) {
+            logger.error("服务端路由处理时出现异常: ", e.message, " ; stack: ", e.stack);
+            htmlStream = this.getServerErrorPageStream();
+        }
+        return htmlStream;
+    }
+
+    private getServerErrorPageStream(): NodeJS.ReadableStream {
+        return ReactDomServer.renderToNodeStream(<html>
+            <head>
+                <meta charSet="UTF-8" />
+            </head>
+            <body>服务出错，稍后重试</body>
+        </html>);
     }
 }
