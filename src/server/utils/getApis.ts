@@ -10,7 +10,7 @@ async function getApiPath(entry): Promise<string[]> {
         logger.debug("getApiFiles entry: ", entry);
         let files: string[] = [];
         const walk = klaw(entry, {
-            depthLimit: -1
+            depthLimit: -1,
         });
         walk.on("data", async (state) => {
             const isFile = state.stats.isFile();
@@ -18,7 +18,7 @@ async function getApiPath(entry): Promise<string[]> {
             const src = state.path;
             logger.debug('klaw src: ', src);
             logger.debug('klaw isFile: ', isFile, " ; isDir: ", isDir);
-            if (isFile && /\.js$/.test(src)) {
+            if (isFile && /\.js$/i.test(src)) {
                 files.push(src.replace(`${entry}`, "").replace(".js", ""));
             }
             // else if (isDir && src.replace(entry, "")) {

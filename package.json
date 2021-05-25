@@ -24,16 +24,17 @@
         "log4js": "~6.3.0",
         "md5": "~2.3.0",
         "node-mocks-http": "~1.10.1",
+        "path-to-regexp": "~6.2.0",
         "query-string": "~7.0.0"
     },
     "peerDependencies": {
         "react": "~17.0.2",
         "react-dom": "~17.0.2",
-        "react-redux": "~7.2.3",
+        "react-redux": "~7.2.4",
         "react-router": "~5.2.0",
         "react-router-config": "~5.1.1",
         "react-router-dom": "~5.2.0",
-        "redux": "~4.0.5",
+        "redux": "~4.1.0",
         "redux-thunk": "~2.3.0"
     },
     "devDependencies": {
@@ -53,8 +54,7 @@
         "@types/react-router": "~5.1.13",
         "@types/react-router-config": "~5.0.2",
         "@types/react-router-dom": "~5.1.7",
-        "@types/webpack-env": "~1.16.0",
-        "alcor": "~0.1.0",
+        "alcor": "~0.1.4",
         "tslib": "~2.2.0",
         "typescript": "~4.2.4"
     },

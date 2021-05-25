@@ -17,6 +17,7 @@ export default function handleMeta(getMeta, publicPath) {
     }
     finalMeta = Object.assign({}, meta);
     const assetsConfigMainfestJson = fs.readJSONSync(Path.resolve("./assetsMainfest.json"));
+    logger.debug(assetsConfigMainfestJson);
     const getFinalPath = handleRelativePath(publicPath);
     finalMeta.favicon = getFinalPath(finalMeta.favicon || "favicon.ico");
     if (finalMeta.styles) {
@@ -49,7 +50,7 @@ export default function handleMeta(getMeta, publicPath) {
         handleDebugMapAsset(assetsConfigMainfestJson)
     );
     for (let key in assetsConfigMainfestJson) {
-        if (/^public\//i.test(key)) {
+        if (/^public\//i.test(key) || /^styleEntry\/.+\.js$/.test(key)) {
             continue;
         }
         if (/\.css$|\.css\.map$/.test(key) && !finalMeta.styles.includes(assetsConfigMainfestJson[key])) {

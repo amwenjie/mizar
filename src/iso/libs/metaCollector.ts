@@ -1,4 +1,5 @@
 import { combineReducers } from "redux";
+import { pathToRegexp, match, parse, compile, MatchResult } from "path-to-regexp";
 import * as config from "../../config";
 import { fetchWithRequestObject } from "../fetch";
 import { getStore } from "../getStore";
@@ -36,30 +37,48 @@ export function getRootReducer(): any {
     return combineReducers(finalReducer);
 }
 
-function getMatchedComponent(matchedBranch): React.Component | undefined {
+function getMatchedComponent(matchedBranch): {
+    component: React.Component,
+    params?: any,
+ } | null {
     if (matchedBranch.route.component) {
-        return matchedBranch.route.component;
+        return {
+            component: matchedBranch.route.component,
+        };
     } else {
         const url = matchedBranch.match.url;
         const clientRouter = matchedBranch.route.clientRouter;
-        const matched = clientRouter.filter(crt => {
-            if (!crt.path) {
-                return false;
+        for (let i = 0, len = clientRouter.length; i < len; i++) {
+            const r = clientRouter[i];
+            if (!r.path) {
+                continue;
             }
-            return (new RegExp("^" + crt.path.replace(/\/\:[^/]+/, "/[^/]+"))).test(url);
-        });
-        if (matched[0]) {
-            return matched[0].component;
+            const matched = match(r.path, {
+                decode: decodeURIComponent,
+                encode: encodeURI,
+            })(url);
+            const isMatched = matched !== false;
+            if (isMatched) {
+                return {
+                    params: (matched as MatchResult).params,
+                    component: r.component,
+                };
+            }
         }
+        return null;
     }
 }
 
 export async function getInitialData(matchedBranch, request): Promise<{preloadData: any, pageReducerName: string}> {
     // 该方法根据路由和请求找到对应的组件获取初始数据。被client端RouterContainer和server端路由入口调用。
     const query = request.query;
-    const urlParams = matchedBranch.match.params;
-    const pageComponent = getMatchedComponent(matchedBranch);
-    if (pageComponent) {
+    let urlParams = matchedBranch.match.params;
+    const matched = getMatchedComponent(matchedBranch);
+    if (matched) {
+        const pageComponent = matched.component;
+        if (matched.params) {
+            urlParams = matched.params;
+        }
         const { preloadData, pageReducerName } = await collectPreloadData(
             reducerComponentMap, pageComponent, request, query, urlParams);
         return { preloadData, pageReducerName };

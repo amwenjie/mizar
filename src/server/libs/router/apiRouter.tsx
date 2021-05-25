@@ -1,4 +1,5 @@
 import * as Express from "express";
+import state from "../../../iso/libs/state";
 import getLogger from "../../utils/getLogger";
 import Router from "./index";
 
@@ -36,6 +37,7 @@ export default class ApiRouter extends Router {
             const childRouter = Express.Router();
             if (apis[path]["get"]) {
                 childRouter.get(path, apis[path]["get"]);
+                state.apis[path] = apis[path]["get"];
             }
             if (apis[path]["post"]) {
                 childRouter.post(path, apis[path]["post"]);
@@ -48,6 +50,9 @@ export default class ApiRouter extends Router {
             }
             if (apis[path]["all"]) {
                 childRouter.all(path, apis[path]["all"]);
+                if (!state.apis[path]) {
+                    state.apis[path] = apis[path]["all"];
+                }
             }
             routers.push(childRouter);
         });

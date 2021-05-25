@@ -36,14 +36,14 @@ export const fetchWithRequestObject = (httpRequest) => async (url, options?) => 
                 throw new Error("请使用getInitialData中传入的fetch方法，否则nodejs无法获取到当前页面的url参数和cookie");
             }
             const paramObj: any = {};
-            if (options.query) {
+            if (options.params) {
                 paramObj.query = {
-                    ...options.query,
+                    ...options.params,
                 };
             }
-            if (options.params) {
-                paramObj.params = {
-                    ...options.params,
+            if (options.data) {
+                paramObj.body = {
+                    ...options.data,
                 };
             }
             // 请求本地API
