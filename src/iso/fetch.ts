@@ -6,7 +6,7 @@ import apiController from "../server/libs/apiController";
 import { getStore } from "./getStore";
 import * as loadingActions from "./libs/components/Loading/actions";
 import getLogger from "./utils/getLogger";
-import isServer from "./libs/utils/isServer";
+import isServer from "./utils/isServer";
 
 const logger = getLogger().getLogger("iso/fetch");
 let loadingNumber = 0;
@@ -61,8 +61,16 @@ export const fetchWithRequestObject = (httpRequest) => async (url, options?) => 
                         eventEmitter: events.EventEmitter,
                     });
                     mockResponse.addListener("send", () => {
+                        const ct = mockResponse.getHeader("content-type") as string;
+                        if (ct && /json/.test(ct)) {
+                            resolve(mockResponse._getJSONData());
+                            return;
+                        }
                         resolve(mockResponse._getData());
                     });
+                    // 为了和client请求走express路由给的request保持一致
+                    // 页面初始化数据获取中的请求只支持get方法，因此req.body是undefined
+                    delete mockRequest.body;
                     apiController(mockRequest, mockResponse, reject);
                 });
             })();
@@ -101,4 +109,5 @@ function hideLoading() {
     }
 }
 
-export const fetch = fetchWithRequestObject(null);
+const fetch = fetchWithRequestObject(null);
+export default fetch;

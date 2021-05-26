@@ -28,6 +28,9 @@ class Logger {
             console.log(this.suffix, ...args);
         }
     }
+    public debug(...args: any[]) {
+        this.log(...args);
+    }
     public info(...args: any[]) {
         this.log(...args);
     }

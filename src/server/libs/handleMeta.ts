@@ -47,15 +47,15 @@ export default function handleMeta(getMeta, publicPath) {
     }
     finalMeta.scripts = finalMeta.scripts.concat(
         handleSplitChunksAsset(assetsConfigMainfestJson),
-        handleDebugMapAsset(assetsConfigMainfestJson)
+        // handleDebugMapAsset(assetsConfigMainfestJson)
     );
     for (let key in assetsConfigMainfestJson) {
         if (/^public\//i.test(key) || /^styleEntry\/.+\.js$/.test(key)) {
             continue;
         }
-        if (/\.css$|\.css\.map$/.test(key) && !finalMeta.styles.includes(assetsConfigMainfestJson[key])) {
+        if (/\.css$/.test(key) && !finalMeta.styles.includes(assetsConfigMainfestJson[key])) {
             finalMeta.styles.push(assetsConfigMainfestJson[key]);
-        } else if (/\.js$|\.js\.map$/.test(key) && !finalMeta.scripts.includes(assetsConfigMainfestJson[key])) {
+        } else if (/\.js$/.test(key) && !finalMeta.scripts.includes(assetsConfigMainfestJson[key])) {
             finalMeta.scripts.push(assetsConfigMainfestJson[key]);
         }
     }

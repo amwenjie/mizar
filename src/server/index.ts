@@ -7,12 +7,16 @@ import * as net from "net";
 import * as internalIp from "internal-ip";
 import * as Path from "path";
 import * as ServeStatic from "serve-static";
-import "source-map-support/register";
 import { getPort, getPublicPath } from "./utils/getConfig";
 import getLogger from "./utils/getLogger";
 // import { getLogger } from "../iso/utils/getLogger";
 import setupExitSignals from "./utils/setupExitSignals";
 import checkPositivePath from "./utils/checkPositivePath";
+import isDebug from "./utils/isDebug";
+
+if (isDebug) {
+    require("source-map-support").install();
+}
 
 interface IBodyParserOption {
     raw?: boolean | BodyParser.Options;

@@ -71,16 +71,21 @@ function getMatchedComponent(matchedBranch): {
 
 export async function getInitialData(matchedBranch, request): Promise<{preloadData: any, pageReducerName: string}> {
     // 该方法根据路由和请求找到对应的组件获取初始数据。被client端RouterContainer和server端路由入口调用。
-    const query = request.query;
     let urlParams = matchedBranch.match.params;
     const matched = getMatchedComponent(matchedBranch);
     if (matched) {
         const pageComponent = matched.component;
         if (matched.params) {
-            urlParams = matched.params;
+            urlParams = {
+                ...matched.params
+            };
         }
         const { preloadData, pageReducerName } = await collectPreloadData(
-            reducerComponentMap, pageComponent, request, query, urlParams);
+            reducerComponentMap, pageComponent, request, {
+                body: request.body || {},
+                query: request.query || {},
+                params: urlParams || {},
+            });
         return { preloadData, pageReducerName };
     } else {
         return {
@@ -90,24 +95,24 @@ export async function getInitialData(matchedBranch, request): Promise<{preloadDa
     }
 }
 
-async function getSinglePreloadData(component, reducer, request, query, urlParams): Promise<any> {
+async function getSinglePreloadData(component, reducer, request, params): Promise<any> {
     let initialData = {};
     if (component.getInitialData) {
         try {
-            initialData = await component.getInitialData(fetchWithRequestObject(request), query, urlParams);
+            initialData = await component.getInitialData(fetchWithRequestObject(request), params);
             // logger.info("getSinglePreloadData initialData", initialData);
         } catch (e) {
-            logger.error("获取初始数据失败", e);
+            logger.warn("业务方未捕获初始数据获取失败的异常 ", e);
         }
     } else {
-        logger.info("no getInitialData.");
+        logger.info("component dont have getInitialData method.");
     }
     let initialState = reducer(undefined, {});
     initialState = typeof initialState === "object" ? initialState : {};
     return Object.assign({}, initialState, initialData);
 }
 
-async function collectPreloadData(rcMap, targetComponent, request, query, urlParams) {
+async function collectPreloadData(rcMap, targetComponent, request, params) {
     let preloadData = {};
     let pageReducerName = "";
     await Promise.all(
@@ -119,12 +124,12 @@ async function collectPreloadData(rcMap, targetComponent, request, query, urlPar
                     const subComponents = rcMap[reducerName].subComponents;
                     // 找到当前页的组件
                     preloadData[reducerName] = await getSinglePreloadData(
-                        targetComponent, reducer, request, query, urlParams);
+                        targetComponent, reducer, request, params);
                     if (subComponents) {
                         await Promise.all(
                             subComponents.map(async (subComponent) => {
                                 const subComPreloadData = await collectPreloadData(
-                                    rcMap, subComponent, request, query, urlParams);
+                                    rcMap, subComponent, request, params);
                                 preloadData = { ...preloadData, ...subComPreloadData.preloadData };
                             }),
                         );

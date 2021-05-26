@@ -1,13 +1,14 @@
 import { applyMiddleware, compose, createStore } from "redux";
 import thunk from "redux-thunk";
 import { getRootReducer } from "./libs/metaCollector";
+import isServer from "./utils/isServer";
 
 let store;
 export function getStore() {
     if (store) {
         return store;
     }
-    if (typeof window === "undefined") {
+    if (isServer) { // typeof window === "undefined") {
         // 非浏览器环境
         return;
     }
