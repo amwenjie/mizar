@@ -150,8 +150,8 @@ export default class PageRouter extends Router {
             publicPath={publicPath}>
             {children}
         </RootContainer>);
-        logger.info("getPageComponent page: ")
-        logger.info(ReactDomServer.renderToString(Page));
+        // logger.info("getPageComponent page: ")
+        // logger.info(ReactDomServer.renderToString(Page));
         return Page;
     }
 

@@ -122,7 +122,10 @@ async function getSinglePreloadData(component, reducer, request, params): Promis
     let initialData = {};
     if (component.getInitialData) {
         try {
-            initialData = await component.getInitialData(fetchWithRequestObject(request), params);
+            initialData = await component.getInitialData(
+                fetchWithRequestObject(request),
+                params
+            );
             // logger.info("getSinglePreloadData initialData", initialData);
         } catch (e) {
             logger.warn("业务方未捕获初始数据获取失败的异常 ", e);
@@ -140,7 +143,7 @@ async function collectPreloadData(rcMap, targetComponent, request, params) {
     let pageReducerName = "";
     await Promise.all(
         Object.keys(rcMap)
-            .map(async (reducerName) => {
+            .map(async reducerName => {
                 if (rcMap[reducerName].component === targetComponent) {
                     pageReducerName = reducerName;
                     const reducer = rcMap[reducerName].reducer;
@@ -150,10 +153,14 @@ async function collectPreloadData(rcMap, targetComponent, request, params) {
                         targetComponent, reducer, request, params);
                     if (subComponents) {
                         await Promise.all(
-                            subComponents.map(async (subComponent) => {
+                            subComponents.map(async subComponent => {
                                 const subComPreloadData = await collectPreloadData(
-                                    rcMap, subComponent, request, params);
-                                preloadData = { ...preloadData, ...subComPreloadData.preloadData };
+                                    rcMap, subComponent, request, params
+                                );
+                                preloadData = {
+                                    ...preloadData,
+                                    ...subComPreloadData.preloadData,
+                                };
                             }),
                         );
                     }
