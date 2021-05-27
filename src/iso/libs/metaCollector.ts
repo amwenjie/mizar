@@ -11,21 +11,44 @@ const logger = getLogger().getLogger("iso/libs/metaCollector");
 const finalReducer = {};
 const reducerComponentMap = {};
 
-function finalPageReducer(pageReducer) {
+function finalPageReducer(pageReducer, reducerName) {
     // reducer中间件
     return (state, action) => {
-        if (action.type === config.frameworkId || action.type === config.pageInit) {
-            // // 用来做页面首屏渲染的初始数据
-            return { ...state, ...action.data };
-            // return { ...state };
-        } else {
-            return pageReducer(state, action);
+        if (action.type.startsWith(config.pageInit)) {
+            // 页面初始数据获取后触发的dispatch
+            // 理论上只需要触发preloadData中包含的reducerName对应reducer即可
+            // action.type中包含的reducerName和此处存储的reduerName不相等，直接返回state
+            const rg = new RegExp("^" + config.pageInit + "(.+)$");
+            const matched = rg.exec(action.type);
+            if (matched && matched[1] === reducerName) {
+                const nextState = pageReducer(state, action);
+                let data = null;
+                if (nextState.data && typeof nextState.data === "object") { // 说明是对象或数组
+                    data = {
+                        ...nextState.data,
+                        ...action.data.data,
+                    };
+                    return {
+                        ...nextState,
+                        ...action.data,
+                        data: {
+                            ...data,
+                        },
+                    };
+                }
+                return {
+                    ...nextState,
+                    ...action.data,
+                };
+            }
+            return state;
         }
+        return pageReducer(state, action);
     };
 }
 
 export function registerRedux(reducer, reducerName, component, subComponents) {
-    finalReducer[reducerName] = finalPageReducer(reducer);
+    finalReducer[reducerName] = finalPageReducer(reducer, reducerName);
     reducerComponentMap[reducerName] = { component, reducer, subComponents };
     if (appState.isClientBootstraped) {
         const store = getStore();

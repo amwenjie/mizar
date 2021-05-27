@@ -1,4 +1,5 @@
 import { connect as reduxConnect } from "react-redux";
+import { withRouter, RouteComponentProps } from "react-router-dom";
 import { registerRedux } from "./libs/metaCollector";
 import getLogger from "./utils/getLogger";
 
@@ -21,8 +22,16 @@ function mizarConnect<TStateProps, TDispatchProps, TOwnProps>(
                 };
             }
 
-            const reduxComponent = getReduxComponent(
-                mapStateToProps, mapDispatchToProps, mergeProps, options, component);
+            // 此处对所有使用connect的组件进行withRouter包裹
+            // 理论上来讲，在Router Component中指定的组件不需要withRouter也能获得history等路由方法
+            // 使用withRouter会增加组件嵌套深度，需要优化子组件没有路由方法的问题
+            const reduxComponent = withRouter(getReduxComponent(
+                mapStateToProps,
+                mapDispatchToProps,
+                mergeProps,
+                options,
+                component,
+            ));
 
             const findedReducerEntity = reducerEntityList.find(
                 (reducerEntity) => (

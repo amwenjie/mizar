@@ -31,8 +31,10 @@ class RouteContainer extends React.Component<IRouteContainer> {
                     query: parse(location.search),
                 },
             );
-            props.dispatch({ type: config.pageInit, data: preloadData[pageReducerName] });
-            if (preloadData[pageReducerName].title) {
+            Object.keys(preloadData).forEach(name => {
+                props.dispatch({ type: `${config.pageInit}${name}`, data: preloadData[name] });
+            });
+            if (preloadData[pageReducerName] && preloadData[pageReducerName].title) {
                 document.title = preloadData[pageReducerName].title;
             }
         });
