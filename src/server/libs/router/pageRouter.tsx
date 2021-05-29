@@ -10,32 +10,18 @@ import * as Loading from "../../../iso/libs/components/Loading";
 import RootContainer from "../../../iso/libs/components/RootContainer";
 import RouteContainer from "../../../iso/libs/components/RouteContainer";
 import * as metaCollector from "../../../iso/libs/metaCollector";
+import appState from "../../../iso/libs/state";
 import getLogger from "../../utils/getLogger";
 // import { getLogger } from "../../../iso/utils/getLogger";
 import { getPublicPath } from "../../utils/getConfig";
 import { IProxyConfig } from "../../interface";
 import checkNotSSR from "../../utils/checkNotSSR";
-import appState from "../../../iso/libs/state";
+import getRenderData from "../../utils/getRenderData";
 import Router from "./index";
 
 // const logger = getLogger("server/libs/router/pageRouter");
 const logger = getLogger().getLogger("server/libs/router/pageRouter");
 
-async function getSSRInitialData(matchedBranch, req): Promise<{preloadData: any, pageReducerName: string}> {
-    const initialData = await metaCollector.getInitialData(matchedBranch, req);
-    let preloadData: any = {};
-    let pageReducerName: string = "";
-    if (initialData.preloadData) {
-        preloadData = initialData.preloadData;
-    }
-    if (initialData.pageReducerName) {
-        pageReducerName = initialData.pageReducerName;
-    }
-    return {
-        preloadData,
-        pageReducerName,
-    };
-}
 export default class PageRouter extends Router {
     private meta;
     private proxyConfig;
@@ -125,7 +111,7 @@ export default class PageRouter extends Router {
             let preloadData = {};
             let pageReducerName = "";
             logger.info("准备进行首屏数据服务端获取.");
-            const initialData = await getSSRInitialData(matchedBranch, req);
+            const initialData = await getRenderData(matchedBranch, req);
             preloadData = initialData.preloadData;
             pageReducerName = initialData.pageReducerName;
             logger.info("首屏数据服务端获取完成，准备进行服务端渲染.");
@@ -143,11 +129,12 @@ export default class PageRouter extends Router {
                 </StaticRouter>
             </Provider>);
         }
-        const publicPath = getPublicPath();
+        // const publicPath = getPublicPath();
         const Page = (<RootContainer
             initialState={initialState}
             meta={meta}
-            publicPath={publicPath}>
+            // publicPath={publicPath}
+        >
             {children}
         </RootContainer>);
         // logger.info("getPageComponent page: ")

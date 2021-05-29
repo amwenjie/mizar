@@ -88,7 +88,7 @@ export default class RootContainer extends React.Component<IRootContainerProps, 
                         {children}
                     </div>
                     <script dangerouslySetInnerHTML={{
-                        __html: `window.publicPath=${JSON.stringify(publicPath)};\r\nwindow.__INITIAL_STATE__ = ${JSON.stringify(initialState || {}).replace(/</g, "\\u003c")}`,
+                        __html: `window.__INITIAL_STATE__ = ${JSON.stringify(initialState || {}).replace(/</g, "\\u003c")}`,
                     }}>
                     </script>
                     {scripts && scripts.map((script) => <script key={script} src={script} />)}
@@ -97,6 +97,8 @@ export default class RootContainer extends React.Component<IRootContainerProps, 
         );
     }
 }
+// window.publicPath=${JSON.stringify(publicPath)};\r\n
+
 // export default (props) => {
 //     const { initialState, publicPath, children } = props;
 //     const { title, keywords, description, favicon, styles,

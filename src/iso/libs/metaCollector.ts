@@ -3,8 +3,9 @@ import { pathToRegexp, match, parse, compile, MatchResult } from "path-to-regexp
 import * as config from "../../config";
 import { fetchWithRequestObject } from "../fetch";
 import { getStore } from "../getStore";
-import appState from "./state";
+import getCombinedState from "../utils/getCombinedState";
 import getLogger from "../utils/getLogger";
+import appState from "./state";
 
 const logger = getLogger().getLogger("iso/libs/metaCollector");
 
@@ -22,24 +23,7 @@ function finalPageReducer(pageReducer, reducerName) {
             const matched = rg.exec(action.type);
             if (matched && matched[1] === reducerName) {
                 const nextState = pageReducer(state, action);
-                let data = null;
-                if (nextState.data && typeof nextState.data === "object") { // 说明是对象或数组
-                    data = {
-                        ...nextState.data,
-                        ...action.data.data,
-                    };
-                    return {
-                        ...nextState,
-                        ...action.data,
-                        data: {
-                            ...data,
-                        },
-                    };
-                }
-                return {
-                    ...nextState,
-                    ...action.data,
-                };
+                return getCombinedState(nextState, action.data);
             }
             return state;
         }
