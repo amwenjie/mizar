@@ -7,7 +7,7 @@ let publicPath = "";
 export function getPublicPath(): string {
     if (publicPath === "") {
         const cdn = appState.isDebug ? '/' : getCDN();
-        publicPath = `${cdn}${getAssetsPathPrefix()}`; // ${getPackageName()}/client/`;
+        publicPath = `${cdn}${getAssetsPathPrefix()}client/`; // ${getPackageName()}/client/`;
     }
     return publicPath;
 }

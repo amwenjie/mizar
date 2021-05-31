@@ -45,10 +45,16 @@ export default function handleMeta(getMeta, publicPath) {
     if (!finalMeta.scripts) {
         finalMeta.scripts = [];
     }
-    finalMeta.scripts = finalMeta.scripts.concat(
-        handleSplitChunksAsset(assetsConfigMainfestJson),
+    
+    finalMeta.styles = finalMeta.styles.concat(
+        handleBaseCSS(assetsConfigMainfestJson),
         // handleDebugMapAsset(assetsConfigMainfestJson)
     );
+    finalMeta.scripts = finalMeta.scripts.concat(
+        handleBaseJS(assetsConfigMainfestJson),
+        // handleDebugMapAsset(assetsConfigMainfestJson)
+    );
+
     for (let key in assetsConfigMainfestJson) {
         if (/^public\//i.test(key) || /^styleEntry\/.+\.js$/.test(key)) {
             continue;
@@ -73,20 +79,32 @@ function handleRelativePath(publicPath) {
     };
 }
 
-function handleSplitChunksAsset(assetsConfigMainfestJson) {
+function handleBaseJS(assetsConfigMainfestJson) {
     const splitChunksArr = [];
     splitChunksArr.push(assetsConfigMainfestJson["runtime.js"]);
     delete assetsConfigMainfestJson["runtime.js"];
+    splitChunksArr.push(assetsConfigMainfestJson["lib.js"]);
+    delete assetsConfigMainfestJson["lib.js"];
     splitChunksArr.push(assetsConfigMainfestJson["vendor.js"]);
     delete assetsConfigMainfestJson["vendor.js"];
+    if (assetsConfigMainfestJson["common.js"]) {
+        splitChunksArr.push(assetsConfigMainfestJson["common.js"]);
+        delete assetsConfigMainfestJson["common.js"];
+    }
     return splitChunksArr;
 }
 
-function handleDebugMapAsset(assetsConfigMainfestJson) {
-    const mapArr = [];
-    assetsConfigMainfestJson["runtime.js.map"] && mapArr.push(assetsConfigMainfestJson["runtime.js.map"]);
-    delete assetsConfigMainfestJson["runtime.js.map"];
-    assetsConfigMainfestJson["vendor.js.map"] && mapArr.push(assetsConfigMainfestJson["vendor.js.map"]);
-    delete assetsConfigMainfestJson["vendor.js.map"];
-    return mapArr;
+function handleBaseCSS(assetsConfigMainfestJson) {
+    const splitChunksArr = [];
+    for (let key in assetsConfigMainfestJson) {
+        if (/^styleEntry\/.+\.css$/.test(key)) {
+            splitChunksArr.push(assetsConfigMainfestJson[key]);
+            delete assetsConfigMainfestJson[key];
+        }
+    }
+    if (assetsConfigMainfestJson["common.css"]) {
+        splitChunksArr.push(assetsConfigMainfestJson["common.css"]);
+        delete assetsConfigMainfestJson["common.css"];
+    }
+    return splitChunksArr;
 }
