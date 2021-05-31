@@ -9,9 +9,9 @@ import RouteContainer from "./libs/components/RouteContainer";
 import "./libs/polyfill";
 import appState from "./libs/state";
 
-declare let __webpack_public_path__: string;
+// declare let __webpack_public_path__: string;
 export function bootstrap(pageRouter) {
-    __webpack_public_path__ = (window as any).publicPath;
+    // __webpack_public_path__ = (window as any).publicPath;
     return (id: string = "app") => {
         ReactDom[appState.isCSR ? 'render' : 'hydrate'](
             <Provider store={getStore()} >

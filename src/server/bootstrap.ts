@@ -5,7 +5,7 @@ import { getApiRouter, getPageRouter } from "./libs/getRouter";
 import { IProxyConfig } from "./interface";
 import { getPublicPath } from "./utils/getConfig";
 
-declare let __webpack_public_path__: string;
+// declare let __webpack_public_path__: string;
 
 const logger = getLogger().getLogger("server/boostrap");
 // const logger = getLogger("server/boostrap")
@@ -13,7 +13,7 @@ const logger = getLogger().getLogger("server/boostrap");
 export function bootstrap(server: WebServer = new WebServer()) {
     return async function (pageRouter, getMeta, config?: IProxyConfig) {
         try {
-            __webpack_public_path__ = getPublicPath();
+            // __webpack_public_path__ = getPublicPath();
 
             const apiRouter = await getApiRouter();
             if (apiRouter) {
