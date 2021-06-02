@@ -1,8 +1,9 @@
 import * as metaCollector from "../../iso/libs/metaCollector";
 import getCombinedState from "../../iso/utils/getCombinedState";
 import { frameworkId } from "../../config";
+import { IInitialRenderData } from "../../interface";
 
-async function getSSRInitialData(matchedBranch, req): Promise<{preloadData: any, pageReducerName: string}> {
+async function getSSRInitialData(matchedBranch, req): Promise<IInitialRenderData> {
     const initialData = await metaCollector.getInitialData(matchedBranch, req);
     let preloadData: any = {};
     let pageReducerName: string = "";
@@ -15,11 +16,12 @@ async function getSSRInitialData(matchedBranch, req): Promise<{preloadData: any,
     return {
         preloadData,
         pageReducerName,
+        pageComName: initialData.pageComName,
     };
 }
 
-export default async function getRenderData(matchedBranch, req): Promise<{preloadData: any, pageReducerName: string}> {
-    const { preloadData, pageReducerName } = await getSSRInitialData(matchedBranch, req);
+export default async function getRenderData(matchedBranch, req): Promise<IInitialRenderData> {
+    const { preloadData, pageReducerName, pageComName } = await getSSRInitialData(matchedBranch, req);
     const initialState: any = metaCollector.getRootReducer()(undefined, {
         type: frameworkId
     }) || {};
@@ -36,5 +38,6 @@ export default async function getRenderData(matchedBranch, req): Promise<{preloa
     return {
         preloadData: initialState,
         pageReducerName,
+        pageComName,
     };
 }

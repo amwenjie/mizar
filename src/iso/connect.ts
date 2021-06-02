@@ -1,8 +1,6 @@
 import { connect as reduxConnect } from "react-redux";
 import { registerRedux } from "./libs/metaCollector";
 import getLogger from "./utils/getLogger";
-import { RouteContext } from "./Component";
-import isServer from "./utils/isServer";
 
 const logger = getLogger().getLogger("iso/connect");
 
@@ -19,12 +17,6 @@ function mizarConnect<TStateProps, TDispatchProps, TOwnProps>(
         return component => {
             if (!mapStateToProps) {
                 mapStateToProps = state => {
-                    if (!isServer) {
-                        return { 
-                            ...state[reducerName],
-                            ...RouteContext,
-                        };
-                    }
                     return {
                         ...state[reducerName],
                     };

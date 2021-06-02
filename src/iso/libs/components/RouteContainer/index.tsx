@@ -6,6 +6,7 @@ import { matchRoutes } from "react-router-config";
 import * as config from "../../../../config";
 import { reduxConnect } from "../../../connect";
 import { getInitialData } from "../../metaCollector";
+import injectAssets from "../../../utils/injectPageAssets";
 import getLoading from "../Loading";
 const Loading = getLoading(config.loadingId);
 
@@ -25,12 +26,13 @@ class RouteContainer extends React.Component<IRouteContainer> {
             if (!branch[0]) {
                 return;
             }
-            const { preloadData, pageReducerName } = await getInitialData(branch[0],
+            const { preloadData, pageReducerName, pageComName } = await getInitialData(branch[0],
                 {
                     baseUrl: location.pathname,
                     query: parse(location.search),
                 },
             );
+            injectAssets(pageComName);
             Object.keys(preloadData).forEach(name => {
                 props.dispatch({ type: `${config.pageInit}${name}`, data: preloadData[name] });
             });

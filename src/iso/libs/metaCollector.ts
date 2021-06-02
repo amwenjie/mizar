@@ -1,10 +1,12 @@
 import { combineReducers } from "redux";
 import { pathToRegexp, match, parse, compile, MatchResult } from "path-to-regexp";
 import * as config from "../../config";
-import { fetchWithRequestObject } from "../fetch";
+import { IInitialRenderData } from "../../interface";
 import { getStore } from "../getStore";
+import { fetchWithRequestObject } from "../fetch";
 import getCombinedState from "../utils/getCombinedState";
 import getLogger from "../utils/getLogger";
+
 import appState from "./state";
 
 const logger = getLogger().getLogger("iso/libs/metaCollector");
@@ -45,12 +47,15 @@ export function getRootReducer(): any {
 }
 
 function getMatchedComponent(matchedBranch): {
-    component: React.Component,
-    params?: any,
+    component: React.Component;
+    // meta?: any,
+    pageComName?: string;
+    params?: any;
  } | null {
     if (matchedBranch.route.component) {
         return {
             component: matchedBranch.route.component,
+            pageComName: matchedBranch.route.name,
         };
     } else {
         const url = matchedBranch.match.url;
@@ -69,6 +74,8 @@ function getMatchedComponent(matchedBranch): {
                 return {
                     params: (matched as MatchResult).params,
                     component: r.component,
+                    pageComName: r.name,
+                    // meta: r.meta,
                 };
             }
         }
@@ -76,7 +83,7 @@ function getMatchedComponent(matchedBranch): {
     }
 }
 
-export async function getInitialData(matchedBranch, request): Promise<{preloadData: any, pageReducerName: string}> {
+export async function getInitialData(matchedBranch, request): Promise<IInitialRenderData> {
     // 该方法根据路由和请求找到对应的组件获取初始数据。被client端RouterContainer和server端路由入口调用。
     let urlParams = matchedBranch.match.params;
     const matched = getMatchedComponent(matchedBranch);
@@ -93,10 +100,15 @@ export async function getInitialData(matchedBranch, request): Promise<{preloadDa
                 query: request.query || {},
                 params: urlParams || {},
             });
-        return { preloadData, pageReducerName };
+        return {
+            preloadData,
+            pageReducerName,
+            pageComName: matched.pageComName,
+        };
     } else {
         return {
             preloadData: {},
+            pageComName: "",
             pageReducerName: "",
         };
     }

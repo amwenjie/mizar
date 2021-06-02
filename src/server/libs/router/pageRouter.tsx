@@ -13,9 +13,9 @@ import * as metaCollector from "../../../iso/libs/metaCollector";
 import appState from "../../../iso/libs/state";
 import getLogger from "../../utils/getLogger";
 // import { getLogger } from "../../../iso/utils/getLogger";
-import { getPublicPath } from "../../utils/getConfig";
-import { IProxyConfig } from "../../interface";
+import { IInitialRenderData, IMetaProps } from "../../../interface";
 import checkNotSSR from "../../utils/checkNotSSR";
+import getAssetsURI, { getPageAssets } from "../../utils/getAssetsURI";
 import getRenderData from "../../utils/getRenderData";
 import Router from "./index";
 
@@ -23,7 +23,7 @@ import Router from "./index";
 const logger = getLogger().getLogger("server/libs/router/pageRouter");
 
 export default class PageRouter extends Router {
-    private meta;
+    private meta: IMetaProps;
     private proxyConfig;
     private pageRouter;
     
@@ -55,7 +55,7 @@ export default class PageRouter extends Router {
                     return next();
                 }
                 logger.info("match router branch.");
-                const Page = await this.getPageComponent(req, branch[0]);
+                const Page = await this.getPage(req, branch[0]);
                 const htmlStream = this.getPageRenderStream(Page);
                 htmlStream.pipe(res);
                 // logger.info("响应完成.");
@@ -98,11 +98,12 @@ export default class PageRouter extends Router {
         return url.split("?")[0];
     }
 
-    private async getPageComponent(req, matchedBranch): Promise<JSX.Element> {
+    private async getPage(req, matchedBranch): Promise<JSX.Element> {
         const notSSR = checkNotSSR(req.query);
         let children = null;
         let initialState = {};
         let meta = this.meta;
+        let assetsMap = [];
         appState.isCSR = notSSR;
         if (notSSR) {
             logger.info("请求参数携带_nossr的标志，跳过服务端首屏数据获取.");
@@ -111,7 +112,7 @@ export default class PageRouter extends Router {
             let preloadData = {};
             let pageReducerName = "";
             logger.info("准备进行首屏数据服务端获取.");
-            const initialData = await getRenderData(matchedBranch, req);
+            const initialData: IInitialRenderData = await getRenderData(matchedBranch, req);
             preloadData = initialData.preloadData;
             pageReducerName = initialData.pageReducerName;
             logger.info("首屏数据服务端获取完成，准备进行服务端渲染.");
@@ -120,6 +121,22 @@ export default class PageRouter extends Router {
             initialState = store.getState() || {};
             initialState[Loading.getReducerName(config.loadingId)] = this.meta.loading;
             meta = Object.assign({}, meta, this.getMeta(initialState[pageReducerName] || {}));
+
+            const pageStyleURI = getAssetsURI("page/" + initialData.pageComName + ".css") as string;
+            logger.debug("pageStyleURI: ", pageStyleURI);
+            if (pageStyleURI) {
+                meta.styles = meta.styles.concat(pageStyleURI);
+            }
+
+            const pageScriptURI = getAssetsURI("page/" + initialData.pageComName + ".js") as string;
+            logger.debug("pageScriptURI: ", pageScriptURI);
+            if (pageScriptURI) {
+                meta.scripts = meta.scripts.concat(pageScriptURI);
+            }
+
+            logger.debug("meta: ", meta);
+
+            assetsMap = getPageAssets().filter(path => (path !== pageStyleURI && path !== pageScriptURI));
 
             children = (<Provider store={store}>
                 <StaticRouter location={req.originalUrl} context={{}}>
@@ -133,11 +150,12 @@ export default class PageRouter extends Router {
         const Page = (<RootContainer
             initialState={initialState}
             meta={meta}
+            assetsMap={assetsMap}
             // publicPath={publicPath}
         >
             {children}
         </RootContainer>);
-        // logger.info("getPageComponent page: ")
+        // logger.info("getPage page: ")
         // logger.info(ReactDomServer.renderToString(Page));
         return Page;
     }

@@ -1,6 +1,6 @@
 import * as fs from "fs-extra";
 import appState from "../../iso/libs/state";
-import { ICustomConfig } from "../interface";
+import { ICustomConfig } from "../../interface";
 const packageJSON = fs.readJSONSync("./package.json");
 let publicPath = "";
 
@@ -21,7 +21,7 @@ export function getCDN(): string {
 }
 
 export function getCustomConf(): ICustomConfig {
-    return packageJSON.customConfig;
+    return packageJSON.appConfig;
 }
 
 export function getAssetsPathPrefix(): string {

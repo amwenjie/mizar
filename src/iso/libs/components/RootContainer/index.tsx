@@ -1,25 +1,8 @@
 import * as React from "react";
-
-interface IRootContainerProps {
-    initialState?: any;
-    publicPath?: string;
-    children?: any;
-    meta?: {
-        title?: string;
-        keywords?: string;
-        description?: string;
-        favicon?: string;
-        styles?: any[];
-        scripts?: any[];
-        links?: any[];
-        metas?: any[];
-        calcRootFontSize?: number | (() => void)
-    };
-}
-
+import { IRootContainerProps } from "../../../../interface";
 export default class RootContainer extends React.Component<IRootContainerProps, {}> {
     public render() {
-        const { initialState, publicPath, children } = this.props;
+        const { assetsMap, initialState, publicPath, children } = this.props;
         const {
             title,
             keywords,
@@ -49,7 +32,7 @@ export default class RootContainer extends React.Component<IRootContainerProps, 
                     <link href={favicon} rel="shortcut icon" />
                     <link href={favicon} rel="bookmark" />
                     {links}
-                    {styles && styles.map((style) => <link rel="stylesheet" key={style} href={style} type="text/css" />)}
+                    {styles && styles.map(style => <link rel="stylesheet" key={style} href={style} type="text/css" />)}
                     {
                         typeof calcRootFontSize === "number"
                             ? <script dangerouslySetInnerHTML={{
@@ -88,10 +71,10 @@ export default class RootContainer extends React.Component<IRootContainerProps, 
                         {children}
                     </div>
                     <script dangerouslySetInnerHTML={{
-                        __html: `window.__INITIAL_STATE__ = ${JSON.stringify(initialState || {}).replace(/</g, "\\u003c")}`,
+                        __html: `window.__INITIAL_STATE__=${JSON.stringify(initialState || {}).replace(/</g, "\\u003c")};window.__ASSETS_MAP__=${JSON.stringify(assetsMap || [])};`,
                     }}>
                     </script>
-                    {scripts && scripts.map((script) => <script key={script} src={script} />)}
+                    {scripts && scripts.map(script => <script key={script} src={script} />)}
                 </body>
             </html>
         );

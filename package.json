@@ -56,7 +56,7 @@
         "@types/react-router": "~5.1.13",
         "@types/react-router-config": "~5.0.2",
         "@types/react-router-dom": "~5.1.7",
-        "alcor": "~0.1.24"
+        "alcor": "~0.1.25"
     },
     "scripts": {
         "build": "alcor pack"
@@ -70,10 +70,5 @@
         "iOS >= 6",
         "Opera >= 12",
         "Safari >= 6"
-    ],
-    "customConfig": {
-        "tslint": {
-            "disable": false
-        }
-    }
+    ]
 }
