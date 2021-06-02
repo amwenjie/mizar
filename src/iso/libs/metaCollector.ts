@@ -24,8 +24,8 @@ function finalPageReducer(pageReducer, reducerName) {
             const rg = new RegExp("^" + config.pageInit + "(.+)$");
             const matched = rg.exec(action.type);
             if (matched && matched[1] === reducerName) {
-                const nextState = pageReducer(state, action);
-                return getCombinedState(nextState, action.data);
+                // const nextState = pageReducer(state, action);
+                return getCombinedState(state, action.data);
             }
             return state;
         }
