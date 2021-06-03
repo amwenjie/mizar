@@ -6,8 +6,8 @@ import apiController from "../server/libs/apiController";
 import { getStore } from "./getStore";
 import * as loadingActions from "./libs/components/Loading/actions";
 import getLogger from "./utils/getLogger";
-import isServer from "./utils/isServer";
 
+declare const IS_SERVER_RUNTIME;
 const logger = getLogger().getLogger("iso/fetch");
 let loadingNumber = 0;
 
@@ -17,13 +17,13 @@ export const fetchWithRequestObject = (httpRequest) => async (url, options?) => 
         url = options.url;
     }
     
-    if (isServer) {
+    if (IS_SERVER_RUNTIME) {
         // 是nodejs环境
         let data;
         if (url.startsWith("http://") || url.startsWith("https://")) {
             // 从服务端请求API团队提供的API服务
             // 这种情况下的请求，cookie是无法工作的，获取的IP会替换成客户端的IP
-            const response = await axios(Object.assign({}, options));
+            const response = await axios({...options});
             data = response.data;
         } else {
             if (/^\/api\//.test(url)) {
@@ -82,7 +82,10 @@ export const fetchWithRequestObject = (httpRequest) => async (url, options?) => 
             // 显示loading
             showLoading();
         }
-        const finalOptions = Object.assign({}, { withCredentials: true }, options);
+        const finalOptions = {
+            withCredentials: true,
+            ...options,
+        };
     
         return new Promise((resolve, reject) => {
             axios(finalOptions)

@@ -17,7 +17,7 @@ export default function handleMeta(getMeta, publicPath) {
     } else {
         meta = getMeta;
     }
-    finalMeta = Object.assign({}, meta);
+    finalMeta = {...meta};
     const assetsConfigMainfestJson = getAssetsURI() as object;
     logger.debug(assetsConfigMainfestJson);
     const getFinalPath = handleRelativePath(publicPath);

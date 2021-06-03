@@ -10,7 +10,9 @@ const logger = getLogger().getLogger("server/getRouter");
 
 export function getPageRouter(pageRouter, getMeta): any {
     const publicPath = getPublicPath();
-    const parsedMeta: any = Object.assign({}, handleMeta(getMeta, publicPath));
+    const parsedMeta: any = {
+        ...handleMeta(getMeta, publicPath),
+    };
     return new PageRouter(pageRouter, parsedMeta);
 }
 

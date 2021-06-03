@@ -4,7 +4,6 @@ import * as config from "../../config";
 import { IInitialRenderData } from "../../interface";
 import { getStore } from "../getStore";
 import { fetchWithRequestObject } from "../fetch";
-import getCombinedState from "../utils/getCombinedState";
 import getLogger from "../utils/getLogger";
 
 import appState from "./state";
@@ -25,7 +24,10 @@ function finalPageReducer(pageReducer, reducerName) {
             const matched = rg.exec(action.type);
             if (matched && matched[1] === reducerName) {
                 // const nextState = pageReducer(state, action);
-                return getCombinedState(state, action.data);
+                return {
+                    ...state,
+                    ...action.data,
+                };
             }
             return state;
         }
@@ -131,7 +133,10 @@ async function getSinglePreloadData(component, reducer, request, params): Promis
     }
     let initialState = reducer(undefined, {});
     initialState = typeof initialState === "object" ? initialState : {};
-    return Object.assign({}, initialState, initialData);
+    return {
+        ...initialState,
+        ...initialData,
+    };
 }
 
 async function collectPreloadData(rcMap, targetComponent, request, params) {

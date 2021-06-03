@@ -7,7 +7,9 @@ import * as config from "../../../../config";
 import { reduxConnect } from "../../../connect";
 import { getInitialData } from "../../metaCollector";
 import injectAssets from "../../../utils/injectPageAssets";
+import getMatchedBranch from "../../getMatchedBranch";
 import getLoading from "../Loading";
+
 const Loading = getLoading(config.loadingId);
 
 interface IRouteContainer extends RouteComponentProps {
@@ -22,7 +24,7 @@ class RouteContainer extends React.Component<IRouteContainer> {
         }
         props.history.listen(async (location, action) => {
             // 当在浏览器端用无刷新的形式切换页面时，该函数被触发
-            const branch = matchRoutes(props.pageRouter, location.pathname);
+            const branch = await getMatchedBranch(props.pageRouter, location.pathname);
             if (!branch[0]) {
                 return;
             }

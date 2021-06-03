@@ -15,7 +15,7 @@ interface ILogger {
 let defaultLogger: IGetLogger;
 
 let isConfigured = false;
-
+declare const IS_DEBUG_MODE;
 class Logger {
     private suffix: string = "";
     private supportMethods = ["log", "info", "warn", "error"];
@@ -24,7 +24,7 @@ class Logger {
     }
 
     public log(...args: any[]) {
-        if (appState.isDebug) {
+        if (IS_DEBUG_MODE) {
             console.log(this.suffix, ...args);
         }
     }
@@ -35,7 +35,7 @@ class Logger {
         this.log(...args);
     }
     public warn(...args: any[]) {
-        if (appState.isDebug) {
+        if (IS_DEBUG_MODE) {
             console.warn(this.suffix, ...args);
         }
     }

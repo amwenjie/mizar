@@ -18,18 +18,37 @@ export default function(name?: string | string[]): string | string[] | object {
             return name.map(n => assetsMap[n]);
         }
     }
-    return Object.assign({}, assetsMap);
+    return {
+        ...assetsMap,
+    };
 }
 
-export function getPageAssets(): string[] {
+export function getPageCssAssets(): string[] {
     if (!assetsMap) {
         assetsMap = fs.readJSONSync(Path.resolve("./assetsMainfest.json"));
     }
-    const pageAssets = [];
+    const cssAssets = [];
     for (let key in assetsMap) {
-        if (/^page\//.test(key)) {
-            pageAssets.push(assetsMap[key]);
+        if (/^page\/.+\.css$/.test(key)) {
+            cssAssets.push(assetsMap[key]);
         }
     }
-    return pageAssets;
+    return cssAssets;
+}
+
+export function getPageJSAssets(): string[] {
+    if (!assetsMap) {
+        assetsMap = fs.readJSONSync(Path.resolve("./assetsMainfest.json"));
+    }
+    const jsAssets = [];
+    for (let key in assetsMap) {
+        if (/^page\/.+\.js$/.test(key)) {
+            jsAssets.push(assetsMap[key]);
+        }
+    }
+    return jsAssets;
+}
+
+export function getPageAssets(): string[] {
+    return getPageCssAssets().concat(getPageJSAssets());
 }

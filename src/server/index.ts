@@ -12,9 +12,10 @@ import getLogger from "./utils/getLogger";
 // import { getLogger } from "../iso/utils/getLogger";
 import setupExitSignals from "./utils/setupExitSignals";
 import checkPositivePath from "./utils/checkPositivePath";
-import isDebug from "./utils/isDebug";
 
-if (isDebug) {
+declare const IS_DEBUG_MODE;
+
+if (IS_DEBUG_MODE) {
     require("source-map-support").install();
 }
 
@@ -66,7 +67,10 @@ export class WebServer {
         const defautlOptions: IWebServerOption = {
             port: getPort(),
         };
-        this.options = Object.assign({}, defautlOptions, options);
+        this.options = {
+            ...defautlOptions,
+            ...options,
+        };
         this.setupApp();
         this.setHealthCheck();
         this.errorEventHandler();

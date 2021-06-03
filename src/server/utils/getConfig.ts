@@ -3,10 +3,10 @@ import appState from "../../iso/libs/state";
 import { ICustomConfig } from "../../interface";
 const packageJSON = fs.readJSONSync("./package.json");
 let publicPath = "";
-
+declare const IS_DEBUG_MODE;
 export function getPublicPath(): string {
     if (publicPath === "") {
-        const cdn = appState.isDebug ? '/' : getCDN();
+        const cdn = IS_DEBUG_MODE ? '/' : getCDN();
         publicPath = `${cdn}${getAssetsPathPrefix()}client/`; // ${getPackageName()}/client/`;
     }
     return publicPath;

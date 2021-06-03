@@ -15,8 +15,8 @@ import getLogger from "../../utils/getLogger";
 // import { getLogger } from "../../../iso/utils/getLogger";
 import { IInitialRenderData, IMetaProps } from "../../../interface";
 import checkNotSSR from "../../utils/checkNotSSR";
-import getAssetsURI, { getPageAssets } from "../../utils/getAssetsURI";
-import getRenderData from "../../utils/getRenderData";
+import getAssetsURI, { getPageCssAssets } from "../../utils/getAssetsURI";
+import getSSRInitialData from "../../utils/getSSRInitialData";
 import Router from "./index";
 
 // const logger = getLogger("server/libs/router/pageRouter");
@@ -104,23 +104,27 @@ export default class PageRouter extends Router {
         let initialState = {};
         let meta = this.meta;
         let assetsMap = [];
+        let preloadData = {};
         appState.isCSR = notSSR;
         if (notSSR) {
             logger.info("请求参数携带_nossr的标志，跳过服务端首屏数据获取.");
         } else {
             const clientRouter = matchedBranch.route.clientRouter;
-            let preloadData = {};
             let pageReducerName = "";
             logger.info("准备进行首屏数据服务端获取.");
-            const initialData: IInitialRenderData = await getRenderData(matchedBranch, req);
+            const initialData: IInitialRenderData = await getSSRInitialData(matchedBranch, req);
             preloadData = initialData.preloadData;
             pageReducerName = initialData.pageReducerName;
             logger.info("首屏数据服务端获取完成，准备进行服务端渲染.");
 
             const store = createStore(metaCollector.getRootReducer(), preloadData);
-            initialState = store.getState() || {};
-            initialState[Loading.getReducerName(config.loadingId)] = this.meta.loading;
-            meta = Object.assign({}, meta, this.getMeta(initialState[pageReducerName] || {}));
+            // initialState = store.getState() || {};
+            meta = {
+                ...meta,
+                ...this.getMeta(preloadData[pageReducerName] || {}),
+            };
+
+            preloadData[Loading.getReducerName(config.loadingId)] = this.meta.loading;
 
             const pageStyleURI = getAssetsURI("page/" + initialData.pageComName + ".css") as string;
             logger.debug("pageStyleURI: ", pageStyleURI);
@@ -136,7 +140,7 @@ export default class PageRouter extends Router {
 
             logger.debug("meta: ", meta);
 
-            assetsMap = getPageAssets().filter(path => (path !== pageStyleURI && path !== pageScriptURI));
+            assetsMap = getPageCssAssets().filter(path => (path !== pageStyleURI && path !== pageScriptURI));
 
             children = (<Provider store={store}>
                 <StaticRouter location={req.originalUrl} context={{}}>
@@ -148,7 +152,7 @@ export default class PageRouter extends Router {
         }
         // const publicPath = getPublicPath();
         const Page = (<RootContainer
-            initialState={initialState}
+            initialState={preloadData}
             meta={meta}
             assetsMap={assetsMap}
             // publicPath={publicPath}
