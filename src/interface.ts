@@ -1,5 +1,4 @@
-import { RouteConfig, RouteConfigComponentProps } from "react-router-config";
-import { Location } from "history"
+import { RouteConfig } from "react-router-config";
 
 export interface IProxyConfig {
     urlPath: string;
@@ -46,14 +45,6 @@ export interface IRootContainerProps {
     assetsMap?: string[];
 }
 
-export interface IPageRouter {
-    name: string;
-    location?: Location;
-    component?: string | React.ComponentType<RouteConfigComponentProps<any>> | React.ComponentType;
-    path?: string | string[];
-    exact?: boolean;
-    strict?: boolean;
-    routes?: RouteConfig[];
-    render?: (props: RouteConfigComponentProps<any>) => React.ReactNode;
-    [propName: string]: any;
+export interface IPageRouter extends RouteConfig {
+    name?: string;
 }

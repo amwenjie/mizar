@@ -1,15 +1,15 @@
-import * as Express from "express";
-import * as React from "react";
+import Express from "express";
+import React from "react";
 import * as ReactDomServer from "react-dom/server";
 import { Provider } from "react-redux";
 import { matchRoutes, renderRoutes } from "react-router-config";
 import { Route, StaticRouter, Switch } from "react-router-dom";
 import { createStore } from "redux";
-import * as config from "../../../config";
-import * as Loading from "../../../iso/libs/components/Loading";
+import { loadingId } from "../../../config";
+import { getReducerName as getLoadingReducerName } from "../../../iso/libs/components/Loading";
 import RootContainer from "../../../iso/libs/components/RootContainer";
 import RouteContainer from "../../../iso/libs/components/RouteContainer";
-import * as metaCollector from "../../../iso/libs/metaCollector";
+import { getRootReducer } from "../../../iso/libs/metaCollector";
 import appState from "../../../iso/libs/state";
 import getLogger from "../../utils/getLogger";
 // import { getLogger } from "../../../iso/utils/getLogger";
@@ -101,9 +101,9 @@ export default class PageRouter extends Router {
     private async getPage(req, matchedBranch): Promise<JSX.Element> {
         const notSSR = checkNotSSR(req.query);
         let children = null;
-        let initialState = {};
+        // let initialState = {};
         let meta = this.meta;
-        let assetsMap = [];
+        // let assetsMap = [];
         let preloadData = {};
         appState.isCSR = notSSR;
         if (notSSR) {
@@ -117,30 +117,35 @@ export default class PageRouter extends Router {
             pageReducerName = initialData.pageReducerName;
             logger.info("首屏数据服务端获取完成，准备进行服务端渲染.");
 
-            const store = createStore(metaCollector.getRootReducer(), preloadData);
+            const store = createStore(getRootReducer(), preloadData);
             // initialState = store.getState() || {};
+
+            const styles = meta.styles.slice(0);
+            const scripts = meta.scripts.slice(0);
             meta = {
                 ...meta,
+                // styles,
+                // scripts,
                 ...this.getMeta(preloadData[pageReducerName] || {}),
             };
 
-            preloadData[Loading.getReducerName(config.loadingId)] = this.meta.loading;
+            preloadData[getLoadingReducerName(loadingId)] = this.meta.loading;
 
-            const pageStyleURI = getAssetsURI("page/" + initialData.pageComName + ".css") as string;
-            logger.debug("pageStyleURI: ", pageStyleURI);
-            if (pageStyleURI) {
-                meta.styles = meta.styles.concat(pageStyleURI);
-            }
+            // const pageStyleURI = getAssetsURI("page/" + initialData.pageComName + ".css") as string;
+            // logger.debug("pageStyleURI: ", pageStyleURI);
+            // if (pageStyleURI) {
+            //     meta.styles.push(pageStyleURI);
+            // }
 
-            const pageScriptURI = getAssetsURI("page/" + initialData.pageComName + ".js") as string;
-            logger.debug("pageScriptURI: ", pageScriptURI);
-            if (pageScriptURI) {
-                meta.scripts = meta.scripts.concat(pageScriptURI);
-            }
-
+            // const pageScriptURI = getAssetsURI("page/" + initialData.pageComName + ".js") as string;
+            // logger.debug("pageScriptURI: ", pageScriptURI);
+            // if (pageScriptURI) {
+            //     meta.scripts.push(pageScriptURI);
+            // }
+            
             logger.debug("meta: ", meta);
 
-            assetsMap = getPageCssAssets().filter(path => (path !== pageStyleURI && path !== pageScriptURI));
+            // assetsMap = getPageCssAssets().filter(path => (path !== pageStyleURI && path !== pageScriptURI));
 
             children = (<Provider store={store}>
                 <StaticRouter location={req.originalUrl} context={{}}>
@@ -154,7 +159,7 @@ export default class PageRouter extends Router {
         const Page = (<RootContainer
             initialState={preloadData}
             meta={meta}
-            assetsMap={assetsMap}
+            // assetsMap={assetsMap}
             // publicPath={publicPath}
         >
             {children}

@@ -1,4 +1,4 @@
-import * as Express from "express";
+import Express from "express";
 import getLogger from "../../utils/getLogger";
 // import { getLogger } from "../../../iso/utils/getLogger";
 

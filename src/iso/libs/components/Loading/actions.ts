@@ -1,13 +1,13 @@
-import * as constants from "./constants";
+import { hideLoading as vHideLoading, showLoading as vShowLoading } from "./constants";
 
 export function showLoading(id = "") {
     return {
-        type: id + constants.showLoading,
+        type: id + vShowLoading,
     };
 }
 
 export function hideLoading(id = "") {
     return {
-        type: id + constants.hideLoading,
+        type: id + vHideLoading,
     };
 }

@@ -1,8 +1,8 @@
-import * as metaCollector from "../../iso/libs/metaCollector";
+import { getInitialData } from "../../iso/libs/metaCollector";
 import { IInitialRenderData } from "../../interface";
 
 export default async function getSSRInitialData(matchedBranch, req): Promise<IInitialRenderData> {
-    const initialData = await metaCollector.getInitialData(matchedBranch, req);
+    const initialData = await getInitialData(matchedBranch, req);
     let preloadData: any = {};
     let pageReducerName: string = "";
     if (initialData.preloadData) {

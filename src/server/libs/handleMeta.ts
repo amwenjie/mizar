@@ -1,5 +1,5 @@
-import * as fs from "fs-extra";
-import * as Path from "path";
+import fs from "fs-extra";
+import Path from "path";
 import getLogger from "../utils/getLogger";
 // import { getLogger } from "../../iso/utils/getLogger";
 import checkPositivePath from "../utils/checkPositivePath";
@@ -51,16 +51,20 @@ export default function handleMeta(getMeta, publicPath) {
     finalMeta.styles = finalMeta.styles.concat(cstyle);
     finalMeta.scripts = finalMeta.scripts.concat(cscript);
 
-    for (let key in assetsConfigMainfestJson) {
-        if (/^public\//i.test(key) || /^styleEntry\/.+\.js$/.test(key) || /^page\/.+/.test(key)) {
-            continue;
-        }
-        if (/\.css$/.test(key) && !finalMeta.styles.includes(assetsConfigMainfestJson[key])) {
-            finalMeta.styles.push(assetsConfigMainfestJson[key]);
-        } else if (/\.js$/.test(key) && !finalMeta.scripts.includes(assetsConfigMainfestJson[key])) {
-            finalMeta.scripts.push(assetsConfigMainfestJson[key]);
-        }
-    }
+    // for (let key in assetsConfigMainfestJson) {
+    //     if (key.startsWith("public/")
+    //         || key.startsWith("styleEntry/")
+    //         || key.startsWith("page/")
+    //         || key === "index.js"
+    //     ) {
+    //         continue;
+    //     }
+    //     if (/\.css$/.test(key) && !finalMeta.styles.includes(assetsConfigMainfestJson[key])) {
+    //         finalMeta.styles.push(assetsConfigMainfestJson[key]);
+    //     } else if (/\.js$/.test(key) && !finalMeta.scripts.includes(assetsConfigMainfestJson[key])) {
+    //         finalMeta.scripts.push(assetsConfigMainfestJson[key]);
+    //     }
+    // }
     logger.info("finalMeta: ", finalMeta);
     return finalMeta;
 }

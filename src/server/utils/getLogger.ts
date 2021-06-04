@@ -1,4 +1,4 @@
-import * as log4js from "log4js";
+import log4js from "log4js";
 
 interface IGetLogger {
     getLogger(category?: string): ILogger;

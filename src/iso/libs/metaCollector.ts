@@ -1,6 +1,6 @@
 import { combineReducers } from "redux";
 import { pathToRegexp, match, parse, compile, MatchResult } from "path-to-regexp";
-import * as config from "../../config";
+import { pageInit } from "../../config";
 import { IInitialRenderData } from "../../interface";
 import { getStore } from "../getStore";
 import { fetchWithRequestObject } from "../fetch";
@@ -16,11 +16,11 @@ const reducerComponentMap = {};
 function finalPageReducer(pageReducer, reducerName) {
     // reducer中间件
     return (state, action) => {
-        if (action.type.startsWith(config.pageInit)) {
+        if (action.type.startsWith(pageInit)) {
             // 页面初始数据获取后触发的dispatch
             // 理论上只需要触发preloadData中包含的reducerName对应reducer即可
             // action.type中包含的reducerName和此处存储的reduerName不相等，直接返回state
-            const rg = new RegExp("^" + config.pageInit + "(.+)$");
+            const rg = new RegExp("^" + pageInit + "(.+)$");
             const matched = rg.exec(action.type);
             if (matched && matched[1] === reducerName) {
                 // const nextState = pageReducer(state, action);

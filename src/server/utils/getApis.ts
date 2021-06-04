@@ -1,6 +1,6 @@
-import * as fs from "fs-extra";
-import * as Path from "path";
-import * as klaw from "klaw";
+import fs from "fs-extra";
+import Path from "path";
+import klaw from "klaw";
 import getLogger from "./getLogger";
 
 const logger = getLogger().getLogger("server/utils/getApis");

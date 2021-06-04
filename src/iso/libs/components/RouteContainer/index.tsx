@@ -1,16 +1,16 @@
 import { parse } from "query-string";
-import * as React from "react";
+import React from "react";
 // import { connect } from "react-redux";
 import { withRouter, RouteComponentProps } from "react-router-dom";
 import { matchRoutes } from "react-router-config";
-import * as config from "../../../../config";
+import { loadingId, pageInit } from "../../../../config";
 import { reduxConnect } from "../../../connect";
 import { getInitialData } from "../../metaCollector";
 import injectAssets from "../../../utils/injectPageAssets";
 import getMatchedBranch from "../../getMatchedBranch";
 import getLoading from "../Loading";
 
-const Loading = getLoading(config.loadingId);
+const Loading = getLoading(loadingId);
 
 interface IRouteContainer extends RouteComponentProps {
     pageRouter: any;
@@ -34,9 +34,9 @@ class RouteContainer extends React.Component<IRouteContainer> {
                     query: parse(location.search),
                 },
             );
-            injectAssets(pageComName);
+            // injectAssets(pageComName);
             Object.keys(preloadData).forEach(name => {
-                props.dispatch({ type: `${config.pageInit}${name}`, data: preloadData[name] });
+                props.dispatch({ type: `${pageInit}${name}`, data: preloadData[name] });
             });
             if (preloadData[pageReducerName] && preloadData[pageReducerName].title) {
                 document.title = preloadData[pageReducerName].title;

@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import { IRootContainerProps } from "../../../../interface";
 export default class RootContainer extends React.Component<IRootContainerProps, {}> {
     public render() {
@@ -71,7 +71,7 @@ export default class RootContainer extends React.Component<IRootContainerProps, 
                         {children}
                     </div>
                     <script dangerouslySetInnerHTML={{
-                        __html: `window.__INITIAL_STATE__=${JSON.stringify(initialState || {}).replace(/</g, "\\u003c")};window.__ASSETS_MAP__=${JSON.stringify(assetsMap || [])};`,
+                        __html: `window.__INITIAL_STATE__=${JSON.stringify(initialState || {}).replace(/</g, "\\u003c")};`,
                     }}>
                     </script>
                     {scripts && scripts.map(script => <script key={script} src={script} />)}

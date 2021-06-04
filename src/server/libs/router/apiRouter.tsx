@@ -1,4 +1,4 @@
-import * as Express from "express";
+import Express from "express";
 import state from "../../../iso/libs/state";
 import getLogger from "../../utils/getLogger";
 import Router from "./index";

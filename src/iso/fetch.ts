@@ -1,10 +1,8 @@
 import axios from "axios";
-import * as events from "events";
-import * as httpMock from "node-mocks-http";
-import * as config from "../config";
-import apiController from "../server/libs/apiController";
+import events from "events";
+import { loadingId } from "../config";
 import { getStore } from "./getStore";
-import * as loadingActions from "./libs/components/Loading/actions";
+import { hideLoading as loadingHideAction, showLoading as loadingShowAction } from "./libs/components/Loading/actions";
 import getLogger from "./utils/getLogger";
 
 declare const IS_SERVER_RUNTIME;
@@ -18,6 +16,9 @@ export const fetchWithRequestObject = (httpRequest) => async (url, options?) => 
     }
     
     if (IS_SERVER_RUNTIME) {
+        const httpMock = require("node-mocks-http");
+        const apiController = require("../server/libs/apiController").default;
+
         // 是nodejs环境
         let data;
         if (url.startsWith("http://") || url.startsWith("https://")) {
@@ -102,13 +103,13 @@ export const fetchWithRequestObject = (httpRequest) => async (url, options?) => 
 
 function showLoading() {
     loadingNumber++;
-    getStore().dispatch(loadingActions.showLoading(config.loadingId));
+    getStore().dispatch(loadingShowAction(loadingId));
 }
 
 function hideLoading() {
     loadingNumber--;
     if (loadingNumber <= 0) {
-        getStore().dispatch(loadingActions.hideLoading(config.loadingId));
+        getStore().dispatch(loadingHideAction(loadingId));
     }
 }
 

@@ -1,9 +1,9 @@
-import * as React from "react";
+import React from "react";
 import { connect } from "../../../connect";
 import CycleImage from "./components/CycleImage";
 import { IProps } from "./interfaces";
 import reducer from "./reducer";
-import * as style from "./main.css";
+import * as style from "./index.css";
 
 class Loading extends React.Component<IProps, {}> {
     // private style = require("./main.css");

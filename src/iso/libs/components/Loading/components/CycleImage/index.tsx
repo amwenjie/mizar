@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import { IProps, IState } from "./interface";
 
 class CycleImage extends React.Component<IProps, IState> {
