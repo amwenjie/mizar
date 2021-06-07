@@ -15,7 +15,8 @@ import getLogger from "../../utils/getLogger";
 // import { getLogger } from "../../../iso/utils/getLogger";
 import { IInitialRenderData, IMetaProps } from "../../../interface";
 import checkNotSSR from "../../utils/checkNotSSR";
-import getAssetsURI, { getPageCssAssets } from "../../utils/getAssetsURI";
+import getAssetsURI from "../../utils/getAssetsURI";
+import { getPageCSSDeps } from "../../utils/getPageDeps";
 import getSSRInitialData from "../../utils/getSSRInitialData";
 import Router from "./index";
 
@@ -124,28 +125,25 @@ export default class PageRouter extends Router {
             const scripts = meta.scripts.slice(0);
             meta = {
                 ...meta,
-                // styles,
+                styles,
                 // scripts,
                 ...this.getMeta(preloadData[pageReducerName] || {}),
             };
 
             preloadData[getLoadingReducerName(loadingId)] = this.meta.loading;
 
-            // const pageStyleURI = getAssetsURI("page/" + initialData.pageComName + ".css") as string;
-            // logger.debug("pageStyleURI: ", pageStyleURI);
-            // if (pageStyleURI) {
-            //     meta.styles.push(pageStyleURI);
-            // }
+            const cssDeps = await getPageCSSDeps("page/" + initialData.pageComName);
+            if (cssDeps && cssDeps.length) {
+                meta.styles = meta.styles.concat(cssDeps);
+            }
 
-            // const pageScriptURI = getAssetsURI("page/" + initialData.pageComName + ".js") as string;
-            // logger.debug("pageScriptURI: ", pageScriptURI);
-            // if (pageScriptURI) {
-            //     meta.scripts.push(pageScriptURI);
-            // }
-            
+            const pageStyleURI = getAssetsURI("page/" + initialData.pageComName + ".css") as string;
+            logger.debug("pageStyleURI: ", pageStyleURI);
+            if (pageStyleURI) {
+                meta.styles.push(pageStyleURI);
+            }
+
             logger.debug("meta: ", meta);
-
-            // assetsMap = getPageCssAssets().filter(path => (path !== pageStyleURI && path !== pageScriptURI));
 
             children = (<Provider store={store}>
                 <StaticRouter location={req.originalUrl} context={{}}>
@@ -159,7 +157,6 @@ export default class PageRouter extends Router {
         const Page = (<RootContainer
             initialState={preloadData}
             meta={meta}
-            // assetsMap={assetsMap}
             // publicPath={publicPath}
         >
             {children}

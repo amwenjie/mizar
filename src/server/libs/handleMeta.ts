@@ -18,8 +18,6 @@ export default function handleMeta(getMeta, publicPath) {
         meta = getMeta;
     }
     finalMeta = {...meta};
-    const assetsConfigMainfestJson = getAssetsURI() as object;
-    logger.debug(assetsConfigMainfestJson);
     const getFinalPath = handleRelativePath(publicPath);
     finalMeta.favicon = getFinalPath(finalMeta.favicon || "favicon.ico");
     if (finalMeta.styles) {
@@ -47,24 +45,30 @@ export default function handleMeta(getMeta, publicPath) {
     if (!finalMeta.scripts) {
         finalMeta.scripts = [];
     }
-    const { styles: cstyle, scripts: cscript } = getBaseAssets(assetsConfigMainfestJson);
-    finalMeta.styles = finalMeta.styles.concat(cstyle);
-    finalMeta.scripts = finalMeta.scripts.concat(cscript);
+    
+    const assetsConfigMainfestJson = getAssetsURI() as object;
+    logger.debug("assetsConfigMainfestJson: ", assetsConfigMainfestJson);
 
-    // for (let key in assetsConfigMainfestJson) {
-    //     if (key.startsWith("public/")
-    //         || key.startsWith("styleEntry/")
-    //         || key.startsWith("page/")
-    //         || key === "index.js"
-    //     ) {
-    //         continue;
-    //     }
-    //     if (/\.css$/.test(key) && !finalMeta.styles.includes(assetsConfigMainfestJson[key])) {
-    //         finalMeta.styles.push(assetsConfigMainfestJson[key]);
-    //     } else if (/\.js$/.test(key) && !finalMeta.scripts.includes(assetsConfigMainfestJson[key])) {
-    //         finalMeta.scripts.push(assetsConfigMainfestJson[key]);
-    //     }
-    // }
+    if (assetsConfigMainfestJson) {
+        const { styles: cstyle, scripts: cscript } = getBaseAssets(assetsConfigMainfestJson);
+        finalMeta.styles = finalMeta.styles.concat(cstyle);
+        finalMeta.scripts = finalMeta.scripts.concat(cscript);
+
+        // for (let key in assetsConfigMainfestJson) {
+        //     if (key.startsWith("public/")
+        //         || key.startsWith("styleEntry/")
+        //         || key.startsWith("page/")
+        //         || key === "index.js"
+        //     ) {
+        //         continue;
+        //     }
+        //     if (/\.css$/.test(key) && !finalMeta.styles.includes(assetsConfigMainfestJson[key])) {
+        //         finalMeta.styles.push(assetsConfigMainfestJson[key]);
+        //     } else if (/\.js$/.test(key) && !finalMeta.scripts.includes(assetsConfigMainfestJson[key])) {
+        //         finalMeta.scripts.push(assetsConfigMainfestJson[key]);
+        //     }
+        // }
+    }
     logger.info("finalMeta: ", finalMeta);
     return finalMeta;
 }

@@ -6,8 +6,6 @@ import reducer from "./reducer";
 import * as style from "./index.css";
 
 class Loading extends React.Component<IProps, {}> {
-    // private style = require("./main.css");
-
     public render() {
         return (
             this.props.showLoading ?

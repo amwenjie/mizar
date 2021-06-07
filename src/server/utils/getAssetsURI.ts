@@ -2,20 +2,39 @@ import fs from "fs-extra";
 import Path from "path";
 import getLogger from "./getLogger";
 
+const filePath = Path.resolve("./assetsMainfest.json");
 const logger = getLogger().getLogger("server/utils/getAssetsRUI");
 let assetsMap: object;
 
-export default function(name?: string | string[]): string | string[] | object {
-    if (!assetsMap) {
-        assetsMap = fs.readJSONSync(Path.resolve("./assetsMainfest.json"));
-    }
+if (fs.existsSync(filePath)) {
+    assetsMap = fs.readJSONSync(filePath);
+}
+
+export default function(name?: string | string[] | RegExp): string | string[] | object | null {
     logger.debug("name: ", name, assetsMap);
+
+    if (assetsMap === undefined) {
+        if (typeof name === "string") {
+            return "";
+        } else if (name instanceof Array || name instanceof RegExp) {
+            return [];
+        }
+        return null;
+    }
     
     if (name) {
         if (typeof name === "string") {
             return assetsMap[name];
         } else if (name instanceof Array) {
             return name.map(n => assetsMap[n]);
+        } else if (name instanceof RegExp) {
+            const map = [];
+            Object.keys(assetsMap).forEach(k => {
+                if (name.test(k)) {
+                    map.push(assetsMap[k]);
+                }
+            });
+            return map;
         }
     }
     return {
@@ -24,8 +43,8 @@ export default function(name?: string | string[]): string | string[] | object {
 }
 
 export function getPageCssAssets(): string[] {
-    if (!assetsMap) {
-        assetsMap = fs.readJSONSync(Path.resolve("./assetsMainfest.json"));
+    if (assetsMap === undefined) {
+        return [];
     }
     const cssAssets = [];
     for (let key in assetsMap) {
@@ -37,8 +56,8 @@ export function getPageCssAssets(): string[] {
 }
 
 export function getPageJSAssets(): string[] {
-    if (!assetsMap) {
-        assetsMap = fs.readJSONSync(Path.resolve("./assetsMainfest.json"));
+    if (assetsMap === undefined) {
+        return [];
     }
     const jsAssets = [];
     for (let key in assetsMap) {
