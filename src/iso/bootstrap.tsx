@@ -11,12 +11,11 @@ import loadComponent from "./libs/getMatchedBranch";
 import "./libs/polyfill";
 import appState from "./libs/state";
 
-// declare let __webpack_public_path__: string;
 export function bootstrap(pageRouter: IPageRouter[]) {
-    // __webpack_public_path__ = (window as any).publicPath;
     return async (id: string = "app") => {
         await loadComponent(pageRouter as RouteConfig[], location.pathname);
-        ReactDom[appState.isCSR ? 'render' : 'hydrate'](
+        const r = (window as any).__isCSR__ === false ? "hydrate" : "render";
+        ReactDom[r](
             <Provider store={getStore()} >
                 <BrowserRouter>
                     <RouteContainer pageRouter={pageRouter}>

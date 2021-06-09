@@ -2,7 +2,7 @@ import React from "react";
 import { IRootContainerProps } from "../../../../interface";
 export default class RootContainer extends React.Component<IRootContainerProps, {}> {
     public render() {
-        const { assetsMap, initialState, publicPath, children } = this.props;
+        const { isCSR = true, initialState, publicPath, children } = this.props;
         const {
             title,
             keywords,
@@ -71,7 +71,7 @@ export default class RootContainer extends React.Component<IRootContainerProps, 
                         {children}
                     </div>
                     <script dangerouslySetInnerHTML={{
-                        __html: `window.__INITIAL_STATE__=${JSON.stringify(initialState || {}).replace(/</g, "\\u003c")};`,
+                        __html: `window.__INITIAL_STATE__=${JSON.stringify(initialState || {}).replace(/</g, "\\u003c")};window.__isCSR__=${JSON.stringify(isCSR)};`,
                     }}>
                     </script>
                     {scripts && scripts.map(script => <script key={script} src={script} />)}

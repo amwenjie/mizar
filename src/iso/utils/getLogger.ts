@@ -1,4 +1,3 @@
-import appState from "../libs/state";
 
 interface IGetLogger {
     getLogger(category?: string): ILogger;

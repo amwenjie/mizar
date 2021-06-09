@@ -10,7 +10,6 @@ import { getReducerName as getLoadingReducerName } from "../../../iso/libs/compo
 import RootContainer from "../../../iso/libs/components/RootContainer";
 import RouteContainer from "../../../iso/libs/components/RouteContainer";
 import { getRootReducer } from "../../../iso/libs/metaCollector";
-import appState from "../../../iso/libs/state";
 import getLogger from "../../utils/getLogger";
 // import { getLogger } from "../../../iso/utils/getLogger";
 import { IInitialRenderData, IMetaProps } from "../../../interface";
@@ -23,6 +22,9 @@ import Router from "./index";
 // const logger = getLogger("server/libs/router/pageRouter");
 const logger = getLogger().getLogger("server/libs/router/pageRouter");
 
+function getErrorPageRenderString() {
+    return '<html><head><meta charset="UTF-8" /><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><meta http-equiv="x-ua-compatible" content="ie=edge" /><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1,user-scalable=no" /></head><body>服务出错，稍后重试</body></html>';
+}
 export default class PageRouter extends Router {
     private meta: IMetaProps;
     private proxyConfig;
@@ -37,6 +39,7 @@ export default class PageRouter extends Router {
 
     public setRouter() {
         this.router.use(async (req, res, next) => {
+            res.setHeader("Content-Type", "text/html; charset=UTF-8");
             res.write("<!DOCTYPE html>");
             res.on('finish', () => {
                 logger.info("响应完成.");
@@ -57,8 +60,9 @@ export default class PageRouter extends Router {
                 }
                 logger.info("match router branch.");
                 const Page = await this.getPage(req, branch[0]);
-                const htmlStream = this.getPageRenderStream(Page);
-                htmlStream.pipe(res);
+                const htmlString = ReactDomServer.renderToString(Page);
+                logger.info("渲染完成，准备响应页面给客户端");
+                res.end(htmlString, "utf8");
                 // logger.info("响应完成.");
                 // const htmlString = ReactDomServer.renderToString(Page);
                 // logger.info("渲染完成，准备响应页面给客户端");
@@ -69,7 +73,7 @@ export default class PageRouter extends Router {
                 // });
                 return;
             } catch (err) {
-                this.getServerErrorPageStream().pipe(res);
+                res.end(getErrorPageRenderString(), "utf-8");
                 logger.error("服务端路由处理时出现异常: ", err.message, " ; stack: ", err.stack);
             }
         });
@@ -105,8 +109,7 @@ export default class PageRouter extends Router {
         // let initialState = {};
         let meta = this.meta;
         // let assetsMap = [];
-        let preloadData = {};
-        appState.isCSR = notSSR;
+        let preloadData: any = {};
         if (notSSR) {
             logger.info("请求参数携带_nossr的标志，跳过服务端首屏数据获取.");
         } else {
@@ -155,6 +158,7 @@ export default class PageRouter extends Router {
         }
         // const publicPath = getPublicPath();
         const Page = (<RootContainer
+            isCSR={notSSR}
             initialState={preloadData}
             meta={meta}
             // publicPath={publicPath}
@@ -164,34 +168,5 @@ export default class PageRouter extends Router {
         // logger.info("getPage page: ")
         // logger.info(ReactDomServer.renderToString(Page));
         return Page;
-    }
-
-    private getPageRenderStream(pageComponent): NodeJS.ReadableStream {
-        let htmlStream: NodeJS.ReadableStream;
-        try {
-            htmlStream = ReactDomServer.renderToNodeStream(pageComponent);
-            logger.info("渲染完成，准备响应页面给客户端");
-            // logger.info("响应完成.");
-            // const htmlString = ReactDomServer.renderToString(Page);
-            // logger.info("渲染完成，准备响应页面给客户端");
-            // res.write("<!DOCTYPE html>");
-            // res.write(htmlString, "utf8");
-            // res.end(() => {
-            //     logger.info("响应完成.");
-            // });
-        } catch (e) {
-            logger.error("服务端路由处理时出现异常: ", e.message, " ; stack: ", e.stack);
-            htmlStream = this.getServerErrorPageStream();
-        }
-        return htmlStream;
-    }
-
-    private getServerErrorPageStream(): NodeJS.ReadableStream {
-        return ReactDomServer.renderToNodeStream(<html>
-            <head>
-                <meta charSet="UTF-8" />
-            </head>
-            <body>服务出错，稍后重试</body>
-        </html>);
     }
 }

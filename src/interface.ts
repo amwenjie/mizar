@@ -43,6 +43,7 @@ export interface IRootContainerProps {
     children?: any;
     meta?: IMetaProps;
     assetsMap?: string[];
+    isCSR?: boolean;
 }
 
 export interface IPageRouter extends RouteConfig {

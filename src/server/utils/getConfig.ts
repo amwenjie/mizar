@@ -1,5 +1,4 @@
 import fs from "fs-extra";
-import appState from "../../iso/libs/state";
 import { ICustomConfig } from "../../interface";
 const packageJSON = fs.readJSONSync("./package.json");
 let publicPath = "";
