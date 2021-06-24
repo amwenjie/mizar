@@ -2,7 +2,7 @@ import axios from "axios";
 import events from "events";
 import { loadingId } from "../config";
 import { getStore } from "./getStore";
-import { hideLoading as loadingHideAction, showLoading as loadingShowAction } from "./libs/components/Loading/actions";
+import { hideLoading as loadingHideAction, showLoading as loadingShowAction } from "./libs/components/FetchLoading/actions";
 import getLogger from "./utils/getLogger";
 
 declare const IS_SERVER_RUNTIME;
@@ -107,9 +107,11 @@ function showLoading() {
 }
 
 function hideLoading() {
-    loadingNumber--;
-    if (loadingNumber <= 0) {
-        getStore().dispatch(loadingHideAction(loadingId));
+    if (loadingNumber > 0) { 
+        loadingNumber--;
+        if (loadingNumber <= 0) {
+            getStore().dispatch(loadingHideAction(loadingId));
+        }
     }
 }
 

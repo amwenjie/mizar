@@ -1,12 +1,10 @@
 import getLogger from "./../utils/getLogger";
-// import { getLogger } from "../iso/utils/getLogger";
 import { getPublicPath } from "../utils/getConfig";
 import handleMeta from "./handleMeta";
 import PageRouter from "./router/pageRouter";
 import ApiRouter from "./router/apiRouter";
 import getApis from "../utils/getApis"
 const logger = getLogger().getLogger("server/getRouter");
-// const logger = getLogger("server/getRouter")
 
 export function getPageRouter(pageRouter, getMeta): any {
     const publicPath = getPublicPath();

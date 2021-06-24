@@ -9,7 +9,6 @@ import Path from "path";
 import ServeStatic from "serve-static";
 import { getPort, getPublicPath } from "./utils/getConfig";
 import getLogger from "./utils/getLogger";
-// import { getLogger } from "../iso/utils/getLogger";
 import setupExitSignals from "./utils/setupExitSignals";
 import checkPositivePath from "./utils/checkPositivePath";
 

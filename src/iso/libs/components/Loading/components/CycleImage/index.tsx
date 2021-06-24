@@ -24,7 +24,9 @@ class CycleImage extends React.Component<IProps, IState> {
 
     public render() {
         return (
-            <div >
+            <div style={{
+                overflow: "hidden"
+            }}>
                 <div>
                     {
                         this.props.images.map((imageSrc, index) => (

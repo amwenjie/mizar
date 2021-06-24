@@ -71,7 +71,7 @@ export default class RootContainer extends React.Component<IRootContainerProps, 
                         {children}
                     </div>
                     <script dangerouslySetInnerHTML={{
-                        __html: `window.__INITIAL_STATE__=${JSON.stringify(initialState || {}).replace(/</g, "\\u003c")};window.__isCSR__=${JSON.stringify(isCSR)};`,
+                        __html: `window.__INITIAL_STATE__=${JSON.stringify(initialState || {}).replace(/</g, "\\u003c")};` + (isCSR ? `window.__isCSR__=${JSON.stringify(isCSR)};` : ""),
                     }}>
                     </script>
                     {scripts && scripts.map(script => <script key={script} src={script} />)}

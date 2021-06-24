@@ -1,12 +1,8 @@
-import fs from "fs-extra";
-import Path from "path";
 import getLogger from "../utils/getLogger";
-// import { getLogger } from "../../iso/utils/getLogger";
 import checkPositivePath from "../utils/checkPositivePath";
 import getAssetsURI from "../utils/getAssetsURI";
 import getBaseAssets from "../utils/getBaseAssets";
 
-// const logger = getLogger("server/libs/handleMeta");
 const logger = getLogger().getLogger("server/libs/handleMeta");
 
 export default function handleMeta(getMeta, publicPath) {

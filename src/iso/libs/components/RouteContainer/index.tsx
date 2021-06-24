@@ -8,9 +8,9 @@ import { reduxConnect } from "../../../connect";
 import { getInitialData } from "../../metaCollector";
 import injectAssets from "../../../utils/injectPageAssets";
 import getMatchedBranch from "../../getMatchedBranch";
-import getLoading from "../Loading";
+import getLoading from "../FetchLoading";
 
-const Loading = getLoading(loadingId);
+const FetchLoading = getLoading(loadingId);
 
 interface IRouteContainer extends RouteComponentProps {
     pageRouter: any;
@@ -48,7 +48,7 @@ class RouteContainer extends React.Component<IRouteContainer> {
         return (
             <div>
                 {this.props.children}
-                <Loading />
+                <FetchLoading />
             </div>
         );
     }
