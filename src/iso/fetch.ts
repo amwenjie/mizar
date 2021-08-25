@@ -78,14 +78,16 @@ export const fetchWithRequestObject = (httpRequest) => async (url, options?) => 
         }
         return data;
     } else {
+        const opts = Object.assign({}, options);
         // 客户端浏览器环境
-        if (!options.noLoading) {
+        if (!opts.noLoading) {
             // 显示loading
             showLoading();
         }
+        delete opts.noLoading;
         const finalOptions = {
             withCredentials: true,
-            ...options,
+            ...opts,
         };
     
         return new Promise((resolve, reject) => {
@@ -116,4 +118,5 @@ function hideLoading() {
 }
 
 const fetch = fetchWithRequestObject(null);
+
 export default fetch;

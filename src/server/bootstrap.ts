@@ -9,7 +9,12 @@ import { IProxyConfig, IPageRouter } from "../interface";
 const logger = getLogger().getLogger("server/boostrap");
 // const logger = getLogger("server/boostrap")
 
-export function bootstrap(server: WebServer = new WebServer()) {
+export function bootstrap(server: WebServer = new WebServer(
+    {
+        bodyParser: true,
+        cookieParser: true,
+    }
+)) {
     return async function (pageRouter: IPageRouter[], getMeta, config?: IProxyConfig) {
         try {
             // __webpack_public_path__ = getPublicPath();
