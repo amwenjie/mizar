@@ -5,16 +5,11 @@ export interface IProxyConfig {
     apiHost: string;
 }
 
-export interface ICustomConfig {
+export interface IAppConf {
+    name: string;
     port: number;
     assetsPathPrefix?: string;
     cdn?: string;
-    debugPort?: number;
-    logger?: string;
-    tslint?: {
-        disable: boolean;
-    };
-    stylelint?: boolean | string | object;
 }
 
 export interface IInitialRenderData {

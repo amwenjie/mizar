@@ -1,6 +1,6 @@
 import fs from "fs-extra";
-import { ICustomConfig } from "../../interface";
-const packageJSON = fs.readJSONSync("./package.json");
+import { IAppConf } from "../../interface";
+const appConfJSON = fs.readJSONSync("./config/app.json");
 let publicPath = "";
 declare const IS_DEBUG_MODE;
 export function getPublicPath(): string {
@@ -12,19 +12,19 @@ export function getPublicPath(): string {
 }
 
 export function getPort(): number {
-    return getCustomConf().port;
+    return getAppConf().port;
 }
 
 export function getCDN(): string {
-    return getCustomConf().cdn; //  || '/';
+    return getAppConf().cdn || ""; //  || '/';
 }
 
-export function getCustomConf(): ICustomConfig {
-    return packageJSON.appConfig;
+export function getAppConf(): IAppConf {
+    return appConfJSON;
 }
 
 export function getAssetsPathPrefix(): string {
-    let prefix = getCustomConf().assetsPathPrefix;
+    let prefix = getAppConf().assetsPathPrefix;
     if (prefix && !prefix.endsWith("/")) {
         prefix += "/";
     }
@@ -32,5 +32,5 @@ export function getAssetsPathPrefix(): string {
 }
 
 export function getPackageName(): string {
-    return packageJSON.name || '';
+    return getAppConf.name || '';
 }
