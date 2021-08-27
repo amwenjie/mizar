@@ -32,7 +32,6 @@ export default class RootContainer extends React.Component<IRootContainerProps, 
                     <link href={favicon} rel="shortcut icon" />
                     <link href={favicon} rel="bookmark" />
                     {links}
-                    {styles && styles.map(style => <link rel="stylesheet" key={style} href={style} type="text/css" />)}
                     {
                         typeof calcRootFontSize === "number"
                             ? <script dangerouslySetInnerHTML={{
@@ -65,6 +64,7 @@ export default class RootContainer extends React.Component<IRootContainerProps, 
                                 : ""
                             )
                     }
+                    {styles && styles.map(style => <link rel="stylesheet" key={style} href={style} type="text/css" />)}
                 </head>
                 <body>
                     <div id="app">

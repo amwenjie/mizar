@@ -7,8 +7,6 @@ import { IPageRouter } from "../interface";
 import { getStore } from "./getStore";
 import RouteContainer from "./libs/components/RouteContainer";
 import loadComponent from "./libs/getMatchedBranch";
-// 临时方案，后续需寻求在tools中统一处理
-import "./libs/polyfill";
 import appState from "./libs/state";
 
 export function bootstrap(pageRouter: IPageRouter[]) {

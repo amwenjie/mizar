@@ -3,7 +3,7 @@ import Path from "path";
 import getAssetsURI from "./getAssetsURI";
 import getLogger from "./getLogger";
 
-const logger = getLogger().getLogger("server/utils/getAssetsRUI");
+const logger = getLogger().getLogger("server/utils/getPageDeps");
 
 let pageDeps: any;
 const filePath = Path.resolve("./pageAssetsDeps.json");

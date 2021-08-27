@@ -12,7 +12,6 @@ import { getRootReducer } from "../../iso/libs/metaCollector";
 import getLogger from "../utils/getLogger";
 import { IInitialRenderData } from "../../interface";
 import checkNotSSR from "../utils/checkNotSSR";
-import getAssetsURI from "../utils/getAssetsURI";
 import { getPageCSSDeps, getPageJSDeps } from "../utils/getPageDeps";
 import getSSRInitialData from "../utils/getSSRInitialData";
 import state from "./state";
@@ -72,12 +71,6 @@ export async function getPage(req, matchedBranch): Promise<ReactElement> {
         if (pageCssDeps && pageCssDeps.length) {
             meta.styles = meta.styles.concat(pageCssDeps);
         }
-
-        // const pageCssURI = getAssetsURI("page/" + initialData.pageComName + ".css") as string;
-        // logger.debug("pageStyleURI: ", pageCssURI);
-        // if (pageCssURI) {
-        //     meta.styles.push(pageCssURI);
-        // }
 
         const pageJsDeps = getPageJSDeps(pageRouterName);
         if (pageJsDeps && pageJsDeps.length) {

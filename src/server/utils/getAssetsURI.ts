@@ -3,7 +3,7 @@ import Path from "path";
 import getLogger from "./getLogger";
 
 const filePath = Path.resolve("./assetsMainfest.json");
-const logger = getLogger().getLogger("server/utils/getAssetsRUI");
+const logger = getLogger().getLogger("server/utils/getAssetsURI");
 let assetsMap: object;
 
 if (fs.existsSync(filePath)) {
