@@ -12,23 +12,35 @@ if (fs.existsSync(filePath)) {
     pageDeps = fs.readJSONSync(filePath);
 }
 
-export async function getPageCSSDeps (pageIdentifier): Promise<string[]> {
+export const pageDepType = {
+    css: "css",
+    js: "js",
+};
+
+function getPageDepsByType(pageIdentifier: string, type: string): string[] {
     if (pageDeps === undefined) {
         return [];
     }
-    return new Promise((resolve, reject) => {
-        const deps = pageDeps[pageIdentifier];
-        logger.debug("pageIdentifier: ", pageIdentifier, " depends: ", deps);
-        let depsPath = [];
-        if (deps && deps.length) {
-            deps.forEach(k => {
-                const assets = getAssetsURI(new RegExp(k + "_.{8}\\.css$"));
-                if (assets) {
-                    depsPath = depsPath.concat(assets);
-                }
-            });
-        }
-        logger.debug("depsPath: ", depsPath);
-        resolve(depsPath);
-    });
+    const deps = pageDeps[pageIdentifier];
+    logger.debug("pageIdentifier: ", pageIdentifier, " depends: ", deps);
+    let depsPath = [];
+    if (deps && deps.length) {
+        deps.forEach(k => {
+            const assets = getAssetsURI(new RegExp(k + `(?:_.{8})?\\.${type}$`));
+            if (assets) {
+                depsPath = depsPath.concat(assets);
+            }
+        });
+    }
+    logger.debug("depsPath: ", depsPath);
+    return depsPath;
+}
+
+export function getPageCSSDeps(pageIdentifier): string[] {
+    return getPageDepsByType(pageIdentifier, pageDepType.css);
+}
+
+
+export function getPageJSDeps(pageIdentifier): string[] {
+    return getPageDepsByType(pageIdentifier, pageDepType.js);
 }

@@ -13,7 +13,7 @@ import getLogger from "../utils/getLogger";
 import { IInitialRenderData } from "../../interface";
 import checkNotSSR from "../utils/checkNotSSR";
 import getAssetsURI from "../utils/getAssetsURI";
-import { getPageCSSDeps } from "../utils/getPageDeps";
+import { getPageCSSDeps, getPageJSDeps } from "../utils/getPageDeps";
 import getSSRInitialData from "../utils/getSSRInitialData";
 import state from "./state";
 const logger = getLogger().getLogger("server/libs/comController");
@@ -67,15 +67,21 @@ export async function getPage(req, matchedBranch): Promise<ReactElement> {
 
         preloadData[getLoadingReducerName(loadingId)] = state.meta.loading;
 
-        const cssDeps = await getPageCSSDeps("page/" + initialData.pageComName);
-        if (cssDeps && cssDeps.length) {
-            meta.styles = meta.styles.concat(cssDeps);
+        const pageRouterName = "page/" + initialData.pageComName;
+        const pageCssDeps = getPageCSSDeps(pageRouterName);
+        if (pageCssDeps && pageCssDeps.length) {
+            meta.styles = meta.styles.concat(pageCssDeps);
         }
 
-        const pageStyleURI = getAssetsURI("page/" + initialData.pageComName + ".css") as string;
-        logger.debug("pageStyleURI: ", pageStyleURI);
-        if (pageStyleURI) {
-            meta.styles.push(pageStyleURI);
+        // const pageCssURI = getAssetsURI("page/" + initialData.pageComName + ".css") as string;
+        // logger.debug("pageStyleURI: ", pageCssURI);
+        // if (pageCssURI) {
+        //     meta.styles.push(pageCssURI);
+        // }
+
+        const pageJsDeps = getPageJSDeps(pageRouterName);
+        if (pageJsDeps && pageJsDeps.length) {
+            meta.scripts = meta.scripts.concat(pageJsDeps);
         }
 
         logger.debug("meta: ", meta);

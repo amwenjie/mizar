@@ -52,7 +52,7 @@ export default async function () {
                 return;
             }
             try {
-                const instance = require(/* webpackIgnore: true */file);
+                const instance = require(/* webpackIgnore: true */ file);
                 logger.debug('api url: ', url);
                 const methods = Object.keys(instance).filter(k => typeof instance[k] === "function");
                 logger.debug('api methods: ', methods);
