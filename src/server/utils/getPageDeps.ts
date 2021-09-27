@@ -22,7 +22,7 @@ function getPageDepsByType(pageIdentifier: string, type: string): string[] {
         return [];
     }
     const deps = pageDeps[pageIdentifier];
-    logger.debug("pageIdentifier: ", pageIdentifier, " depends: ", deps);
+    logger.debug("pageIdentifier: ", pageIdentifier, ", type: ", type,  ", depends: ", deps);
     let depsPath = [];
     if (deps && deps.length) {
         deps.forEach(k => {

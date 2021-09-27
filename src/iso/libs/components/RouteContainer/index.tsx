@@ -26,6 +26,7 @@ class RouteContainer extends React.Component<IRouteContainer> {
             // 当在浏览器端用无刷新的形式切换页面时，该函数被触发
             const branch = await getMatchedBranch(props.pageRouter, location.pathname);
             if (!branch[0]) {
+                window.location.reload();
                 return;
             }
             const { preloadData, pageReducerName, pageComName } = await getInitialData(branch[0],

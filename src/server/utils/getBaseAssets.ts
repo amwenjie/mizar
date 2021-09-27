@@ -12,10 +12,10 @@ function handleServerBaseJS(assetsConfigMainfestJson) {
         splitChunksArr.push(assetsConfigMainfestJson["common.js"]);
         // delete assetsConfigMainfestJson["common.js"];
     }
-    if (assetsConfigMainfestJson["index.js"]) {
-        splitChunksArr.push(assetsConfigMainfestJson["index.js"]);
-        // delete assetsConfigMainfestJson["index.css"];
-    }
+    // if (assetsConfigMainfestJson["index.js"]) {
+    //     splitChunksArr.push(assetsConfigMainfestJson["index.js"]);
+    //     // delete assetsConfigMainfestJson["index.css"];
+    // }
     return splitChunksArr;
 }
 
@@ -31,10 +31,10 @@ function handleServerBaseCSS(assetsConfigMainfestJson) {
         splitChunksArr.push(assetsConfigMainfestJson["common.css"]);
         // delete assetsConfigMainfestJson["common.css"];
     }
-    if (assetsConfigMainfestJson["index.css"]) {
-        splitChunksArr.push(assetsConfigMainfestJson["index.css"]);
-        // delete assetsConfigMainfestJson["index.css"];
-    }
+    // if (assetsConfigMainfestJson["index.css"]) {
+    //     splitChunksArr.push(assetsConfigMainfestJson["index.css"]);
+    //     // delete assetsConfigMainfestJson["index.css"];
+    // }
     return splitChunksArr;
 }
 

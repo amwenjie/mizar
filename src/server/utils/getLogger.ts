@@ -28,7 +28,7 @@ export function setLogger(logger: IGetLogger) {
 export default function getLogger(): any {
     if (!isConfigured) {
         defaultLogger = log4js;
-        defaultLogger.configure({
+        const config = {
             "appenders": {
                 "access": {
                     "type": "dateFile",
@@ -62,9 +62,13 @@ export default function getLogger(): any {
                 "debug": { "appenders": ["out"], "level": "DEBUG" },
                 "default": { "appenders": ["app", "errors"], "level": "DEBUG" },
                 "http": { "appenders": ["access"], "level": "DEBUG" }
-            },
-            "pm2": true
-        });
+            }
+        };
+        if (process.env.NODE_ENV === 'production') {
+            config["pm2"] = true;
+            config["pm2InstanceVar"] = "PM2_INSTANCE_ID";
+        }
+        defaultLogger.configure(config);
     }
     isConfigured = true;
     return defaultLogger;
