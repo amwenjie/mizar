@@ -1,4 +1,4 @@
-import getLogger from "./../utils/getLogger";
+import getLogger from "./../utils/logger";
 import { getPublicPath } from "../utils/getConfig";
 import handleMeta from "./handleMeta";
 import PageRouter from "./router/pageRouter";

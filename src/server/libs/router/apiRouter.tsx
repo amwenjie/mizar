@@ -1,10 +1,14 @@
 import Express from "express";
 import state from "../state";
-import getLogger from "../../utils/getLogger";
+import getLogger from "../../utils/logger";
 import Router from "./index";
 
 // const logger = getLogger("server/libs/router/pageRouter");
 const logger = getLogger().getLogger("server/libs/router/apiRouter");
+
+function isFunction(fn) {
+    return typeof fn === "function";
+}
 
 export default class ApiRouter extends Router {
     private apis = [];
@@ -35,23 +39,24 @@ export default class ApiRouter extends Router {
         const routers = [];
         pathArr.forEach(path => {
             const childRouter = Express.Router();
-            if (apis[path]["get"]) {
-                childRouter.get(path, apis[path]["get"]);
-                state.apis[path] = apis[path]["get"];
+            const apiHandlerMap = apis[path];
+            if (isFunction(apiHandlerMap["get"])) {
+                childRouter.get(path, apiHandlerMap["get"]);
+                state.apis[path] = apiHandlerMap["get"];
             }
-            if (apis[path]["post"]) {
-                childRouter.post(path, apis[path]["post"]);
+            if (isFunction(apiHandlerMap["post"])) {
+                childRouter.post(path, apiHandlerMap["post"]);
             }
-            if (apis[path]["put"]) {
-                childRouter.put(path, apis[path]["put"]);
+            if (isFunction(apiHandlerMap["put"])) {
+                childRouter.put(path, apiHandlerMap["put"]);
             }
-            if (apis[path]["delete"]) {
-                childRouter.delete(path, apis[path]["delete"]);
+            if (isFunction(apiHandlerMap["delete"])) {
+                childRouter.delete(path, apiHandlerMap["delete"]);
             }
-            if (apis[path]["all"]) {
-                childRouter.all(path, apis[path]["all"]);
+            if (isFunction(apiHandlerMap["all"])) {
+                childRouter.all(path, apiHandlerMap["all"]);
                 if (!state.apis[path]) {
-                    state.apis[path] = apis[path]["all"];
+                    state.apis[path] = apiHandlerMap["all"];
                 }
             }
             routers.push(childRouter);

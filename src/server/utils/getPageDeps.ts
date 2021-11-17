@@ -1,7 +1,7 @@
 import fs from "fs-extra";
 import Path from "path";
 import getAssetsURI from "./getAssetsURI";
-import getLogger from "./getLogger";
+import getLogger from "./logger";
 
 const logger = getLogger().getLogger("server/utils/getPageDeps");
 

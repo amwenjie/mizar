@@ -1,7 +1,7 @@
 import Express from "express";
 import { ReactElement } from "react";
 import { matchRoutes } from "react-router-config";
-import getLogger from "../../utils/getLogger";
+import getLogger from "../../utils/logger";
 import { getComRenderString, getErrorPageRenderString, getPage } from "../comController";
 import state from "../state";
 import Router from "./index";

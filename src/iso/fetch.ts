@@ -3,7 +3,7 @@ import events from "events";
 import { loadingId } from "../config";
 import { getStore } from "./getStore";
 import { hideLoading as loadingHideAction, showLoading as loadingShowAction } from "./libs/components/FetchLoading/actions";
-import getLogger from "./utils/getLogger";
+import getLogger from "./utils/logger";
 
 declare const IS_SERVER_RUNTIME;
 const logger = getLogger().getLogger("iso/fetch");
@@ -30,7 +30,7 @@ export const fetchWithRequestObject = (httpRequest) => async (url, options?) => 
             if (/^\/api\//.test(url)) {
                 url = url.replace(/^\/api/, "");
             } else {
-                logger.error("api的请求必须以\"/api\"开头");
+                logger.error(`api请求url未以/api/开头：${url}`);
                 return;
             }
             if (!httpRequest) {

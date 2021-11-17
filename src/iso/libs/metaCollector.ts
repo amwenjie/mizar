@@ -4,7 +4,7 @@ import { pageInit } from "../../config";
 import { IInitialRenderData } from "../../interface";
 import { getStore } from "../getStore";
 import { fetchWithRequestObject } from "../fetch";
-import getLogger from "../utils/getLogger";
+import getLogger from "../utils/logger";
 
 import appState from "./state";
 

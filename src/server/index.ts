@@ -8,7 +8,7 @@ import { internalIpV4, internalIpV6 } from "internal-ip";
 import Path from "path";
 import ServeStatic from "serve-static";
 import { getPort, getPublicPath } from "./utils/getConfig";
-import getLogger from "./utils/getLogger";
+import getLogger from "./utils/logger";
 import setupExitSignals from "./utils/setupExitSignals";
 import checkPositivePath from "./utils/checkPositivePath";
 

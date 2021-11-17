@@ -1,4 +1,4 @@
-import getLogger from "./utils/getLogger";
+import getLogger from "./utils/logger";
 import WebServer from "./index";
 import { getApiRouter, getPageRouter } from "./libs/getRouter";
 import { IProxyConfig, IPageRouter } from "../interface";

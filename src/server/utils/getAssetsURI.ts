@@ -1,6 +1,6 @@
 import fs from "fs-extra";
 import Path from "path";
-import getLogger from "./getLogger";
+import getLogger from "./logger";
 
 const filePath = Path.resolve("./assetsMainfest.json");
 const logger = getLogger().getLogger("server/utils/getAssetsURI");

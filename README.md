@@ -32,14 +32,14 @@
 ## 使用类组件开发
 
 定义类组件的方式 (以上面目录结构中的pageA举例)
-
+```
     import { connect } from 'mizar/iso/connect';
     import pageAreducer from './reducer';
     import * as css from './index.less';
-    import ChildComponentA fromm './childComponentA';
-    import ChildComponentB fromm './childComponentB';
-    import ChildComponentC fromm './childComponentC';
-
+    import ChildComponentA from './childComponentA';
+    import ChildComponentB from './childComponentB';
+    import ChildComponentC from './childComponentC';
+    
     class PageA extends React.Commponent {
         public static async getInitialData(fetch, options) {
             fetch({
@@ -54,7 +54,7 @@
                 console.log("fetch error出错:", e);
             })
             return {};
-       }
+        }
         constructor(props) {
             super(props);
         }
@@ -69,7 +69,7 @@
         }
     }
     export default connect()(pageAreducer, 'PageA', [childComponentA, childComponentB])(PageA);
-
+```
 ### 1. 在服务端渲染时，如需要服务端获取初始数据的能力，需要具备公共的静态方法getInitialData。方法名不可更改。
    getInitialData入参两个：
    * fetch用于发送http请求，不可自行引入其他http请求工具，仅可用此入参。配置方式同axios。
@@ -85,72 +85,73 @@
 ### 4. 客户端路由配置
    * 支持客户端SPA的应用对非首次访问的页面在客户端按需加载，同时按需加载的页面组件支持loading配置
    * 该应用框架基于express、react-router，因此页面的路由配置和处理采用react-router、express routing方案。
-   * pageRouters目录中的路由配置
-      比如：src/isomorphic/pageRouter/index.ts文件中配置
-
-            const pageRouter = [
-               {
-                  path: "/detail/article/:id",
-                  exact: true,
-                  component: "../pages/pageA",
-               },{
-                  path: "/detail/step/:id",
-                  exact: true,
-                  component: () => "../pages/pageB",
-               },{
-                   component: '../pages/NotFound',
-               },
-            ];
-            export default pageRouter;
-      代表访问/detail/article/2323232323，会将pageA页面渲染出来响应。
-   * 路由配置中有个route配置的component值是() => '../pages/pageB'的形式，这就是表示pageB是个按需加载的页面，在第一次访问的是article时，在客户端再路由到step页面，此时pageB才会加载。
-   * 由于支持页面组件的按需加载，因此在pages/pageB目录可以存在一个skeleton.tsx的文件，该文件会作为按需加载时，真实页面渲染出来前展示。
-       该文件需要暴露一个纯函数，比如:
-
-        export default function (props: ILoadingProps) {
-            if (props.error) {
-                return 'render an error state dom';
-            } else if (props.pastDelay) {
-                return 'render a loading dom';
-            } else {
-                return null; // nothing to render
-            }
+   * pageRouters目录中的路由配置，比如：src/isomorphic/pageRouter/index.ts文件中配置
+```
+    const pageRouter = [
+        {
+            path: "/detail/article/:id",
+            exact: true,
+            component: "../pages/pageA",
+        }, {
+            path: "/detail/step/:id",
+            exact: true,
+            component: () => "../pages/pageB",
+        },{
+            component: '../pages/NotFound',
+        },
+    ];
+    export default pageRouter;
+```
+    代表访问/detail/article/2323232323，会将pageA页面渲染出来响应。
+   * 路由配置中有个route配置的component值是() => '../pages/pageB'的形式，这就是表示pageB是个按需加载的页面，在第一次访问的是article时，在客户端再路由到/detail/step/11111 url时，pageB相关的js和css才会加载并渲染出页面。
+   * 由于支持页面组件的按需加载，因此在pages/pageB目录可以存在一个skeleton.tsx的文件，该文件会作为按需加载时，真实页面渲染出来前展示。  
+    该文件需要暴露一个纯函数，比如:
+```
+    export default function (props: ILoadingProps) {
+        if (props.error) {
+            return 'render an error state dom';
+        } else if (props.pastDelay) {
+            return 'render a loading dom';
+        } else {
+            return null; // nothing to render
         }
-        
-        该函数接收一个对象类型的入参：
-
-        interface ILoadingProps {
-            error: {} | null; // 当按需加载的组件失败时，该字段会是一个错误对象，否则为null
-            pastDelay: boolean; // 当按需加载的组件，花费超过200ms时，该字段会是true
-        }
-
+    }
+```
+    该函数接收一个对象类型的入参：
+```
+    interface ILoadingProps {
+        error: {} | null; // 当按需加载的组件失败时，该字段会是一个错误对象，否则为null
+        pastDelay: boolean; // 当按需加载的组件，花费超过200ms时，该字段会是true
+    }
+```
 ### 5. 支持server api
-   * 该应用框架基于express，因此api的路由处理采用express routing方案
+   * 该应用框架基于express，因此api的路由处理采用express routing方案。
    * 需要在server目录中增加apis目录，apis里面的文件目录会转化为api的url path。
    * 文件中导出的几个特定名称的方法，http method为导出方法名：get｜post｜put｜delete。
-   * 文件中以default导出的方法，会忽略方法名，作为express route的all方法中间件取处理http请求
+   * 文件中以default导出的方法，会忽略方法名，作为express route的all方法中间件取处理http请求。
+   * 文件中定义的请求处理函数，第一个入参是http request对象，第二个入参是http response对象。但**需要注意**：
+    由于处理函数可能会同时处理客户端和服务端getInitialData中的请求，由于目前的实现**无法抹平差异**，因此如果会同时处理客户端和服务端的请求，第二个入参的可用api的可用api只能是json()｜send()；如果处理客户端请求，第二个入参的可用api是express response所提供的api。
    * 比如有个这样的目录：/src/server/apis/:path/method.ts，method.ts文件内容如下：
-
-        export function <span style="color: #008000">love</span> (req, res) {
-            res.json({});
-        }
-
-        export function <span style="color: purple">get</span>(req, res) {
-            res.send('method api http get method');
-        }
-        export default function <span style="color: blue">like</span>(req, res) {
-            res.send('like');
-        }
-
-       那客户端请求的时候:
-       1. 以get 为http request method请求/api/123/method，这个get请求会被<span style="color: purple">get</span>请求处理函数处理，url中的123会存在于<span style="color: purple">get</span>请求处理函数的入参req中，以req.param.path的方式获取到。
-       2. 以post 为http request method请求/api/456/method，这个post请求会被<span style="color: blue">like</span>请求处理函数处理，url中的456会存在于<span style="color: blue">like</span>请求处理函数的入参req中，以req.param.path的方式获取到。
-       3. 以get 为http request method请求/api/789/method/<span style="color: #008000">love</span>，这个get请求会被<span style="color: #008000">love</span>请求处理函数处理，url中的789会在<span style="color: #008000">love</span>请求处理函数的入参req中，以req.param.path的方式获取到。
-       4. 以delete 为http request method请求/api/000/method/<span style="color: #008000">love</span>，这个delete请求会响应404。
+```
+    export function love (req, res) {
+        res.json({});
+    }
+    export function get(req, res) {
+        res.send('method api http get method');
+    }
+    export default function like(req, res) {
+        res.send('like');
+    }
+```
+    那客户端请求的时候:
+    1. 以get 为http request method请求/api/123/method，这个get请求会被export function get 请求处理函数处理，url中的123会存在于请求处理函数的入参req中，以req.param.path的方式获取到。
+    2. 以post 为http request method请求/api/456/method，这个post请求会被export function like 请求处理函数处理，url中的456会存在于请求处理函数的入参req中，以req.param.path的方式获取到。
+    3. 以get 为http request method请求/api/789/method/love，这个get请求会被export function love 请求处理函数处理，url中的789会在请求处理函数的入参req中，以req.param.path的方式获取到。
+    4. 以delete 为http request method请求/api/000/method/love，这个delete请求会响应404。
 
 ### 6. 服务端启动入口配置
    /src/server/index.ts内容：
-    
+```
     import { bootstrap } from "mizar/server/bootstrap";
     import clientRouter from "../isomorphic/pageRouters/index";
     (async () => {
@@ -172,77 +173,82 @@
             console.log("启动错误", e);
         }
     })();
-
+```
    * bootstrap高阶函数，可接收一个webserver：
-   
-        ...
+```
+    ...
+    import WebServer from "mizar/server";
+    ...
 
-        import WebServer from "mizar/server";
-
-        ...
-
-        const webserver = new WebServer({}: IWebServerOption);
-
-        bootstrap(webserver)(...);
-        
+    const webserver = new WebServer({}: IWebServerOption);
+    bootstrap(webserver)(...);
+```
    * 比如，想要替换框架自带的日志记录功能，同时启用响应压缩、cookie和body格式化：
-        
-        ...
+```
+    ...
+    import * as path from 'path';
+    import * as YLogger from 'yog-log';
+    import { setLogger } from "mizar/server/utils/logger";
+    ...
+    
+    // setLogger用于替换框架中的log
+    setLogger({
+        getLogger: () => {
+            const logger = YLogger.getLogger();
+            return {
+                log: logger.debug.bind(logger),
+                info: logger.debug.bind(logger),
+                warn: logger.debug.bind(logger),
+                error: logger.debug.bind(logger),
+            }
+        }
+    })
+    const conf = {  
+        app: 'article-h5',
+        log_path: path.join(__dirname, 'log'),
+        intLevel: 16,
+        debug: 1
+    };
+    const logger = YLogger.getLogger();
+    const server = new WebServer({
+        access: YLogger(conf), // access是http请求log
+        compress: true,
+        bodyParser: true,
+        cookieParser: true,
+    });
 
-        import * as path from 'path';
+    server.useMiddleware(YLogger(conf));
 
-        import * as YLogger from 'yog-log';
-
-        ...
-
-        const conf = {
-            app: 'article-h5',
-            log_path: path.join(__dirname, 'log'),
-            intLevel: 16,
-            debug: 1
-        };
-
-        const logger = YLogger.getLogger();
-
-        const server = new WebServer({
-            access: YLogger(conf),
-            compress: true,
-            bodyParser: true,
-            cookieParser: true,
-        });
-
-        server.useMiddleware(YLogger(conf));
-
-        bootstrap(server)(...);
-   
+    bootstrap(server)(...);
+```
    * WebServer构造函数接收一个可选配置对象参数：
-
-        interface IWebServerOption {
-            access?: any;
-            compress?: boolean;
-            cookieParser?: boolean;
-            bodyParser?: boolean | IBodyParserOption;
-            headers?: string;
-            hostname?: "local-ip" | "local-ipv4" | "local-ipv6";
-            port?: number;
-            middleware?: any;
-            static?: IStaticOption[];
-            onServerClosed?: () => void;
-            onListening?: (server: net.Server) => void;
-        }
-
-        interface IBodyParserOption {
-            raw?: boolean | BodyParser.Options;
-            json?: boolean | BodyParser.OptionsJson;
-            text?: boolean | BodyParser.OptionsText;
-            urlencoded?: boolean | BodyParser.OptionsUrlencoded;
-        }
-
-        interface IStaticOption {
-            path: string[];
-            directory: string;
-            staticOption?: ServeStatic.ServeStaticOptions;
-            isInternal?: true;
-        }
-
+```
+    interface IWebServerOption {
+        access?: any;
+        compress?: boolean;
+        cookieParser?: boolean;
+        bodyParser?: boolean | IBodyParserOption;
+        headers?: string;
+        hostname?: "local-ip" | "local-ipv4" | "local-ipv6";
+        port?: number;
+        middleware?: any;
+        static?: IStaticOption[];
+        onServerClosed?: () => void;
+        onListening?: (server: net.Server) => void;
+    }
+    
+    interface IBodyParserOption {
+        raw?: boolean | BodyParser.Options;
+        json?: boolean | BodyParser.OptionsJson;
+        text?: boolean | BodyParser.OptionsText;
+        urlencoded?: boolean | BodyParser.OptionsUrlencoded;
+    }
+    
+    interface IStaticOption {
+        path: string[];
+        directory: string;
+        staticOption?: ServeStatic.ServeStaticOptions;
+        isInternal?: true;
+    }
+```
 

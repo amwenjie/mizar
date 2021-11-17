@@ -1,6 +1,6 @@
 import { connect as reduxConnect } from "react-redux";
 import { registerRedux } from "./libs/metaCollector";
-import getLogger from "./utils/getLogger";
+import getLogger from "./utils/logger";
 
 const logger = getLogger().getLogger("iso/connect");
 

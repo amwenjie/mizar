@@ -1,5 +1,5 @@
 import Express from "express";
-import getLogger from "../../utils/getLogger";
+import getLogger from "../../utils/logger";
 const logger = getLogger().getLogger("server/libs/router/index");
 
 export class Router {

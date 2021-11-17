@@ -1,4 +1,4 @@
-import getLogger from "../utils/getLogger";
+import getLogger from "../utils/logger";
 import checkPositivePath from "../utils/checkPositivePath";
 import getAssetsURI from "../utils/getAssetsURI";
 import getBaseAssets from "../utils/getBaseAssets";

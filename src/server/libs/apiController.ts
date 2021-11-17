@@ -1,5 +1,5 @@
 import state from "./state";
-import getLogger from "../utils/getLogger";
+import getLogger from "../utils/logger";
 import { match, MatchResult } from "path-to-regexp";
 
 const logger = getLogger().getLogger("server/libs/apiController");
