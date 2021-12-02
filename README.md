@@ -81,6 +81,27 @@
 ### 3. 要支持redux，需要使用connect
    * 因为采用类组件+redux，所以需要使用connect，应用框架导出了两个connect，{ connect, reduxConnect} from 'mizar/iso/connect'。
    * reduxConnect是redux提供的原始connect高阶函数，connect是该框架基于reduxConnect进行的包装，用于进行组件、reducer、dispatch的关联，同时实现页面级组件的子组件需要服务端获取初始数据的支持。
+   * connect用法：
+       1. connect入参同redux connect，调用connect()后返回一个函数；
+       2. connect()返回的函数入参有四个：connect()(component: react.Component, reducer: redux.Reducer, reducerName: string, childComp: react.Component[]);
+   * mizar 版本 >= 0.0.30时，中间两个参数可省略，省略后，编译工具alcor打包时会注入，规则：
+      component在定义和导出connect包裹后的组件时，实现代码需要在目录中的index.tsx文件中，打包时会寻找index.tsx同目录的reducer.ts文件，文件中需要具有default function，或component同名的、以Reducer结尾的、小驼峰规则的function，
+      举例：
+```
+    src/isomorphic/pages/PageA/index.tsx
+
+    class PageA extends React.Commponent {
+    }
+
+    src/isomorphic/pages/PageA/reducer.ts
+
+    export function pageAReducer() {}
+    或
+    export default function() {}
+
+```
+   * mizar 版本< 0.0.30，中间两个参数不可省略，使用规则为connect()(reducer, reducerName, childComp)(component)
+
 
 ### 4. 客户端路由配置
    * 支持客户端SPA的应用对非首次访问的页面在客户端按需加载，同时按需加载的页面组件支持loading配置

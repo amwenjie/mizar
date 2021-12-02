@@ -48,5 +48,5 @@ export const getReducerName = (id) => {
 };
 
 export default function (id) {
-    return connect()(reducer(id), getReducerName(id))(Loading);
+    return connect()(Loading, reducer(id), getReducerName(id));
 };
