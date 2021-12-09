@@ -1,8 +1,8 @@
 import React, { ReactElement } from "react";
 import ReactDomServer from "react-dom/server";
 import { Provider } from "react-redux";
-import { renderRoutes } from "react-router-config";
-import { Route, StaticRouter, Switch } from "react-router-dom";
+import { useRoutes, renderMatches } from "react-router-dom";
+import { StaticRouter } from "react-router-dom/server";
 import { createStore } from "redux";
 import { loadingId } from "../../config";
 import { getReducerName as getLoadingReducerName } from "../../iso/libs/components/FetchLoading";
@@ -10,7 +10,7 @@ import RootContainer from "../../iso/libs/components/RootContainer";
 import RouteContainer from "../../iso/libs/components/RouteContainer";
 import { getRootReducer } from "../../iso/libs/metaCollector";
 import getLogger from "../utils/logger";
-import { IInitialRenderData } from "../../interface";
+import { IInitialRenderData, IPageRouter} from "../../interface";
 import checkNotSSR from "../utils/checkNotSSR";
 import { getPageCSSDeps, getPageJSDeps } from "../utils/getPageDeps";
 import getSSRInitialData from "../utils/getSSRInitialData";
@@ -35,7 +35,7 @@ export function getErrorPageRenderString() {
     return '<html><head><meta charset="UTF-8" /><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><meta http-equiv="x-ua-compatible" content="ie=edge" /><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1,user-scalable=no" /></head><body>服务出错，稍后重试</body></html>';
 }
 
-export function getComRenderString(com) {
+export function getComRenderString(com: ReactElement) {
     return ReactDomServer.renderToString(com);
 }
 
@@ -47,10 +47,9 @@ export async function getPage(req, matchedBranch): Promise<ReactElement> {
     if (notSSR) {
         logger.info("请求参数携带_nossr的标志，跳过服务端首屏数据获取.");
     } else {
-        const clientRouter = matchedBranch.route.clientRouter;
         let pageReducerName = "";
         logger.info("准备进行首屏数据服务端获取.");
-        const initialData: IInitialRenderData = await getSSRInitialData(matchedBranch, req);
+        const initialData: IInitialRenderData = await getSSRInitialData(matchedBranch[0], req);
         preloadData = initialData.preloadData;
         pageReducerName = initialData.pageReducerName;
         logger.info("首屏数据服务端获取完成，准备进行服务端渲染.");
@@ -78,11 +77,16 @@ export async function getPage(req, matchedBranch): Promise<ReactElement> {
         }
 
         logger.debug("meta: ", meta);
+        
+        const Routes = (props) => {
+            return useRoutes(props.pageRouter);
+        }
 
         children = (<Provider store={store}>
-            <StaticRouter location={req.originalUrl} context={{}}>
-                <RouteContainer pageRouter={clientRouter}>
-                    {renderRoutes(clientRouter)}
+            <StaticRouter location={req.originalUrl}>
+                <RouteContainer pageRouter={matchedBranch}>
+                    {/* {renderMatches(matchedBranch)} */}
+                    <Routes pageRouter={matchedBranch} />
                 </RouteContainer>
             </StaticRouter>
         </Provider>);

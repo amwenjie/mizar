@@ -1,5 +1,3 @@
-import { RouteConfig } from "react-router-config";
-
 export interface IProxyConfig {
     urlPath: string;
     apiHost: string;
@@ -41,6 +39,11 @@ export interface IRootContainerProps {
     isCSR?: boolean;
 }
 
-export interface IPageRouter extends RouteConfig {
+export interface IPageRouter {
+    caseSensitive?: boolean;
+    children?: IPageRouter[];
+    element?: React.ReactNode;
+    index?: boolean;
+    path?: string;
     name?: string;
 }

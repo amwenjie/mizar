@@ -2,7 +2,7 @@ import { connect as reduxConnect, InferableComponentEnhancerWithProps } from "re
 import { registerRedux } from "./libs/metaCollector";
 import getLogger from "./utils/logger";
 import { Reducer } from "redux";
-import { ElementType } from "react";
+import { ComponentType } from "react";
 
 const logger = getLogger().getLogger("iso/connect");
 
@@ -10,14 +10,14 @@ const componentEntityList = [];
 const reducerEntityList = [];
 
 export interface IMizarComponentEnhancerWithProps {
-    (component: ElementType): ElementType
-    (component: ElementType, reducer: Reducer): ElementType
-    (component: ElementType, reducerName: string): ElementType
-    (component: ElementType, subComponents: ElementType[]): ElementType
-    (component: ElementType, reducer: Reducer, reducerName: string): ElementType
-    (component: ElementType, reducer: Reducer, subComponents: ElementType[]): ElementType
-    (component: ElementType, reducerName: string, subComponents: ElementType[]): ElementType
-    (component: ElementType, reducer: Reducer, reducerName: string, subComponents: ElementType[]): ElementType
+    (component: ComponentType): ComponentType
+    (component: ComponentType, reducer: Reducer): ComponentType
+    (component: ComponentType, reducerName: string): ComponentType
+    (component: ComponentType, subComponents: ComponentType[]): ComponentType
+    (component: ComponentType, reducer: Reducer, reducerName: string): ComponentType
+    (component: ComponentType, reducer: Reducer, subComponents: ComponentType[]): ComponentType
+    (component: ComponentType, reducerName: string, subComponents: ComponentType[]): ComponentType
+    (component: ComponentType, reducer: Reducer, reducerName: string, subComponents: ComponentType[]): ComponentType
 }
 
 export interface IMizarConnect {

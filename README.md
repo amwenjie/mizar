@@ -34,7 +34,6 @@
 定义类组件的方式 (以上面目录结构中的pageA举例)
 ```
     import { connect } from 'mizar/iso/connect';
-    import pageAreducer from './reducer';
     import * as css from './index.less';
     import ChildComponentA from './childComponentA';
     import ChildComponentB from './childComponentB';
@@ -68,7 +67,8 @@
             </div>);
         }
     }
-    export default connect()(pageAreducer, 'PageA', [childComponentA, childComponentB])(PageA);
+    
+    export default connect()(PageA, [childComponentA, childComponentB]);
 ```
 ### 1. 在服务端渲染时，如需要服务端获取初始数据的能力，需要具备公共的静态方法getInitialData。方法名不可更改。
    getInitialData入参两个：
@@ -84,30 +84,43 @@
    * connect用法：
        1. connect入参同redux connect，调用connect()后返回一个函数；
        2. connect()返回的函数入参有四个：connect()(component: react.Component, reducer: redux.Reducer, reducerName: string, childComp: react.Component[]);
-   * mizar 版本 >= 0.0.30时，中间两个参数可省略，省略后，编译工具alcor打包时会注入，规则：
-      component在定义和导出connect包裹后的组件时，实现代码需要在目录中的index.tsx文件中，打包时会寻找index.tsx同目录的reducer.ts文件，文件中需要具有default function，或component同名的、以Reducer结尾的、小驼峰规则的function，
-      举例：
+   * mizar 版本 > 0.0.30时，中间两个参数可省略，省略后，编译工具alcor打包时会注入，规则：
+      component在定义和导出connect包裹后的组件时，实现代码需要在目录中的index.tsx文件中，打包时会寻找index.tsx同目录的reducer.ts文件，文件中需要具有default function，或component同名的但是首字母小写化、以Reducer结尾规则的function
 ```
-    src/isomorphic/pages/PageA/index.tsx
-
-    class PageA extends React.Commponent {
-    }
-
-    src/isomorphic/pages/PageA/reducer.ts
+    src/isomorphic/pages/PageA/reducer.ts :
 
     export function pageAReducer() {}
     或
     export default function() {}
 
-```
-   * mizar 版本< 0.0.30，中间两个参数不可省略，使用规则为connect()(reducer, reducerName, childComp)(component)
+    src/isomorphic/pages/PageA/index.tsx :
 
+    class PageA extends React.Commponent {
+    }
+
+    export default connect()(PageA, [childComponentA, childComponentB]);
+```
+   * mizar 版本 <= 0.0.30，中间两个参数不可省略，使用规则为:
+```
+    src/isomorphic/pages/PageA/index.tsx :
+
+    ...
+    import pageAreducer from './reducer';
+    ...
+
+    class PageA extends React.Commponent {
+    }
+
+    export default connect()(pageAreducer, 'PageA', [childComp...])(PageA)
+```
 
 ### 4. 客户端路由配置
    * 支持客户端SPA的应用对非首次访问的页面在客户端按需加载，同时按需加载的页面组件支持loading配置
    * 该应用框架基于express、react-router，因此页面的路由配置和处理采用react-router、express routing方案。
+   * mizar 版本 <= 0.0.30，react-router 采用V5版本，mizar 版本 >= 0.0.31，react-router 采用V6版本，区别是配置中的component改为element，去掉exact，[两个配置区别点击此处](https://reactrouter.com/docs/en/v6/upgrading/v5#use-useroutes-instead-of-react-router-config)。
    * pageRouters目录中的路由配置，比如：src/isomorphic/pageRouter/index.ts文件中配置
 ```
+    mizar 版本< 0.0.31 : 
     const pageRouter = [
         {
             path: "/detail/article/:id",
@@ -119,6 +132,21 @@
             component: () => "../pages/pageB",
         },{
             component: '../pages/NotFound',
+        },
+    ];
+    export default pageRouter;
+
+    mizar 版本>= 0.0.31 : 
+    const pageRouter = [
+        {
+            path: "/detail/article/:id",
+            element: "../pages/pageA",
+        }, {
+            path: "/detail/step/:id",
+            element: () => "../pages/pageB",
+        },{
+            path: "*"
+            element: '../pages/NotFound',
         },
     ];
     export default pageRouter;
@@ -145,7 +173,58 @@
         pastDelay: boolean; // 当按需加载的组件，花费超过200ms时，该字段会是true
     }
 ```
-### 5. 支持server api
+
+### 5. 页面组件内跳转功能、url参数获取说明
+   * 由于mizar 不同版本使用的react-router版本不同，两个主要功能需要特殊说明
+    1. 跳转功能
+        * mizar 版本 <= 0.0.30 ，可用this.props.history.push("")，进行跳转
+        * mizar 版本 >= 0.0.31 ，需要将跳转功能封装函数组件（function component），其中使用useNavigate，进跳转
+    2. url参数获取
+        * mizar 版本 <= 0.0.30 ，可用this.props.match，获取url param参数
+        * mizar 版本 >= 0.0.31 ，需要提供一个函数组件（function component），其中使用useParams来获取url param参数
+   * 举例：
+```
+    mizar 版本 <= 0.0.30
+    src/isomorphic/pages/PageA/index.tsx :
+
+    class PageA extends React.Commponent {
+        render() {
+            const id = this.props.match ? this.props.match.id : "";
+            return (<div>
+                <a href="#" onClick={(e) => {
+                    e.preventDefault();
+                    this.props.history.push("url" + id);
+                }}>跳转到url</a>
+            </div>)
+        }
+    }
+
+    mizar 版本 >= 0.0.31
+    src/isomorphic/pages/PageA/index.tsx :
+
+    ...
+    import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+    ...
+
+    function JumpTo ({url, text}) {
+        const navigate = useNavigate();
+        const {id} = useParams();
+        const [searchParams] = useSearchParams();
+        return (<a href="#" onClick={(e) => {
+            e.preventDefault();
+            navigate(url + id + "?search=" + searchParams.get("query"));
+        }}>{text}</a>);
+    }
+    class PageA extends React.Commponent {
+        render() {
+            return (<div>
+                <JumpTo text="跳转到url" url="url"/>
+            </div>);
+        }
+    }
+```
+
+### 6. 支持server api
    * 该应用框架基于express，因此api的路由处理采用express routing方案。
    * 需要在server目录中增加apis目录，apis里面的文件目录会转化为api的url path。
    * 文件中导出的几个特定名称的方法，http method为导出方法名：get｜post｜put｜delete。
@@ -170,25 +249,14 @@
     3. 以get 为http request method请求/api/789/method/love，这个get请求会被export function love 请求处理函数处理，url中的789会在请求处理函数的入参req中，以req.param.path的方式获取到。
     4. 以delete 为http request method请求/api/000/method/love，这个delete请求会响应404。
 
-### 6. 服务端启动入口配置
+### 7. 服务端启动入口配置
    /src/server/index.ts内容：
 ```
     import { bootstrap } from "mizar/server/bootstrap";
     import clientRouter from "../isomorphic/pageRouters/index";
     (async () => {
         try {
-            await bootstrap()([{
-                name: "other",
-            //     path: "/detail/video/*",
-            //     clientRouter: videoRouter,
-            // },{
-                name: "article",
-                path: "/detail/article/*",
-                clientRouter,
-            }, {
-                name: "notfound",
-                clientRouter: [clientRouter[2]]
-            }], meta);
+            await bootstrap()(clientRouter, meta);
             logger.log('warning','msg');
         } catch (e) {
             console.log("启动错误", e);

@@ -1,3 +1,4 @@
+import { ComponentType } from "react";
 import { combineReducers } from "redux";
 import { pathToRegexp, match, parse, compile, MatchResult } from "path-to-regexp";
 import { pageInit } from "../../config";
@@ -49,14 +50,14 @@ export function getRootReducer(): any {
 }
 
 function getMatchedComponent(matchedBranch): {
-    component: React.Component;
+    element: ComponentType;
     // meta?: any,
     pageComName?: string;
     params?: any;
  } | null {
-    if (matchedBranch.route.component) {
+    if (matchedBranch.route.element) {
         return {
-            component: matchedBranch.route.component,
+            element: matchedBranch.route.element,
             pageComName: matchedBranch.route.name,
         };
     } else {
@@ -74,8 +75,8 @@ function getMatchedComponent(matchedBranch): {
             const isMatched = matched !== false;
             if (isMatched) {
                 return {
-                    params: (matched as MatchResult).params,
-                    component: r.component,
+                    params: matched.params,
+                    element: r.element,
                     pageComName: r.name,
                     // meta: r.meta,
                 };
@@ -87,10 +88,10 @@ function getMatchedComponent(matchedBranch): {
 
 export async function getInitialData(matchedBranch, request): Promise<IInitialRenderData> {
     // 该方法根据路由和请求找到对应的组件获取初始数据。被client端RouterContainer和server端路由入口调用。
-    let urlParams = matchedBranch.match.params;
+    let urlParams = matchedBranch.params;
     const matched = getMatchedComponent(matchedBranch);
     if (matched) {
-        const pageComponent = matched.component;
+        const pageComponent = matched.element;
         if (matched.params) {
             urlParams = {
                 ...matched.params
@@ -145,13 +146,16 @@ async function collectPreloadData(rcMap, targetComponent, request, params) {
     await Promise.all(
         Object.keys(rcMap)
             .map(async reducerName => {
-                if (rcMap[reducerName].component === targetComponent) {
+                const isCompEqual = rcMap[reducerName].component === targetComponent;
+                const isCompTypeEqual = rcMap[reducerName].component === targetComponent.type; // 客户端路由切换react-router v6 route.element.type才是原component
+                if (isCompEqual || isCompTypeEqual) {
                     pageReducerName = reducerName;
                     const reducer = rcMap[reducerName].reducer;
                     const subComponents = rcMap[reducerName].subComponents;
+                    const currComponent = rcMap[reducerName].component;
                     // 找到当前页的组件
                     preloadData[reducerName] = await getSinglePreloadData(
-                        targetComponent, reducer, request, params);
+                        currComponent, reducer, request, params);
                     if (subComponents) {
                         await Promise.all(
                             subComponents.map(async subComponent => {

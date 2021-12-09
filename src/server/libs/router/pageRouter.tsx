@@ -1,6 +1,6 @@
 import Express from "express";
 import { ReactElement } from "react";
-import { matchRoutes } from "react-router-config";
+import { matchRoutes } from "react-router-dom";
 import getLogger from "../../utils/logger";
 import { getComRenderString, getErrorPageRenderString, getPage } from "../comController";
 import state from "../state";
@@ -35,13 +35,13 @@ export default class PageRouter extends Router {
                 logger.info("path: ", path);
                 logger.info("branch: ", branch);
 
-                if (!branch[0]) {
+                if (!branch) {
                     logger.warn(`not match any router branch. originalUrl: ${originalUrl}, path: ${path}`);
                     // 找不到匹配的页面，由express的404兜底
                     return next();
                 }
                 logger.info("match router branch.");
-                const Page: ReactElement = await getPage(req, branch[0]);
+                const Page: ReactElement = await getPage(req, branch);
                 const htmlString: string = getComRenderString(Page);
                 logger.info("渲染完成，准备响应页面给客户端");
                 res.end(htmlString, "utf8");
