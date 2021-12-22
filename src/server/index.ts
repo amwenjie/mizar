@@ -4,7 +4,7 @@ import CookieParser from "cookie-parser";
 import Express from "express";
 import * as Http from "http";
 import * as net from "net";
-import { internalIpV4, internalIpV6 } from "internal-ip";
+import internalIp from "internal-ip";
 import Path from "path";
 import ServeStatic from "serve-static";
 import { getPort, getPublicPath } from "./utils/getConfig";
@@ -166,11 +166,11 @@ export class WebServer {
         return new Promise(async (resolve, reject) => {
             try {
                 if (hostname === "local-ip") {
-                    hostname = await internalIpV4() || await internalIpV6() || "0.0.0.0";
+                    hostname = await internalIp.v4() || await internalIp.v6() || "0.0.0.0";
                 } else if (hostname === "local-ipv4") {
-                    hostname = await internalIpV4() || "0.0.0.0";
+                    hostname = await internalIp.v4() || "0.0.0.0";
                 } else if (hostname === 'local-ipv6') {
-                    hostname = await internalIpV6() || '::';
+                    hostname = await internalIp.v6() || '::';
                 }
                 this.server.listen({
                     port: port,
