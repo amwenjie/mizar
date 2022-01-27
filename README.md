@@ -224,13 +224,13 @@
     }
 ```
 
-### 6. 支持server api
+### 6. 支持动态路由（server端api）
    * 该应用框架基于express，因此api的路由处理采用express routing方案。
    * 需要在server目录中增加apis目录，apis里面的文件目录会转化为api的url path。
    * 文件中导出的几个特定名称的方法，http method为导出方法名：get｜post｜put｜delete。
    * 文件中以default导出的方法，会忽略方法名，作为express route的all方法中间件取处理http请求。
    * 文件中定义的请求处理函数，第一个入参是http request对象，第二个入参是http response对象。但**需要注意**：
-    由于处理函数可能会同时处理客户端和服务端getInitialData中的请求，由于目前的实现**无法抹平差异**，因此如果会同时处理客户端和服务端的请求，第二个入参的可用api的可用api只能是json()｜send()；如果处理客户端请求，第二个入参的可用api是express response所提供的api。
+    由于处理函数可能会同时处理客户端和服务端getInitialData中的请求，由于目前的实现**无法抹平差异**，因此如果会同时处理客户端和服务端的请求，第二个入参的可用api只能是json()｜send()；如果处理客户端请求，第二个入参的可用api是express response所提供的api。
    * 比如有个这样的目录：/src/server/apis/:path/method.ts，method.ts文件内容如下：
 ```
     export function love (req, res) {

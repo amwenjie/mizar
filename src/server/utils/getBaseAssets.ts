@@ -6,8 +6,8 @@ function handleServerBaseJS(assetsConfigMainfestJson) {
         splitChunksArr.push(assetsConfigMainfestJson["lib.js"]);
         // delete assetsConfigMainfestJson["lib.js"];
     }
-    splitChunksArr.push(assetsConfigMainfestJson["vendor.js"]);
-    // delete assetsConfigMainfestJson["vendor.js"];
+    splitChunksArr.push(assetsConfigMainfestJson["nmdeps.js"]);
+    // delete assetsConfigMainfestJson["nmdeps.js"];
     if (assetsConfigMainfestJson["common.js"]) {
         splitChunksArr.push(assetsConfigMainfestJson["common.js"]);
         // delete assetsConfigMainfestJson["common.js"];
