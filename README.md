@@ -76,7 +76,6 @@
    * options是当用户访问改页面时，请求中携带的query或路由参数，options.query代表url search部分的query，options.params代表路由参数，即‘path/:id/:name‘中的id和name会在params中。
 
 ### 2. 支持css module
-   * 目前存在需要需要使用类型断言转为any的形式，待改进
 
 ### 3. 要支持redux，需要使用connect
    * 因为采用类组件+redux，所以需要使用connect，应用框架导出了两个connect，{ connect, reduxConnect} from 'mizar/iso/connect'。
