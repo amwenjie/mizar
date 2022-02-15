@@ -1,7 +1,7 @@
 import getLogger from "./utils/logger";
 import WebServer from "./index";
 import { getApiRouter, getPageRouter } from "./libs/getRouter";
-import { IProxyConfig, IPageRouter } from "../interface";
+import { IPageRouter, IGetMetaFn, IMetaProps } from "../interface";
 // import { getPublicPath } from "./utils/getConfig";
 
 // declare let __webpack_public_path__: string;
@@ -15,7 +15,7 @@ export function bootstrap(server: WebServer = new WebServer(
         cookieParser: true,
     }
 )) {
-    return async function (pageRouter: IPageRouter[], getMeta, config?: IProxyConfig) {
+    return async function (pageRouter: IPageRouter[], getMeta?: IGetMetaFn | IMetaProps) {
         try {
             // __webpack_public_path__ = getPublicPath();
 

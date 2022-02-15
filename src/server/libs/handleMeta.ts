@@ -1,3 +1,4 @@
+import { IGetMetaFn, IMetaProps } from "../../interface";
 import getLogger from "../utils/logger";
 import checkPositivePath from "../utils/checkPositivePath";
 import getAssetsURI from "../utils/getAssetsURI";
@@ -5,10 +6,10 @@ import getBaseAssets from "../utils/getBaseAssets";
 
 const logger = getLogger().getLogger("server/libs/handleMeta");
 
-export default function handleMeta(getMeta, publicPath) {
+export default function handleMeta(publicPath, getMeta: IGetMetaFn | IMetaProps = {}): IMetaProps {
     let finalMeta = { favicon: "", styles: [], scripts: [], metas: [], links: [] };
     let meta;
-    if (Object.prototype.toString.call(getMeta) === "[object Function]") {
+    if (typeof getMeta === "function") {
         meta = getMeta();
     } else {
         meta = getMeta;

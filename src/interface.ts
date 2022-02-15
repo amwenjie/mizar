@@ -1,6 +1,6 @@
-export interface IProxyConfig {
-    urlPath: string;
-    apiHost: string;
+
+export interface IGetMetaFn {
+    (): IMetaProps;
 }
 
 export interface IAppConf {

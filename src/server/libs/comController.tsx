@@ -10,7 +10,7 @@ import RootContainer from "../../iso/libs/components/RootContainer";
 import RouteContainer from "../../iso/libs/components/RouteContainer";
 import { getRootReducer } from "../../iso/libs/metaCollector";
 import getLogger from "../utils/logger";
-import { IInitialRenderData, IPageRouter} from "../../interface";
+import { IInitialRenderData } from "../../interface";
 import checkNotSSR from "../utils/checkNotSSR";
 import { getPageCSSDeps, getPageJSDeps } from "../utils/getPageDeps";
 import getSSRInitialData from "../utils/getSSRInitialData";
