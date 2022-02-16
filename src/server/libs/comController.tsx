@@ -1,7 +1,8 @@
+import { type Request } from "express";
 import React, { ReactElement } from "react";
 import ReactDomServer from "react-dom/server";
 import { Provider } from "react-redux";
-import { useRoutes, renderMatches } from "react-router-dom";
+import { RouteMatch } from "react-router-dom";
 import { StaticRouter } from "react-router-dom/server";
 import { createStore } from "redux";
 import { loadingId } from "../../config";
@@ -10,7 +11,7 @@ import RootContainer from "../../iso/libs/components/RootContainer";
 import RouteContainer from "../../iso/libs/components/RouteContainer";
 import { getRootReducer } from "../../iso/libs/metaCollector";
 import getLogger from "../utils/logger";
-import { IInitialRenderData } from "../../interface";
+import { IInitialRenderData, IPageRouter } from "../../interface";
 import checkNotSSR from "../utils/checkNotSSR";
 import { getPageCSSDeps, getPageJSDeps } from "../utils/getPageDeps";
 import getSSRInitialData from "../utils/getSSRInitialData";
@@ -39,7 +40,7 @@ export function getComRenderString(com: ReactElement) {
     return ReactDomServer.renderToString(com);
 }
 
-export async function getPage(req, matchedBranch): Promise<ReactElement> {
+export async function getPage(req: Request, pageRouter: IPageRouter[], matchedRoute: RouteMatch): Promise<ReactElement> {
     const notSSR = checkNotSSR(req.query);
     let children = null;
     let meta = state.meta;
@@ -49,7 +50,7 @@ export async function getPage(req, matchedBranch): Promise<ReactElement> {
     } else {
         let pageReducerName = "";
         logger.info("准备进行首屏数据服务端获取.");
-        const initialData: IInitialRenderData = await getSSRInitialData(matchedBranch[0], req);
+        const initialData: IInitialRenderData = await getSSRInitialData(matchedRoute, req);
         preloadData = initialData.preloadData;
         pageReducerName = initialData.pageReducerName;
         logger.info("首屏数据服务端获取完成，准备进行服务端渲染.");
@@ -78,16 +79,10 @@ export async function getPage(req, matchedBranch): Promise<ReactElement> {
 
         logger.debug("meta: ", meta);
         
-        const Routes = (props) => {
-            return useRoutes(props.pageRouter);
-        }
 
         children = (<Provider store={store}>
             <StaticRouter location={req.originalUrl}>
-                <RouteContainer pageRouter={matchedBranch}>
-                    {/* {renderMatches(matchedBranch)} */}
-                    <Routes pageRouter={matchedBranch} />
-                </RouteContainer>
+                <RouteContainer pageRouter={pageRouter} />
             </StaticRouter>
         </Provider>);
     }

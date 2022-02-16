@@ -1,12 +1,11 @@
-import { ComponentType } from "react";
+import { ReactNode } from "react";
 import { combineReducers } from "redux";
-import { pathToRegexp, match, parse, compile, MatchResult } from "path-to-regexp";
+import { RouteMatch } from "react-router-dom";
 import { pageInit } from "../../config";
-import { IInitialRenderData } from "../../interface";
+import { IInitialRenderData, IPageRouter } from "../../interface";
 import { getStore } from "../getStore";
 import { fetchWithRequestObject } from "../fetch";
 import getLogger from "../utils/logger";
-
 import appState from "./state";
 
 const logger = getLogger().getLogger("iso/libs/metaCollector");
@@ -49,49 +48,27 @@ export function getRootReducer(): any {
     return combineReducers(finalReducer);
 }
 
-function getMatchedComponent(matchedBranch): {
-    element: ComponentType;
-    // meta?: any,
+export function getMatchedComponent(matchedRoute: RouteMatch): {
+    element: ReactNode;
     pageComName?: string;
     params?: any;
  } | null {
-    if (matchedBranch.route.element) {
+    if (matchedRoute.route.element) {
         return {
-            element: matchedBranch.route.element,
-            pageComName: matchedBranch.route.name,
+            params: matchedRoute.params,
+            element: matchedRoute.route.element,
+            pageComName: (matchedRoute.route as IPageRouter).name,
         };
-    } else {
-        const url = matchedBranch.match.url;
-        const clientRouter = matchedBranch.route.clientRouter;
-        for (let i = 0, len = clientRouter.length; i < len; i++) {
-            const r = clientRouter[i];
-            if (!r.path) {
-                continue;
-            }
-            const matched = match(r.path, {
-                decode: decodeURIComponent,
-                encode: encodeURI,
-            })(url);
-            const isMatched = matched !== false;
-            if (isMatched) {
-                return {
-                    params: matched.params,
-                    element: r.element,
-                    pageComName: r.name,
-                    // meta: r.meta,
-                };
-            }
-        }
-        return null;
     }
+    return null;
 }
 
-export async function getInitialData(matchedBranch, request): Promise<IInitialRenderData> {
+export async function getInitialData(matchedRoute: RouteMatch, request): Promise<IInitialRenderData> {
     // 该方法根据路由和请求找到对应的组件获取初始数据。被client端RouterContainer和server端路由入口调用。
-    let urlParams = matchedBranch.params;
-    const matched = getMatchedComponent(matchedBranch);
-    if (matched) {
-        const pageComponent = matched.element;
+    let urlParams = matchedRoute.params;
+    const matched = getMatchedComponent(matchedRoute);
+    const pageComponent = matched.element;
+    if (matched && pageComponent) {
         if (matched.params) {
             urlParams = {
                 ...matched.params

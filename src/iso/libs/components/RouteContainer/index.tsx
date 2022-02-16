@@ -1,6 +1,6 @@
 import { parse } from "query-string";
 import React, { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useRoutes, renderMatches } from "react-router-dom";
 import { loadingId, pageInit } from "../../../../config";
 import { reduxConnect } from "../../../connect";
 import { getInitialData } from "../../metaCollector";
@@ -9,17 +9,21 @@ import getLoading from "../FetchLoading";
 
 const FetchLoading = getLoading(loadingId);
 
+function Routes(props) {
+    return useRoutes(props.router);
+}
+
 function RouteContainer(props) {
     const { pathname, search } = useLocation();
     useEffect(() => {
         const cb = async () => {
             // 当在浏览器端用无刷新的形式切换页面时，该函数被触发
-            const branch = await getMatchedBranch(props.pageRouter, pathname);
-            if (!branch) {
+            const matchedBranch = await getMatchedBranch(props.pageRouter, pathname);
+            if (!matchedBranch) {
                 window.location.reload();
                 return;
             }
-            const { preloadData, pageReducerName, pageComName } = await getInitialData(branch[0],
+            const { preloadData, pageReducerName, pageComName } = await getInitialData(matchedBranch,
                 {
                     baseUrl: pathname,
                     query: parse(search),
@@ -35,7 +39,7 @@ function RouteContainer(props) {
         cb();
     }, [pathname, search]);
     return (<>
-        {props.children}
+        <Routes router={props.pageRouter} />
         <FetchLoading />
     </>);
 }

@@ -1,6 +1,7 @@
 import Express from "express";
 import { ReactElement } from "react";
 import { matchRoutes } from "react-router-dom";
+import getPathForRouterMatch from "../../utils/getPathForRouterMatch";
 import getLogger from "../../utils/logger";
 import { getComRenderString, getErrorPageRenderString, getPage } from "../comController";
 import state from "../state";
@@ -20,7 +21,7 @@ export default class PageRouter extends Router {
     }
 
     public setRouter() {
-        this.router.use(async (req, res, next) => {
+        this.router.use(async (req: Express.Request, res: Express.Response, next) => {
             res.setHeader("Content-Type", "text/html; charset=UTF-8");
             res.write("<!DOCTYPE html>");
             res.on('finish', () => {
@@ -28,20 +29,20 @@ export default class PageRouter extends Router {
             });
             try {
                 const originalUrl: string = req.originalUrl;
-                const path: string = this.getUrlPath(originalUrl);
-                const branch = matchRoutes(this.pageRouter, path);
+                const path: string = getPathForRouterMatch(originalUrl);
+                const matchedRoute = matchRoutes(this.pageRouter, path);
                 
                 logger.info("originalUrl: ", originalUrl);
                 logger.info("path: ", path);
-                logger.info("branch: ", branch);
+                logger.info("matchedRoute: ", matchedRoute);
 
-                if (!branch) {
+                if (!matchedRoute) {
                     logger.warn(`not match any router branch. originalUrl: ${originalUrl}, path: ${path}`);
                     // 找不到匹配的页面，由express的404兜底
                     return next();
                 }
                 logger.info("match router branch.");
-                const Page: ReactElement = await getPage(req, branch);
+                const Page: ReactElement = await getPage(req, this.pageRouter, matchedRoute[matchedRoute.length - 1]);
                 const htmlString: string = getComRenderString(Page);
                 logger.info("渲染完成，准备响应页面给客户端");
                 res.end(htmlString, "utf8");
@@ -51,9 +52,5 @@ export default class PageRouter extends Router {
                 logger.error("服务端路由处理时出现异常: ", err.message, " ; stack: ", err.stack);
             }
         });
-    }
-
-    private getUrlPath(url) {
-        return url.split("?")[0];
     }
 }

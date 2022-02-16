@@ -2,7 +2,7 @@ import React from "react";
 import { matchRoutes } from "react-router-dom";
 import { IPageRouter } from "../../interface";
 
-function checkElementIsLoadable (element): boolean {
+function checkElementIsLoadable(element): boolean {
     if (element
         && typeof element.type === "function"
         // && element.type.name === "LoadableComponent"
@@ -15,15 +15,18 @@ function checkElementIsLoadable (element): boolean {
 
 export default async function (pageRouter: IPageRouter[], path: string) {
     const branch = matchRoutes(pageRouter, path);
-    if (branch
-        && branch[0].route
-        && branch[0].route.element
-        && checkElementIsLoadable(branch[0].route.element)
-    ) {
-        const compMap = {};
-        compMap[(branch[0].route as IPageRouter).name] = (await ((branch[0].route.element as any).type as any).preload()).default;
-        const TrueCom = compMap[(branch[0].route as IPageRouter).name];
-        branch[0].route.element = <TrueCom />
+    let matched = null;
+    if (branch) {
+        matched = branch[branch.length - 1];
+        if (matched.route
+            && matched.route.element
+            && checkElementIsLoadable(matched.route.element)
+        ) {
+            const compMap = {};
+            compMap[(matched.route as IPageRouter).name] = (await ((matched.route.element as any).type as any).preload()).default;
+            const TrueCom = compMap[(matched.route as IPageRouter).name];
+            matched.route.element = (<TrueCom />);
+        }
     }
-    return branch;
+    return matched;
 }
