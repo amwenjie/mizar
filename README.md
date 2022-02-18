@@ -1,6 +1,6 @@
 # mizar，a react server side render framework，support isomorphic render
 
-## 使用此框架的应用程序，目录结构应为：
+## 使用此框架的应用程序，需要使用alcor打包编译工具。应用目录结构应为：
     -config   用于存放配置文件的目录
         -app.json   用于配置应用的运行时信息，比如该应用的node服务启动端口、cdn地址等
         -configure.json   用于配置应用的编译时信息，比如是否启用tslint、stylelint的配置、less-loader的配置等
@@ -75,9 +75,8 @@
    * fetch用于发送http请求，不可自行引入其他http请求工具，仅可用此入参。配置方式同axios。
    * options是当用户访问改页面时，请求中携带的query或路由参数，options.query代表url search部分的query，options.params代表路由参数，即‘path/:id/:name‘中的id和name会在params中。
 
-### 2. 支持css module
 
-### 3. 要支持redux，需要使用connect
+### 2. 要支持redux，需要使用connect
    * 因为采用类组件+redux，所以需要使用connect，应用框架导出了两个connect，{ connect, reduxConnect} from 'mizar/iso/connect'。
    * reduxConnect是redux提供的原始connect高阶函数，connect是该框架基于reduxConnect进行的包装，用于进行组件、reducer、dispatch的关联，同时实现页面级组件的子组件需要服务端获取初始数据的支持。
    * connect用法：
@@ -113,7 +112,7 @@
     export default connect()(pageAreducer, 'PageA', [childComp...])(PageA)
 ```
 
-### 4. 客户端路由配置
+### 3. 客户端路由配置
    * 支持客户端SPA的应用对非首次访问的页面在客户端按需加载，同时按需加载的页面组件支持loading配置
    * 该应用框架基于express、react-router，因此页面的路由配置和处理采用react-router、express routing方案。
    * mizar 版本 <= 0.0.30，react-router 采用V5版本，mizar 版本 >= 0.0.31，react-router 采用V6版本，区别是配置中的component改为element，去掉exact，[两个配置区别点击此处](https://reactrouter.com/docs/en/v6/upgrading/v5#use-useroutes-instead-of-react-router-config)。
@@ -173,57 +172,7 @@
     }
 ```
 
-### 5. 页面组件内跳转功能、url参数获取说明
-   * 由于mizar 不同版本使用的react-router版本不同，两个主要功能需要特殊说明
-    1. 跳转功能
-        * mizar 版本 <= 0.0.30 ，可用this.props.history.push("")，进行跳转
-        * mizar 版本 >= 0.0.31 ，需要将跳转功能封装函数组件（function component），其中使用useNavigate，进跳转
-    2. url参数获取
-        * mizar 版本 <= 0.0.30 ，可用this.props.match，获取url param参数
-        * mizar 版本 >= 0.0.31 ，需要提供一个函数组件（function component），其中使用useParams来获取url param参数
-   * 举例：
-```
-    mizar 版本 <= 0.0.30
-    src/isomorphic/pages/PageA/index.tsx :
-
-    class PageA extends React.Commponent {
-        render() {
-            const id = this.props.match ? this.props.match.id : "";
-            return (<div>
-                <a href="#" onClick={(e) => {
-                    e.preventDefault();
-                    this.props.history.push("url" + id);
-                }}>跳转到url</a>
-            </div>)
-        }
-    }
-
-    mizar 版本 >= 0.0.31
-    src/isomorphic/pages/PageA/index.tsx :
-
-    ...
-    import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-    ...
-
-    function JumpTo ({url, text}) {
-        const navigate = useNavigate();
-        const {id} = useParams();
-        const [searchParams] = useSearchParams();
-        return (<a href="#" onClick={(e) => {
-            e.preventDefault();
-            navigate(url + id + "?search=" + searchParams.get("query"));
-        }}>{text}</a>);
-    }
-    class PageA extends React.Commponent {
-        render() {
-            return (<div>
-                <JumpTo text="跳转到url" url="url"/>
-            </div>);
-        }
-    }
-```
-
-### 6. 支持动态路由（server端api）
+### 4. 支持动态路由（server端api）
    * 该应用框架基于express，因此api的路由处理采用express routing方案。
    * 需要在server目录中增加apis目录，apis里面的文件目录会转化为api的url path。
    * 文件中导出的几个特定名称的方法，http method为导出方法名：get｜post｜put｜delete。
@@ -248,7 +197,7 @@
     3. 以get 为http request method请求/api/789/method/love，这个get请求会被export function love 请求处理函数处理，url中的789会在请求处理函数的入参req中，以req.param.path的方式获取到。
     4. 以delete 为http request method请求/api/000/method/love，这个delete请求会响应404。
 
-### 7. 服务端启动入口配置
+### 5. 服务端启动入口配置
    /src/server/index.ts内容：
 ```
     import { bootstrap } from "mizar/server/bootstrap";
@@ -337,6 +286,56 @@
         directory: string;
         staticOption?: ServeStatic.ServeStaticOptions;
         isInternal?: true;
+    }
+```
+
+### 6. 页面组件内跳转功能、url参数获取说明
+   * 由于mizar 不同版本使用的react-router版本不同，两个主要功能需要特殊说明
+    1. 跳转功能
+        * mizar 版本 <= 0.0.30 ，可用this.props.history.push("")，进行跳转
+        * mizar 版本 >= 0.0.31 ，需要将跳转功能封装函数组件（function component），其中使用useNavigate，进跳转
+    2. url参数获取
+        * mizar 版本 <= 0.0.30 ，可用this.props.match，获取url param参数
+        * mizar 版本 >= 0.0.31 ，需要提供一个函数组件（function component），其中使用useParams来获取url param参数
+   * 举例：
+```
+    mizar 版本 <= 0.0.30
+    src/isomorphic/pages/PageA/index.tsx :
+
+    class PageA extends React.Commponent {
+        render() {
+            const id = this.props.match ? this.props.match.id : "";
+            return (<div>
+                <a href="#" onClick={(e) => {
+                    e.preventDefault();
+                    this.props.history.push("url" + id);
+                }}>跳转到url</a>
+            </div>)
+        }
+    }
+
+    mizar 版本 >= 0.0.31
+    src/isomorphic/pages/PageA/index.tsx :
+
+    ...
+    import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+    ...
+
+    function JumpTo ({url, text}) {
+        const navigate = useNavigate();
+        const {id} = useParams();
+        const [searchParams] = useSearchParams();
+        return (<a href="#" onClick={(e) => {
+            e.preventDefault();
+            navigate(url + id + "?search=" + searchParams.get("query"));
+        }}>{text}</a>);
+    }
+    class PageA extends React.Commponent {
+        render() {
+            return (<div>
+                <JumpTo text="跳转到url" url="url"/>
+            </div>);
+        }
     }
 ```
 

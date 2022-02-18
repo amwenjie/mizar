@@ -5,6 +5,8 @@ import getLogger from "./logger";
 
 const logger = getLogger().getLogger("server/utils/getApis");
 
+const apisBasePath = "./apis";
+
 async function getApiPath(entry): Promise<string[]> {
     return new Promise((resolve, reject) => {
         logger.debug("getApiFiles entry: ", entry);
@@ -37,15 +39,18 @@ async function getApiPath(entry): Promise<string[]> {
 }
 
 export default async function () {
-    const apiFilePath = Path.resolve('./apis');
-    let files = await getApiPath(apiFilePath);
+    const apiPath = Path.resolve(apisBasePath);
+    if (!fs.existsSync(apiPath)) {
+        return null;
+    }
+    let files = await getApiPath(apiPath);
     // files.forEach(name => {
     //     console.debug(require(/* webpackIgnore: true */`./apis${name}.js`));
     // });
     if (files && files.length) {
         let apis = {};
         files.forEach(url => {
-            const file = `./apis${url}.js`;
+            const file = `${apisBasePath}${url}.js`;
             logger.debug("file: ", file);
             if (!fs.existsSync(file)) {
                 logger.error('file not exist: ', file);

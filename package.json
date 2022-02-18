@@ -1,11 +1,11 @@
 {
     "author": "wenjie",
     "dependencies": {
-      "axios": "~0.25.0",
-      "body-parser": "~1.19.1",
+      "axios": "~0.26.0",
+      "body-parser": "~1.19.2",
       "compression": "~1.7.4",
       "cookie-parser": "~1.4.6",
-      "express": "~4.17.2",
+      "express": "~4.17.3",
       "express-http-proxy": "~1.6.3",
       "fs-extra": "~10.0.0",
       "internal-ip": "~6.2.0",
@@ -13,7 +13,7 @@
       "log4js": "~6.4.1",
       "node-mocks-http": "~1.11.0",
       "path-to-regexp": "~6.2.0",
-      "query-string": "~7.1.0",
+      "query-string": "~7.1.1",
       "source-map-support": "~0.5.21"
     },
     "description": "react服务端渲染同构框架",
@@ -28,7 +28,7 @@
       "@types/react": "~17.0.37",
       "@types/react-dom": "~17.0.11",
       "@types/react-redux": "~7.1.20",
-      "alcor": "~0.1.45"
+      "alcor": "~0.1.49"
     },
     "license": "MIT",
     "name": "mizar",
@@ -50,5 +50,5 @@
     "scripts": {
       "build": "alcor pack"
     },
-    "version": "0.0.36"
+    "version": "0.0.37"
   }  
