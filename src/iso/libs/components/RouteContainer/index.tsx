@@ -1,9 +1,9 @@
 import { parse } from "query-string";
 import React, { useEffect } from "react";
-import { useLocation, useRoutes, renderMatches } from "react-router-dom";
+import { useLocation, useRoutes } from "react-router-dom";
 import { loadingId, pageInit } from "../../../../config";
 import { reduxConnect } from "../../../connect";
-import { getInitialData } from "../../metaCollector";
+import { getInitialData, getMatchedComponent } from "../../metaCollector";
 import getMatchedBranch from "../../getMatchedBranch";
 import getLoading from "../FetchLoading";
 
@@ -23,7 +23,8 @@ function RouteContainer(props) {
                 window.location.reload();
                 return;
             }
-            const { preloadData, pageReducerName, pageComName } = await getInitialData(matchedBranch,
+            const matchedPageCom = getMatchedComponent(matchedBranch);
+            const { preloadData, pageReducerName, pageComName } = await getInitialData(matchedPageCom,
                 {
                     baseUrl: pathname,
                     query: parse(search),

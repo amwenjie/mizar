@@ -63,27 +63,21 @@ export function getMatchedComponent(matchedRoute: RouteMatch): {
     return null;
 }
 
-export async function getInitialData(matchedRoute: RouteMatch, request): Promise<IInitialRenderData> {
+export async function getInitialData(matchedPageCom, request): Promise<IInitialRenderData> {
     // 该方法根据路由和请求找到对应的组件获取初始数据。被client端RouterContainer和server端路由入口调用。
-    let urlParams = matchedRoute.params;
-    const matched = getMatchedComponent(matchedRoute);
-    const pageComponent = matched.element;
-    if (matched && pageComponent) {
-        if (matched.params) {
-            urlParams = {
-                ...matched.params
-            };
-        }
+    if (matchedPageCom && matchedPageCom.element) {
         const { preloadData, pageReducerName } = await collectPreloadData(
-            reducerComponentMap, pageComponent, request, {
+            reducerComponentMap, matchedPageCom.element, request, {
                 body: request.body || {},
                 query: request.query || {},
-                params: urlParams || {},
+                params: matchedPageCom.params ? {
+                    ...matchedPageCom.params,
+                } : {},
             });
         return {
             preloadData,
             pageReducerName,
-            pageComName: matched.pageComName,
+            pageComName: matchedPageCom.pageComName,
         };
     } else {
         return {

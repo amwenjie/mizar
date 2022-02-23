@@ -9,7 +9,7 @@ import { loadingId } from "../../config";
 import { getReducerName as getLoadingReducerName } from "../../iso/libs/components/FetchLoading";
 import RootContainer from "../../iso/libs/components/RootContainer";
 import RouteContainer from "../../iso/libs/components/RouteContainer";
-import { getRootReducer } from "../../iso/libs/metaCollector";
+import { getMatchedComponent, getRootReducer } from "../../iso/libs/metaCollector";
 import getLogger from "../utils/logger";
 import { IInitialRenderData, IPageRouter } from "../../interface";
 import checkNotSSR from "../utils/checkNotSSR";
@@ -40,45 +40,53 @@ export function getComRenderString(com: ReactElement) {
     return ReactDomServer.renderToString(com);
 }
 
+function getPageMeta(pageComName) {
+    let meta = state.meta;
+    meta = {
+        ...meta,
+        styles: meta.styles.slice(0),
+        scripts: meta.scripts.slice(0),
+    };
+
+    const pageRouterName = "page/" + pageComName;
+    const pageCssDeps = getPageCSSDeps(pageRouterName);
+    if (pageCssDeps && pageCssDeps.length) {
+        meta.styles = meta.styles.concat(pageCssDeps);
+    }
+
+    const pageJsDeps = getPageJSDeps(pageRouterName);
+    if (pageJsDeps && pageJsDeps.length) {
+        meta.scripts = meta.scripts.concat(pageJsDeps);
+    }
+
+    logger.debug("meta: ", meta);
+    return meta;
+}
+
 export async function getPage(req: Request, pageRouter: IPageRouter[], matchedRoute: RouteMatch): Promise<ReactElement> {
     const notSSR = checkNotSSR(req.query);
     let children = null;
-    let meta = state.meta;
     let preloadData: any = {};
+    const matchedPageCom = getMatchedComponent(matchedRoute);
+    let meta = getPageMeta(matchedPageCom.pageComName);
     if (notSSR) {
         logger.info("请求参数携带_nossr的标志，跳过服务端首屏数据获取.");
     } else {
         let pageReducerName = "";
         logger.info("准备进行首屏数据服务端获取.");
-        const initialData: IInitialRenderData = await getSSRInitialData(matchedRoute, req);
+        const initialData: IInitialRenderData = await getSSRInitialData(matchedPageCom, req);
         preloadData = initialData.preloadData;
         pageReducerName = initialData.pageReducerName;
         logger.info("首屏数据服务端获取完成，准备进行服务端渲染.");
 
         const store = createStore(getRootReducer(), preloadData);
 
-        const styles = meta.styles.slice(0);
         meta = {
             ...meta,
-            styles,
             ...getMeta(preloadData[pageReducerName] || {}),
         };
 
         preloadData[getLoadingReducerName(loadingId)] = state.meta.loading;
-
-        const pageRouterName = "page/" + initialData.pageComName;
-        const pageCssDeps = getPageCSSDeps(pageRouterName);
-        if (pageCssDeps && pageCssDeps.length) {
-            meta.styles = meta.styles.concat(pageCssDeps);
-        }
-
-        const pageJsDeps = getPageJSDeps(pageRouterName);
-        if (pageJsDeps && pageJsDeps.length) {
-            meta.scripts = meta.scripts.concat(pageJsDeps);
-        }
-
-        logger.debug("meta: ", meta);
-        
 
         children = (<Provider store={store}>
             <StaticRouter location={req.originalUrl}>
