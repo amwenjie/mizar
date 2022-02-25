@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import React from "react";
 import { combineReducers } from "redux";
 import { RouteMatch } from "react-router-dom";
 import { pageInit } from "../../config";
@@ -49,14 +49,14 @@ export function getRootReducer(): any {
 }
 
 export function getMatchedComponent(matchedRoute: RouteMatch): {
-    element: ReactNode;
+    element: React.ElementType;
     pageComName?: string;
     params?: any;
  } | null {
     if (matchedRoute.route.element) {
         return {
             params: matchedRoute.params,
-            element: matchedRoute.route.element,
+            element: matchedRoute.route.element as React.ElementType,
             pageComName: (matchedRoute.route as IPageRouter).name,
         };
     }
@@ -66,8 +66,12 @@ export function getMatchedComponent(matchedRoute: RouteMatch): {
 export async function getInitialData(matchedPageCom, request): Promise<IInitialRenderData> {
     // 该方法根据路由和请求找到对应的组件获取初始数据。被client端RouterContainer和server端路由入口调用。
     if (matchedPageCom && matchedPageCom.element) {
+        let component = matchedPageCom.element;
+        // if (typeof matchedPageCom.element.load === "function") {
+        //     component = await component.load();
+        // }
         const { preloadData, pageReducerName } = await collectPreloadData(
-            reducerComponentMap, matchedPageCom.element, request, {
+            reducerComponentMap, component, request, {
                 body: request.body || {},
                 query: request.query || {},
                 params: matchedPageCom.params ? {

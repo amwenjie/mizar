@@ -1,8 +1,6 @@
 import { IGetMetaFn, IMetaProps } from "../../interface";
 import getLogger from "../utils/logger";
 import checkPositivePath from "../utils/checkPositivePath";
-import getAssetsURI from "../utils/getAssetsURI";
-import getBaseAssets from "../utils/getBaseAssets";
 
 const logger = getLogger().getLogger("server/libs/handleMeta");
 
@@ -41,30 +39,6 @@ export default function handleMeta(publicPath, getMeta: IGetMetaFn | IMetaProps 
     }
     if (!finalMeta.scripts) {
         finalMeta.scripts = [];
-    }
-    
-    const assetsConfigMainfestJson = getAssetsURI() as object;
-    logger.debug("assetsConfigMainfestJson: ", assetsConfigMainfestJson);
-
-    if (assetsConfigMainfestJson) {
-        const { styles: cstyle, scripts: cscript } = getBaseAssets(assetsConfigMainfestJson);
-        finalMeta.styles = finalMeta.styles.concat(cstyle);
-        finalMeta.scripts = finalMeta.scripts.concat(cscript);
-
-        // for (let key in assetsConfigMainfestJson) {
-        //     if (key.startsWith("public/")
-        //         || key.startsWith("styleEntry/")
-        //         || key.startsWith("page/")
-        //         || key === "index.js"
-        //     ) {
-        //         continue;
-        //     }
-        //     if (/\.css$/.test(key) && !finalMeta.styles.includes(assetsConfigMainfestJson[key])) {
-        //         finalMeta.styles.push(assetsConfigMainfestJson[key]);
-        //     } else if (/\.js$/.test(key) && !finalMeta.scripts.includes(assetsConfigMainfestJson[key])) {
-        //         finalMeta.scripts.push(assetsConfigMainfestJson[key]);
-        //     }
-        // }
     }
     logger.info("finalMeta: ", finalMeta);
     return finalMeta;

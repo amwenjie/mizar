@@ -1,16 +1,20 @@
-import React from "react";
 import { matchRoutes } from "react-router-dom";
 import { IPageRouter } from "../../interface";
 
-function checkElementIsLoadable(element): boolean {
-    if (element
-        && typeof element.type === "function"
-        // && element.type.name === "LoadableComponent"
-        && (element.type as any).preload
-    ) {
+export function checkElementIsLoadable(element): boolean {
+    if (element && typeof element.preload === "function" && typeof element.load === "function") {
         return true;
     }
     return false;
+}
+
+export async function loadLoadableElement(element): Promise<JSX.Element|null> {
+    let RealCom;
+    if (checkElementIsLoadable(element)) {
+        RealCom = await element.load();
+        return RealCom;
+    }
+    return element;
 }
 
 export default async function (pageRouter: IPageRouter[], path: string) {
@@ -18,15 +22,12 @@ export default async function (pageRouter: IPageRouter[], path: string) {
     let matched = null;
     if (branch) {
         matched = branch[branch.length - 1];
-        if (matched.route
-            && matched.route.element
-            && checkElementIsLoadable(matched.route.element)
-        ) {
-            const compMap = {};
-            compMap[(matched.route as IPageRouter).name] = (await ((matched.route.element as any).type as any).preload()).default;
-            const TrueCom = compMap[(matched.route as IPageRouter).name];
-            matched.route.element = (<TrueCom />);
-        }
+        // if (matched.route && matched.route.element) {
+        //     const RealCom = await loadLoadableElement(matched.route.element);
+        //     if (RealCom) {
+        //         matched.route.element = RealCom;
+        //     }
+        // }
     }
     return matched;
 }

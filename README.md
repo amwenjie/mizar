@@ -6,8 +6,10 @@
         -configure.json   用于配置应用的编译时信息，比如是否启用tslint、stylelint的配置、less-loader的配置等
     -src   应用代码源文件目录
         -isomorphic    同构内容所在目录，组件会被在客户端或服务端执行，需要注意执行环境特有能力的使用
-            -pageRouters   应用的客户端路由文件所在目录，可以有多个路由配置，里面的每个文件都是路由所包含的页面组成的客户端单页入口应用的入口
-                -index.tsx   文件中包含的页面组成的单页应用入口
+            -entry    客户端启动入口，里面的每个文件就对应一个所包含的路由组成的客户端单页应用的入口
+                -index.ts    文件中包含的页面组成的单页应用入口
+            -routers   应用的客户端路由文件所在目录
+                -index.tsx
             -pages    页面所在的目录
                 -pageA    一个采用类组件形式开发的页面级redux组件
                     -index.tsx    页面组件入口文件
@@ -76,7 +78,51 @@
    * options是当用户访问改页面时，请求中携带的query或路由参数，options.query代表url search部分的query，options.params代表路由参数，即‘path/:id/:name‘中的id和name会在params中。
 
 
-### 2. 要支持redux，需要使用connect
+### 2. 客户端启动入口配置
+   /src/isomorphic/entry/index.ts内容：
+```
+    import { bootstrap } from "mizar/iso/bootstrap";
+    import articleRouter from "../routers/article";
+
+    bootstrap(articleRouter)();
+```
+
+
+### 3. 客户端路由配置
+   * 支持客户端SPA的应用对非首次访问的页面在客户端按需加载，同时按需加载的页面组件支持loading配置
+   * 该应用框架基于express、react-router，因此页面的路由配置和处理采用react-router、express routing方案。
+   * pageRouters目录中的路由配置，比如：src/isomorphic/pageRouter/index.ts文件中配置
+```
+    import loadable from '@loadable/component';
+    import React from "react";
+    import NotFound from "../pages/NotFound";
+    import ArticleDetail from "../pages/ArticleDetail";
+    import VideoDetail from "../pages/VideoDetail";
+
+    const AsyncCom = loadable(() => import("../pages/VideoDetail"));
+    const pageRouter = [
+        {
+            path: "/detail/iso/:id",
+            element: <VideoDetail />,
+        },
+        {
+            path: "/detail/article/:id",
+            element: <ArticleDetail />,
+        },
+        {
+            path: "/detail/video/:id",
+            element: AsyncCom,
+        },
+        {
+            path: "*",
+            element: <NotFound />,
+        }
+    ];
+
+    export default pageRouter;
+```
+
+### 4. 要支持redux，需要使用connect
    * 因为采用类组件+redux，所以需要使用connect，应用框架导出了两个connect，{ connect, reduxConnect} from 'mizar/iso/connect'。
    * reduxConnect是redux提供的原始connect高阶函数，connect是该框架基于reduxConnect进行的包装，用于进行组件、reducer、dispatch的关联，同时实现页面级组件的子组件需要服务端获取初始数据的支持。
    * connect用法：
@@ -112,96 +158,11 @@
     export default connect()(pageAreducer, 'PageA', [childComp...])(PageA)
 ```
 
-### 3. 客户端路由配置
-   * 支持客户端SPA的应用对非首次访问的页面在客户端按需加载，同时按需加载的页面组件支持loading配置
-   * 该应用框架基于express、react-router，因此页面的路由配置和处理采用react-router、express routing方案。
-   * mizar 版本 <= 0.0.30，react-router 采用V5版本，mizar 版本 >= 0.0.31，react-router 采用V6版本，区别是配置中的component改为element，去掉exact，[两个配置区别点击此处](https://reactrouter.com/docs/en/v6/upgrading/v5#use-useroutes-instead-of-react-router-config)。
-   * pageRouters目录中的路由配置，比如：src/isomorphic/pageRouter/index.ts文件中配置
-```
-    mizar 版本< 0.0.31 : 
-    const pageRouter = [
-        {
-            path: "/detail/article/:id",
-            exact: true,
-            component: "../pages/pageA",
-        }, {
-            path: "/detail/step/:id",
-            exact: true,
-            component: () => "../pages/pageB",
-        },{
-            component: '../pages/NotFound',
-        },
-    ];
-    export default pageRouter;
-
-    mizar 版本>= 0.0.31 : 
-    const pageRouter = [
-        {
-            path: "/detail/article/:id",
-            element: "../pages/pageA",
-        }, {
-            path: "/detail/step/:id",
-            element: () => "../pages/pageB",
-        },{
-            path: "*"
-            element: '../pages/NotFound',
-        },
-    ];
-    export default pageRouter;
-```
-    代表访问/detail/article/2323232323，会将pageA页面渲染出来响应。
-   * 路由配置中有个route配置的component值是() => '../pages/pageB'的形式，这就是表示pageB是个按需加载的页面，在第一次访问的是article时，在客户端再路由到/detail/step/11111 url时，pageB相关的js和css才会加载并渲染出页面。
-   * 由于支持页面组件的按需加载，因此在pages/pageB目录可以存在一个skeleton.tsx的文件，该文件会作为按需加载时，真实页面渲染出来前展示。  
-    该文件需要暴露一个纯函数，比如:
-```
-    export default function (props: ILoadingProps) {
-        if (props.error) {
-            return 'render an error state dom';
-        } else if (props.pastDelay) {
-            return 'render a loading dom';
-        } else {
-            return null; // nothing to render
-        }
-    }
-```
-    该函数接收一个对象类型的入参：
-```
-    interface ILoadingProps {
-        error: {} | null; // 当按需加载的组件失败时，该字段会是一个错误对象，否则为null
-        pastDelay: boolean; // 当按需加载的组件，花费超过200ms时，该字段会是true
-    }
-```
-
-### 4. 支持动态路由（server端api）
-   * 该应用框架基于express，因此api的路由处理采用express routing方案。
-   * 需要在server目录中增加apis目录，apis里面的文件目录会转化为api的url path。
-   * 文件中导出的几个特定名称的方法，http method为导出方法名：get｜post｜put｜delete。
-   * 文件中以default导出的方法，会忽略方法名，作为express route的all方法中间件取处理http请求。
-   * 文件中定义的请求处理函数，第一个入参是http request对象，第二个入参是http response对象。但**需要注意**：
-    由于处理函数可能会同时处理客户端和服务端getInitialData中的请求，由于目前的实现**无法抹平差异**，因此如果会同时处理客户端和服务端的请求，第二个入参的可用api只能是json()｜send()；如果处理客户端请求，第二个入参的可用api是express response所提供的api。
-   * 比如有个这样的目录：/src/server/apis/:path/method.ts，method.ts文件内容如下：
-```
-    export function love (req, res) {
-        res.json({});
-    }
-    export function get(req, res) {
-        res.send('method api http get method');
-    }
-    export default function like(req, res) {
-        res.send('like');
-    }
-```
-    那客户端请求的时候:
-    1. 以get 为http request method请求/api/123/method，这个get请求会被export function get 请求处理函数处理，url中的123会存在于请求处理函数的入参req中，以req.param.path的方式获取到。
-    2. 以post 为http request method请求/api/456/method，这个post请求会被export function like 请求处理函数处理，url中的456会存在于请求处理函数的入参req中，以req.param.path的方式获取到。
-    3. 以get 为http request method请求/api/789/method/love，这个get请求会被export function love 请求处理函数处理，url中的789会在请求处理函数的入参req中，以req.param.path的方式获取到。
-    4. 以delete 为http request method请求/api/000/method/love，这个delete请求会响应404。
-
 ### 5. 服务端启动入口配置
    /src/server/index.ts内容：
 ```
     import { bootstrap } from "mizar/server/bootstrap";
-    import clientRouter from "../isomorphic/pageRouters/index";
+    import clientRouter from "../isomorphic/routers/index";
     (async () => {
         try {
             await bootstrap()(clientRouter, meta);
@@ -289,7 +250,33 @@
     }
 ```
 
-### 6. 页面组件内跳转功能、url参数获取说明
+### 6. 支持动态路由（server端api）
+   * 该应用框架基于express，因此api的路由处理采用express routing方案。
+   * 需要在server目录中增加apis目录，apis里面的文件目录会转化为api的url path。
+   * 文件中导出的几个特定名称的方法，http method为导出方法名：get｜post｜put｜delete。
+   * 文件中以default导出的方法，会忽略方法名，作为express route的all方法中间件取处理http请求。
+   * 文件中定义的请求处理函数，第一个入参是http request对象，第二个入参是http response对象。但**需要注意**：
+    由于处理函数可能会同时处理客户端和服务端getInitialData中的请求，由于目前的实现**无法抹平差异**，因此如果会同时处理客户端和服务端的请求，第二个入参的可用api只能是json()｜send()；如果处理客户端请求，第二个入参的可用api是express response所提供的api。
+   * 比如有个这样的目录：/src/server/apis/:path/method.ts，method.ts文件内容如下：
+```
+    export function love (req, res) {
+        res.json({});
+    }
+    export function get(req, res) {
+        res.send('method api http get method');
+    }
+    export default function like(req, res) {
+        res.send('like');
+    }
+```
+    那客户端请求的时候:
+    1. 以get 为http request method请求/api/123/method，这个get请求会被export function get 请求处理函数处理，url中的123会存在于请求处理函数的入参req中，以req.param.path的方式获取到。
+    2. 以post 为http request method请求/api/456/method，这个post请求会被export function like 请求处理函数处理，url中的456会存在于请求处理函数的入参req中，以req.param.path的方式获取到。
+    3. 以get 为http request method请求/api/789/method/love，这个get请求会被export function love 请求处理函数处理，url中的789会在请求处理函数的入参req中，以req.param.path的方式获取到。
+    4. 以delete 为http request method请求/api/000/method/love，这个delete请求会响应404。
+
+
+### 7. 页面组件内跳转功能、url参数获取说明
    * 由于mizar 不同版本使用的react-router版本不同，两个主要功能需要特殊说明
     1. 跳转功能
         * mizar 版本 <= 0.0.30 ，可用this.props.history.push("")，进行跳转
@@ -338,4 +325,3 @@
         }
     }
 ```
-

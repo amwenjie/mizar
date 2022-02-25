@@ -7,19 +7,54 @@ import { StaticRouter } from "react-router-dom/server";
 import { createStore } from "redux";
 import { loadingId } from "../../config";
 import { getReducerName as getLoadingReducerName } from "../../iso/libs/components/FetchLoading";
-import RootContainer from "../../iso/libs/components/RootContainer";
 import RouteContainer from "../../iso/libs/components/RouteContainer";
 import { getMatchedComponent, getRootReducer } from "../../iso/libs/metaCollector";
+import { IInitialRenderData, IMetaProps, IPageRouter } from "../../interface";
+import getHtmlString from "../utils/getHtmlString";
 import getLogger from "../utils/logger";
-import { IInitialRenderData, IPageRouter } from "../../interface";
 import checkNotSSR from "../utils/checkNotSSR";
-import { getPageCSSDeps, getPageJSDeps } from "../utils/getPageDeps";
 import getSSRInitialData from "../utils/getSSRInitialData";
 import state from "./state";
-const logger = getLogger().getLogger("server/libs/comController");
 
-function getMeta(pageInitialState) {
-    const meta: { title?, description?, keywords?} = {};
+const logger = getLogger().getLogger("server/libs/pageRender");
+
+import { ChunkExtractor } from '@loadable/server';
+import fs from "fs-extra";
+import path from "path";
+import { getPublicPath } from "../utils/getConfig";
+
+const clientStatsFile = path.resolve("." + getPublicPath() + "stats.json");
+const serverStatsFile = path.resolve("./stats.json");
+if (!fs.existsSync(clientStatsFile) || !fs.existsSync(serverStatsFile)) {
+    throw new Error("server/stats.json and client/stats.json must exist，nor application couldn't deploy");
+}
+const extractorConf = { statsFile: clientStatsFile, entrypoints: fs.readJSONSync(path.resolve("./clientEntry.json")) };
+
+export const createScriptTag = (url: string) => `<script defer src="${url}"></script>`;
+
+export const createStyleTag = (url: string) => `<link href="${url}" type="text/css" rel="stylesheet">`;
+
+export async function getHtmlMeta(extractor: ChunkExtractor): Promise<IMetaProps> {
+    const meta = {
+        ...state.meta,
+    };
+    meta.styles = meta.styles
+        .map(createStyleTag)
+        .concat(extractor.getStyleTags());
+    meta.scripts = meta.scripts
+        .map(createScriptTag)
+        .concat(
+            extractor.getScriptTags().replace(/\s+async\s+/ig, " defer ")
+        );
+    // meta.links = meta.links.concat(extractor.getLinkTags());
+
+    logger.debug("meta: ", meta);
+    return meta;
+}
+
+
+function getMetaData(pageInitialState) {
+    const meta: { title?, description?, keywords? } = {};
     if (pageInitialState.title) {
         meta.title = pageInitialState.title;
     }
@@ -40,39 +75,18 @@ export function getComRenderString(com: ReactElement) {
     return ReactDomServer.renderToString(com);
 }
 
-function getPageMeta(pageComName) {
-    let meta = state.meta;
-    meta = {
-        ...meta,
-        styles: meta.styles.slice(0),
-        scripts: meta.scripts.slice(0),
-    };
-
-    const pageRouterName = "page/" + pageComName;
-    const pageCssDeps = getPageCSSDeps(pageRouterName);
-    if (pageCssDeps && pageCssDeps.length) {
-        meta.styles = meta.styles.concat(pageCssDeps);
-    }
-
-    const pageJsDeps = getPageJSDeps(pageRouterName);
-    if (pageJsDeps && pageJsDeps.length) {
-        meta.scripts = meta.scripts.concat(pageJsDeps);
-    }
-
-    logger.debug("meta: ", meta);
-    return meta;
-}
-
-export async function getPage(req: Request, pageRouter: IPageRouter[], matchedRoute: RouteMatch): Promise<ReactElement> {
+export async function getResponsePage(req: Request, pageRouter: IPageRouter[], matchedRoute: RouteMatch): Promise<string> {
     const notSSR = checkNotSSR(req.query);
-    let children = null;
+    let children = "";
     let preloadData: any = {};
+    let pageReducerName = "";
     const matchedPageCom = getMatchedComponent(matchedRoute);
-    let meta = getPageMeta(matchedPageCom.pageComName);
+    const extractor = new ChunkExtractor(extractorConf);
+    const jsx = extractor.collectChunks(matchedPageCom.element);
+    let meta = await getHtmlMeta(extractor);
     if (notSSR) {
         logger.info("请求参数携带_nossr的标志，跳过服务端首屏数据获取.");
     } else {
-        let pageReducerName = "";
         logger.info("准备进行首屏数据服务端获取.");
         const initialData: IInitialRenderData = await getSSRInitialData(matchedPageCom, req);
         preloadData = initialData.preloadData;
@@ -81,27 +95,24 @@ export async function getPage(req: Request, pageRouter: IPageRouter[], matchedRo
 
         const store = createStore(getRootReducer(), preloadData);
 
-        meta = {
-            ...meta,
-            ...getMeta(preloadData[pageReducerName] || {}),
-        };
-
         preloadData[getLoadingReducerName(loadingId)] = state.meta.loading;
 
-        children = (<Provider store={store}>
+        meta = {
+            ...meta,
+            ...getMetaData(preloadData[pageReducerName] || {}),
+        };
+
+        children = getComRenderString(<Provider store={store}>
             <StaticRouter location={req.originalUrl}>
                 <RouteContainer pageRouter={pageRouter} />
             </StaticRouter>
         </Provider>);
     }
-    // const publicPath = getPublicPath();
-    const Page = (<RootContainer
-        isCSR={notSSR}
-        initialState={preloadData}
-        meta={meta}
-        // publicPath={publicPath}
-    >
-        {children}
-    </RootContainer>);
-    return Page;
+
+    return getHtmlString({
+        isCSR: notSSR,
+        initialState: preloadData,
+        meta,
+        children,
+    })
 }
