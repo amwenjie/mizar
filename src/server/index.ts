@@ -3,6 +3,7 @@ import Compression from "compression";
 import CookieParser from "cookie-parser";
 import Express from "express";
 import * as Http from "http";
+import { createProxyMiddleware, Options as ProxyOptions } from "http-proxy-middleware";
 import * as net from "net";
 import internalIp from "internal-ip";
 import Path from "path";
@@ -30,6 +31,13 @@ interface IStaticOption {
     staticOption?: ServeStatic.ServeStaticOptions;
     isInternal?: true;
 }
+interface IServerProxyRouter {
+    [path: string]: string;
+}
+interface IServerProxyOption {
+    path: string;
+    config: ProxyOptions;
+}
 interface IWebServerOption {
     access?: any;
     compress?: boolean;
@@ -38,6 +46,7 @@ interface IWebServerOption {
     headers?: string;
     hostname?: "local-ip" | "local-ipv4" | "local-ipv6";
     port?: number;
+    proxy?: string | IServerProxyRouter | IServerProxyOption[];
     middleware?: any;
     static?: IStaticOption[];
     onServerClosed?: () => void;
@@ -112,6 +121,7 @@ export class WebServer {
         this.server.on("error", e => {
             log.error("server start error, please retry", e);
             this.close();
+            throw new Error("server start error, please retry. " + e.message);
         });
         this.server.on("listening", () => {
             this.state = true;
@@ -213,11 +223,11 @@ export class WebServer {
                     this.setupBodyParserFeature();
                 }
             },
-            // proxy: () => {
-            //     if (this.options.proxy) {
-            //         this.setupProxyFeature();
-            //     }
-            // },
+            proxy: () => {
+                if (this.options.proxy) {
+                    this.setupProxyFeature();
+                }
+            },
             static: () => {
                 this.setupStaticFeature();
             },
@@ -241,21 +251,21 @@ export class WebServer {
             runnableFeatures.push('compress');
         }
 
+        if (this.options.headers) {
+            runnableFeatures.push('headers');
+        }
+
         if (this.options.cookieParser) {
             runnableFeatures.push('cookieParser');
+        }
+
+        if (this.options.proxy) {
+            runnableFeatures.push('proxy');
         }
 
         if (this.options.bodyParser) {
             runnableFeatures.push('bodyParser');
         }
-
-        if (this.options.headers) {
-            runnableFeatures.push('headers');
-        }
-
-        // if (this.options.proxy) {
-        //     runnableFeatures.push('proxy', 'middleware');
-        // }
 
         runnableFeatures.push('static');
 
@@ -303,6 +313,31 @@ export class WebServer {
 
     private setupCookieParserFeature() {
         this.app.use(CookieParser());
+    }
+
+    private setupProxyFeature() {
+        if (typeof this.options.proxy === "string") {
+            this.app.use("/proxy", createProxyMiddleware({
+                target: this.options.proxy,
+                changeOrigin: true,
+                pathRewrite: {'^/proxy' : ''},
+            }));
+        } else if (Array.isArray(this.options.proxy)) {
+            this.options.proxy.forEach((proxy: IServerProxyOption) => {
+                this.app.use("/proxy" + proxy.path, createProxyMiddleware({
+                    changeOrigin: true,
+                    pathRewrite: {'^/proxy' : ''},
+                    ...proxy.config,
+                }));
+            })
+        } else if (this.options.proxy) {
+            this.app.use("/proxy", createProxyMiddleware({
+                target: "",
+                changeOrigin: true,
+                pathRewrite: {'^/proxy' : ''},
+                router: this.options.proxy,
+            }));
+        }
     }
 
     private setupBodyParserFeature() {

@@ -1,5 +1,6 @@
 import axios from "axios";
 import events from "events";
+import { IFetchConfig } from "../interface";
 import { loadingId } from "../config";
 import { getStore } from "./getStore";
 import { hideLoading as loadingHideAction, showLoading as loadingShowAction } from "./libs/components/FetchLoading/actions";
@@ -9,22 +10,22 @@ declare const IS_SERVER_RUNTIME;
 const logger = getLogger().getLogger("iso/fetch");
 let loadingNumber = 0;
 
-export const fetchWithRequestObject = (httpRequest) => async (url, options?) => {
-    if (options === undefined) {
-        options = url;
-        url = options.url;
+export const fetchWithRequestObject = (httpRequest) => async (config: IFetchConfig) => {
+    if (!config || !config.url) {
+        throw new Error("fetch() parameters error");
     }
-    
+
     if (IS_SERVER_RUNTIME) {
         const httpMock = require("node-mocks-http");
         const apiController = require("../server/libs/apiController").default;
 
         // 是nodejs环境
         let data;
+        let url = config.url;
         if (url.startsWith("http://") || url.startsWith("https://")) {
             // 从服务端请求API团队提供的API服务
             // 这种情况下的请求，cookie是无法工作的，获取的IP会替换成客户端的IP
-            const response = await axios({...options});
+            const response = await axios(config);
             data = response.data;
         } else {
             if (/^\/api\//.test(url)) {
@@ -36,22 +37,12 @@ export const fetchWithRequestObject = (httpRequest) => async (url, options?) => 
             if (!httpRequest) {
                 throw new Error("请使用getInitialData中传入的fetch方法，否则nodejs无法获取到当前页面的url参数和cookie");
             }
-            const paramObj: any = {};
-            if (options.params) {
-                paramObj.query = {
-                    ...options.params,
-                };
-            }
-            if (options.data) {
-                paramObj.body = {
-                    ...options.data,
-                };
-            }
             // 请求本地API
             const mockRequest = httpMock.createRequest({
-                method: "GET",
+                method: config.method.toUpperCase() || "GET",
                 url,
-                ...paramObj,
+                query: config.params || {},
+                body: config.data || {},
                 cookies: httpRequest && httpRequest.cookies,
                 headers: httpRequest && httpRequest.headers,
             });
@@ -69,37 +60,39 @@ export const fetchWithRequestObject = (httpRequest) => async (url, options?) => 
                         }
                         resolve(mockResponse._getData());
                     });
-                    // 为了和client请求走express路由给的request保持一致
-                    // 页面初始化数据获取中的请求只支持get方法，因此req.body是undefined
-                    delete mockRequest.body;
                     apiController(mockRequest, mockResponse, reject);
                 });
             })();
         }
         return data;
     } else {
-        const opts = Object.assign({}, options);
         // 客户端浏览器环境
-        if (!opts.noLoading) {
+
+        if (!config.noLoading) {
             // 显示loading
             showLoading();
         }
-        delete opts.noLoading;
         const finalOptions = {
             withCredentials: true,
-            ...opts,
+            ...config,
         };
-    
-        return new Promise((resolve, reject) => {
-            axios(finalOptions)
-                .then((response) => {
-                    resolve(response.data);
-                    hideLoading();
-                }, (reason) => {
-                    reject(reason);
-                    hideLoading();
-                });
-        });
+        delete finalOptions.noLoading;
+        if (!config.noLoading) {
+            return new Promise((resolve, reject) => {
+                axios(finalOptions)
+                    .then(response => {
+
+                        hideLoading();
+                        resolve(response);
+                    })
+                    .catch(reason => {
+                        hideLoading();
+                        reject(reason);
+                    });
+            });
+        } else {
+            return axios(finalOptions);
+        }
     }
 };
 
@@ -118,5 +111,9 @@ function hideLoading() {
 }
 
 const fetch = fetchWithRequestObject(null);
+
+export function getRawAxios() {
+    return axios;
+}
 
 export default fetch;

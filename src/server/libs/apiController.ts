@@ -30,16 +30,15 @@ export default async (req, res, next = logger.error) => {
     logger.info("api req.path", req.path);
     logger.info("api req.body", req.body);
     logger.info("api req.query", req.query);
-    const path = req.path; // .replace(/^\//, "");
+    let apiPath = req.path; // .replace(/^\//, "");
     // 根据path找到并调用对应的api方法
     // apiPath期望的形式: path/method
-    if (!/^\/([A-Za-z]+(\/[A-Za-z]*)*)+$/.test(path)) {
+    if (!/^(?:\/[A-Za-z][A-Za-z0-9]*?)+$/.test(apiPath)) {
         // 不合法的api请求，交给错误中间件兜底
-        next(new Error("不合法的API请求: " + path));
+        next(new Error("不合法的API请求: " + apiPath));
         return;
     }
-    const matched = getMatchedApiPath(req.path);
-    let apiPath = path;
+    const matched = getMatchedApiPath(apiPath);
     if (matched) {
         req.params = {
             ...matched.params

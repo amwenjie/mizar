@@ -1,4 +1,4 @@
-
+import { type AxiosRequestConfig } from "axios";
 export interface IGetMetaFn {
     (): IMetaProps;
 }
@@ -46,4 +46,8 @@ export interface IPageRouter {
     index?: boolean;
     path?: string;
     name?: string;
+}
+
+export interface IFetchConfig extends AxiosRequestConfig {
+    noLoading?: boolean;
 }
