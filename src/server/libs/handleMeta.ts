@@ -5,14 +5,21 @@ import checkPositivePath from "../utils/checkPositivePath";
 const logger = getLogger().getLogger("server/libs/handleMeta");
 
 export default function handleMeta(publicPath, getMeta: IGetMetaFn | IMetaProps = {}): IMetaProps {
-    let finalMeta = { favicon: "", styles: [], scripts: [], metas: [], links: [] };
     let meta;
     if (typeof getMeta === "function") {
         meta = getMeta();
     } else {
         meta = getMeta;
     }
-    finalMeta = {...meta};
+    const finalMeta = {
+        favicon: "",
+        styles: [],
+        scripts: [],
+        metas: [],
+        links: [],
+        ...meta,
+    };
+
     const getFinalPath = handleRelativePath(publicPath);
     finalMeta.favicon = getFinalPath(finalMeta.favicon || "favicon.ico");
     if (finalMeta.styles) {

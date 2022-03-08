@@ -10,10 +10,10 @@ export default function getHtmlString(props): string {
             keywords,
             description,
             favicon,
-            styles,
-            scripts,
-            links,
-            metas,
+            styles = [],
+            scripts = [],
+            links = [],
+            metas = [],
             calcRootFontSize,
         } = meta;
 
@@ -21,10 +21,15 @@ export default function getHtmlString(props): string {
     <head>
         <meta charSet="UTF-8" /><meta httpEquiv="Content-Type" content="text/html; charset=UTF-8" /><title>${title}</title><meta httpEquiv="x-ua-compatible" content="ie=edge" />
         <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1,user-scalable=no" /><meta name="keywords" content="${keywords}" /><meta name="description" content="${description}" />
-        ${metas.join("")}<link href=${favicon} rel="icon" /><link href=${favicon} rel="shortcut icon" /><link href=${favicon} rel="bookmark" />${links.join("")}${styles.join("")}
+        ${metas.join("")}${favicon
+            ? ['<link href="',
+                '" rel="icon" /><link href="',
+                '" rel="shortcut icon" /><link href="',
+                '" rel="bookmark" />'].join(favicon)
+            : ""}${links.join("")}${styles.join("")}
         <script>${
             typeof calcRootFontSize === "number"
-                ? [';(function () {',
+                ? ['(function () {',
                     'function setRootFontSize() {',
                     'var rootElement = document.documentElement;',
                     'var styleElement = document.createElement("style");',
@@ -40,7 +45,7 @@ export default function getHtmlString(props): string {
                     'window.addEventListener("resize", setRootFontSize);',
                     '}());'].join('')
                 : typeof calcRootFontSize === "function"
-                    ? ";(" + calcRootFontSize.toString() + "());" : ""
+                    ? "(" + calcRootFontSize.toString() + "());" : ""
         }</script>
     </head>
     <body>

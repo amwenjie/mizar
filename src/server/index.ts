@@ -8,12 +8,21 @@ import * as net from "net";
 import internalIp from "internal-ip";
 import Path from "path";
 import ServeStatic from "serve-static";
+import { URL } from "url";
 import { getPort, getPublicPath } from "./utils/getConfig";
 import getLogger from "./utils/logger";
 import setupExitSignals from "./utils/setupExitSignals";
 import checkPositivePath from "./utils/checkPositivePath";
 
 declare const IS_DEBUG_MODE;
+
+const protocalPortMap = {
+    "ftp:": 21,
+    "http:": 80,
+    "https:": 443,
+    "ws:": 80,
+    "wss:": 443,
+};
 
 if (IS_DEBUG_MODE) {
     require("source-map-support").install();
@@ -275,7 +284,6 @@ export class WebServer {
 
         // if (this.options.historyApiFallback) {
         //     runnableFeatures.push('historyApiFallback', 'middleware');
-
         //     if (this.options.static) {
         //         runnableFeatures.push('static');
         //     }
@@ -284,7 +292,6 @@ export class WebServer {
         // if (this.options.static) {
         //     runnableFeatures.push('staticServeIndex', 'staticWatch');
         // }
-
 
         runnableFeatures.forEach((feature) => {
             features[feature]();
@@ -316,25 +323,44 @@ export class WebServer {
     }
 
     private setupProxyFeature() {
-        if (typeof this.options.proxy === "string") {
-            this.app.use("/proxy", createProxyMiddleware({
-                target: this.options.proxy,
+        const getProxyReq = (proxyReq: Http.ClientRequest, req: Express.Request, res: Express.Response) => {
+            const refererURL = new URL(req.header("Referer"));
+            const hostStr = proxyReq.getHeader("Host") as string;
+            refererURL.host = hostStr;
+            if (hostStr.indexOf(":") === -1) {
+                refererURL.port = protocalPortMap[refererURL.protocol];
+            }
+            proxyReq.setHeader("Referer", refererURL.href);
+        };
+        const getProxyMW = (config: ProxyOptions) => {
+            const opt: ProxyOptions = {
                 changeOrigin: true,
-                pathRewrite: {'^/proxy' : ''},
+                pathRewrite: {
+                    "^/proxy": "",
+                },
+                onError: (err, req, res, target) => {
+                    res.writeHead(500, {
+                        "Content-Type": "text/plain",
+                    });
+                    res.end("proxying request error: " + err.message);
+                },
+                ...config,
+            };
+            if (config.changeOrigin !== false) {
+                opt.onProxyReq = getProxyReq;
+            }
+            return createProxyMiddleware(opt);
+        };
+        if (typeof this.options.proxy === "string") {
+            this.app.use("/proxy", getProxyMW({
+                target: this.options.proxy,
             }));
         } else if (Array.isArray(this.options.proxy)) {
             this.options.proxy.forEach((proxy: IServerProxyOption) => {
-                this.app.use("/proxy" + proxy.path, createProxyMiddleware({
-                    changeOrigin: true,
-                    pathRewrite: {'^/proxy' : ''},
-                    ...proxy.config,
-                }));
-            })
+                this.app.use("/proxy" + proxy.path, getProxyMW(proxy.config));
+            });
         } else if (this.options.proxy) {
-            this.app.use("/proxy", createProxyMiddleware({
-                target: "",
-                changeOrigin: true,
-                pathRewrite: {'^/proxy' : ''},
+            this.app.use("/proxy", getProxyMW({
                 router: this.options.proxy,
             }));
         }
