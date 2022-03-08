@@ -279,10 +279,10 @@
 
 ### 7. 服务端接口代理
    * WebServer构造函数入参中有个proxy字段，用于配置接口代理，所有以/proxy开头的接口都会被当作代理转发接口。
-   * 支持三种代理配置形式
-    1. string：接口路径中/proxy之后的内容就是需要代理的真实接口地址，都会被代理到该字符串的域名上去。
-    2. {[path: string]: string;}：接口路径中/proxy之后的内容，匹配到的path对应的接口请求会被代理到对应value指定的域名上去。
-    3. { path: string; config: Options; }\[\]：接口路径中/proxy之后的内容，匹配到的path对应的接口请求会被config里指定的配置去处理代理策略。[详细Options参见此处](https://github.com/chimurai/http-proxy-middleware#options)。
+   * 支持三种代理配置形式：
+       1. string：接口路径中/proxy之后的内容就是需要代理的真实接口地址，都会被代理到该字符串的域名上去。
+       2. {[path: string]: string;}：接口路径中/proxy之后的内容，匹配到的path对应的接口请求会被代理到对应value指定的域名上去。
+       3. { path: string; config: Options; }\[\]：接口路径中/proxy之后的内容，匹配到的path对应的接口请求会被config里指定的配置去处理代理策略。[详细Options参见此处](https://github.com/chimurai/http-proxy-middleware#options)。
    * 举例：
 ```
     /src/server/index.ts:
