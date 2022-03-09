@@ -278,11 +278,13 @@
 
 
 ### 7. 服务端接口代理
-   * WebServer构造函数入参中有个proxy字段，用于配置接口代理，所有以/proxy开头的接口都会被当作代理转发接口。
+   * WebServer构造函数入参中有个proxy字段，用于配置接口代理，所有以/proxy开头的接口，才会被当作需要代理转发的接口应用对应config配置。
+   * 所有被代理转发的请求，都会默认在转发到请求target域名接口的时候将请求头的Host和Referer中域名部分改写为target真实域名。可通过增加changeOrigin: false配置来关闭改写Host和Referer操作或仅增加changeOriginReferer: false配置来关闭改写Referer但保持改写Host的操作。
    * 支持三种代理配置形式：
        1. string：接口路径中/proxy之后的内容就是需要代理的真实接口地址，都会被代理到该字符串的域名上去。
        2. {[path: string]: string;}：接口路径中/proxy之后的内容，匹配到的path对应的接口请求会被代理到对应value指定的域名上去。
-       3. { path: string; config: Options; }\[\]：path对应的接口请求会用config配置去处理代理策略。[详细Options参见此处](https://github.com/chimurai/http-proxy-middleware#options)。
+       3. { path: string; config: Options; }\[\]：接口路径中/proxy之后的内容，匹配到path对应的接口请求会用config配置去处理代理策略。[详细Options参见此处](https://github.com/chimurai/http-proxy-middleware#options)。
+   * 当需要灵活、自由度更大的扩展时，可以考虑用前面第6点介绍的动态路由（server端api）的能力来替代该接口代理转发的能力。
    * 举例：
 ```
     /src/server/index.ts:
@@ -300,9 +302,10 @@
         },
         proxy: [
             {
-                path: "/proxy/ajax",
+                path: "/ajax",
                 config: {
                     target: "http://target.com",
+                    changeOrigin: false, // 显示的关闭代理转发请求的时候更改请求头中的Host和Referer
                     pathRewrite: {
                         "^/proxy/ajax": "",
                     },
@@ -316,7 +319,7 @@
                         "^/user/ajax": "/anotheruserpath",
                     },
                 }
-            }, // 如果请求/user/ajax/getsomething,会被代理到http://user.com/anotheruserpath/getsomething
+            }, // 如果请求/proxy/user/ajax/getsomething,会被代理到http://user.com/anotheruserpath/getsomething
         ],
     });
     bootstrap(webserver)(...);

@@ -15,6 +15,7 @@ import setupExitSignals from "./utils/setupExitSignals";
 import checkPositivePath from "./utils/checkPositivePath";
 
 declare const IS_DEBUG_MODE;
+declare const DEV_PROXY_CONFIG;
 
 const protocalPortMap = {
     "ftp:": 21,
@@ -43,9 +44,14 @@ interface IStaticOption {
 interface IServerProxyRouter {
     [path: string]: string;
 }
+
+interface IProxyConfig extends ProxyOptions {
+    changeOriginReferer?: boolean;
+}
+
 interface IServerProxyOption {
     path: string;
-    config: ProxyOptions;
+    config: IProxyConfig
 }
 interface IWebServerOption {
     access?: any;
@@ -322,49 +328,57 @@ export class WebServer {
         this.app.use(CookieParser());
     }
 
+    private changeProxyReqReferer(proxyReq: Http.ClientRequest, req: Express.Request, res: Express.Response) {
+        const refererURL = new URL(req.header("Referer"));
+        const hostStr = proxyReq.getHeader("Host") as string;
+        refererURL.host = hostStr;
+        if (hostStr.indexOf(":") === -1) {
+            refererURL.port = protocalPortMap[refererURL.protocol];
+        }
+        proxyReq.setHeader("Referer", refererURL.href);
+    }
+
+    private getProxyMW(config: IProxyConfig) {
+        const opt: IProxyConfig = {
+            changeOrigin: true,
+            changeOriginReferer: true,
+            pathRewrite: {
+                "^/proxy": "",
+            },
+            onError: (err, req, res, target) => {
+                res.writeHead(500, {
+                    "Content-Type": "text/plain",
+                });
+                res.end("proxying request error: " + err.message);
+            },
+            ...config,
+        };
+        // changeOriginReferer为true的前提必须是changeOrigin为true
+        if (opt.changeOrigin === false) {
+            opt.changeOriginReferer = false;
+        }
+        if (opt.changeOriginReferer !== false) {
+            opt.onProxyReq = this.changeProxyReqReferer;
+        }
+        return createProxyMiddleware(opt);
+    }
+
     private setupProxyFeature() {
-        const getProxyReq = (proxyReq: Http.ClientRequest, req: Express.Request, res: Express.Response) => {
-            const refererURL = new URL(req.header("Referer"));
-            const hostStr = proxyReq.getHeader("Host") as string;
-            refererURL.host = hostStr;
-            if (hostStr.indexOf(":") === -1) {
-                refererURL.port = protocalPortMap[refererURL.protocol];
-            }
-            proxyReq.setHeader("Referer", refererURL.href);
-        };
-        const getProxyMW = (config: ProxyOptions) => {
-            const opt: ProxyOptions = {
-                changeOrigin: true,
-                pathRewrite: {
-                    "^/proxy": "",
-                },
-                onError: (err, req, res, target) => {
-                    res.writeHead(500, {
-                        "Content-Type": "text/plain",
-                    });
-                    res.end("proxying request error: " + err.message);
-                },
-                ...config,
-            };
-            if (config.changeOrigin !== false) {
-                opt.onProxyReq = getProxyReq;
-            }
-            return createProxyMiddleware(opt);
-        };
-        if (typeof this.options.proxy === "string") {
-            this.app.use("/proxy", getProxyMW({
-                target: this.options.proxy,
+        const proxyConfig = this.options.proxy;
+        if (typeof proxyConfig === "string") {
+            this.app.use("/proxy", this.getProxyMW({
+                target: proxyConfig,
             }));
-        } else if (Array.isArray(this.options.proxy)) {
-            this.options.proxy.forEach((proxy: IServerProxyOption) => {
-                this.app.use(proxy.path, getProxyMW({
+        } else if (Array.isArray(proxyConfig)) {
+            proxyConfig.forEach((proxy: IServerProxyOption) => {
+                this.app.use("/proxy" + proxy.path, this.getProxyMW({
                     pathRewrite: undefined,
                     ...proxy.config,
                 }));
             });
-        } else if (this.options.proxy) {
-            this.app.use("/proxy", getProxyMW({
-                router: this.options.proxy,
+        } else if (proxyConfig) {
+            this.app.use("/proxy", this.getProxyMW({
+                router: proxyConfig as IServerProxyRouter,
             }));
         }
     }
@@ -476,6 +490,17 @@ export class WebServer {
     // }
 
     private ready() {
+        if (IS_DEBUG_MODE) {
+            const proxConfig = DEV_PROXY_CONFIG;
+            if (proxConfig && Array.isArray(proxConfig)) {
+                proxConfig.forEach((proxy: IServerProxyOption) => {
+                    this.app.use(proxy.path, this.getProxyMW({
+                        pathRewrite: undefined,
+                        ...proxy.config,
+                    }));
+                });
+            }
+        }
         this.setMiddleware();
         this.setRouter();
     }

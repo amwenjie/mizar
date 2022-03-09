@@ -7,7 +7,7 @@
         "compression": "~1.7.4",
         "cookie-parser": "~1.4.6",
         "express": "~4.17.3",
-        "fs-extra": "~10.0.0",
+        "fs-extra": "~10.0.1",
         "http-proxy-middleware": "~2.0.3",
         "internal-ip": "~6.2.0",
         "klaw": "~4.0.1",
@@ -28,7 +28,7 @@
         "@types/react": "~17.0.37",
         "@types/react-dom": "~17.0.11",
         "@types/react-redux": "~7.1.20",
-        "alcor": "~0.1.53"
+        "alcor": "~0.1.54"
     },
     "license": "MIT",
     "name": "mizar",
@@ -49,5 +49,5 @@
     "scripts": {
         "build": "alcor pack"
     },
-    "version": "0.0.42"
+    "version": "0.0.43"
 }
