@@ -282,7 +282,7 @@
    * 支持三种代理配置形式：
        1. string：接口路径中/proxy之后的内容就是需要代理的真实接口地址，都会被代理到该字符串的域名上去。
        2. {[path: string]: string;}：接口路径中/proxy之后的内容，匹配到的path对应的接口请求会被代理到对应value指定的域名上去。
-       3. { path: string; config: Options; }\[\]：接口路径中/proxy之后的内容，匹配到的path对应的接口请求会被config里指定的配置去处理代理策略。[详细Options参见此处](https://github.com/chimurai/http-proxy-middleware#options)。
+       3. { path: string; config: Options; }\[\]：path对应的接口请求会用config配置去处理代理策略。[详细Options参见此处](https://github.com/chimurai/http-proxy-middleware#options)。
    * 举例：
 ```
     /src/server/index.ts:
@@ -293,30 +293,30 @@
     ...
 
     const webserver = new WebServer({
-        proxy: "https://target.com", // 如果请求/proxy/ajax/api,会被代理到https://target.com/ajax/api
+        proxy: "http://target.com", // 如果请求/proxy/ajax/api,会被代理到http://target.com/ajax/api
         proxy: {
-            "ajax": "https://target.com", // 如果请求/proxy/ajax/api,会被代理到https://target.com/ajax/api
-            "user": "https://user.com", // 如果请求/proxy/user/anypath/api,会被代理到https://user.com/user/anypath/api
+            "/ajax": "http://target.com", // 如果请求/proxy/ajax/api,会被代理到http://target.com/ajax/api
+            "/user": "http://user.com", // 如果请求/proxy/user/anypath/api,会被代理到http://user.com/user/anypath/api
         },
         proxy: [
             {
-                path: "ajax",
+                path: "/proxy/ajax",
                 config: {
-                    target: "https://target.com",
+                    target: "http://target.com",
                     pathRewrite: {
                         "^/proxy/ajax": "",
                     },
                 },
-            }, // 如果请求/proxy/ajax/api1/getsomething,会被代理到https://target.com/api1/getsomething
+            }, // 如果请求/proxy/ajax/api1/getsomething,会被代理到http://target.com/api1/getsomething
             {
-                path: "user",
+                path: "/user",
                 config: {
-                    target: "https://user.com",
+                    target: "http://user.com",
                     pathRewrite: {
-                        "^/proxy/user/ajax": "/anotheruserpath",
+                        "^/user/ajax": "/anotheruserpath",
                     },
                 }
-            }, // 如果请求/proxy/user/ajax/getsomething,会被代理到https://user.com/anotheruserpath/getsomething
+            }, // 如果请求/user/ajax/getsomething,会被代理到http://user.com/anotheruserpath/getsomething
         ],
     });
     bootstrap(webserver)(...);

@@ -357,7 +357,10 @@ export class WebServer {
             }));
         } else if (Array.isArray(this.options.proxy)) {
             this.options.proxy.forEach((proxy: IServerProxyOption) => {
-                this.app.use("/proxy" + proxy.path, getProxyMW(proxy.config));
+                this.app.use(proxy.path, getProxyMW({
+                    pathRewrite: undefined,
+                    ...proxy.config,
+                }));
             });
         } else if (this.options.proxy) {
             this.app.use("/proxy", getProxyMW({

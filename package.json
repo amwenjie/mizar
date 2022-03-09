@@ -49,5 +49,5 @@
     "scripts": {
         "build": "alcor pack"
     },
-    "version": "0.0.41"
+    "version": "0.0.42"
 }
