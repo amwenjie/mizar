@@ -1,7 +1,7 @@
 import { hideLoading, showLoading } from "./constants";
 import initialState from "./initialState";
 
-export default (id) => {
+export default (id: string) => {
     return (state = initialState, action) => {
         if (action.type === (id + showLoading)) {
             return { ...state, showLoading: true };

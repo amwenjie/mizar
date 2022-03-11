@@ -1,8 +1,8 @@
-import { connect as reduxConnect, InferableComponentEnhancerWithProps } from "react-redux";
+import { connect as reduxConnect, type ConnectedComponent } from "react-redux";
 import { registerRedux } from "./libs/metaCollector";
 import getLogger from "./utils/logger";
 import { Reducer } from "redux";
-import { ComponentType } from "react";
+import { type ComponentType, type ElementType } from "react";
 
 const logger = getLogger().getLogger("iso/connect");
 
@@ -10,14 +10,14 @@ const componentEntityList = [];
 const reducerEntityList = [];
 
 export interface IMizarComponentEnhancerWithProps {
-    (component: ComponentType): ComponentType
-    (component: ComponentType, reducer: Reducer): ComponentType
-    (component: ComponentType, reducerName: string): ComponentType
-    (component: ComponentType, subComponents: ComponentType[]): ComponentType
-    (component: ComponentType, reducer: Reducer, reducerName: string): ComponentType
-    (component: ComponentType, reducer: Reducer, subComponents: ComponentType[]): ComponentType
-    (component: ComponentType, reducerName: string, subComponents: ComponentType[]): ComponentType
-    (component: ComponentType, reducer: Reducer, reducerName: string, subComponents: ComponentType[]): ComponentType
+    (component: ElementType): ElementType
+    (component: ElementType, reducer: Reducer): ElementType
+    (component: ElementType, reducerName: string): ElementType
+    (component: ElementType, subComponents: ElementType[]): ElementType
+    (component: ElementType, reducer: Reducer, reducerName: string): ElementType
+    (component: ElementType, reducer: Reducer, subComponents: ElementType[]): ElementType
+    (component: ElementType, reducerName: string, subComponents: ElementType[]): ElementType
+    (component: ElementType, reducer: Reducer, reducerName: string, subComponents: ElementType[]): ElementType
 }
 
 export interface IMizarConnect {
@@ -84,7 +84,12 @@ const mizarConnect: IMizarConnect = function mizarConnect<TStateProps, TDispatch
 }
 
 function getReduxComponent<TStateProps, TDispatchProps, TOwnProps>(
-    mapStateToProps, mapDispatchToProps, mergeProps, options, component) {
+    mapStateToProps,
+    mapDispatchToProps,
+    mergeProps,
+    options,
+    component: ElementType,
+): ConnectedComponent<ComponentType<any>, any> {
     // 先去池子里找
     const findedComponentEntity = componentEntityList.find(
         componentEntity => componentEntity.component === component);
@@ -98,7 +103,7 @@ function getReduxComponent<TStateProps, TDispatchProps, TOwnProps>(
             mapDispatchToProps,
             mergeProps,
             options
-        )(component);
+        )(component as ComponentType);
         componentEntityList.push({ reduxComponent, component });
         return reduxComponent;
     }

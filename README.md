@@ -6,22 +6,22 @@
         -configure.json   用于配置应用的编译时信息，比如是否启用tslint、stylelint的配置、less-loader的配置等
     -src   应用代码源文件目录
         -isomorphic    同构内容所在目录，组件会被在客户端或服务端执行，需要注意执行环境特有能力的使用
-            -entry    客户端启动入口，里面的每个文件就对应一个所包含的路由组成的客户端单页应用的入口
-                -index.ts    文件中包含的页面组成的单页应用入口
+            -index.ts    客户端启动入口
             -routers   应用的客户端路由文件所在目录
                 -index.tsx
             -pages    页面所在的目录
                 -pageA    一个采用类组件形式开发的页面级redux组件
                     -index.tsx    页面组件入口文件
                     -index.less    页面组件样式文件
+                    -constant.ts    页面中使用到的常量文件
                     -action.ts    页面组件内所有action定义
                     -initialState.ts    页面组件reducer需要使用的初始值定义
-                    -reduce.ts    页面组件reducer定义
+                    -reducer.ts    页面组件reducer定义
                     -interface.ts    页面组件内所有的ts定义文件
                 -pageB
                     - ...
             -typings
-                -*.d.ts    同构目录中，css的类型定义
+                -*.d.ts    同构目录中，css\module-federation模块等类型定义
             -public   存放一些非模块化的的内容，每个文件会被直接用link或script引入
         -server   应用的服务端代码
             -apis   服务端node api存放目录，规则是请求路径已/apis/开头，文件名为方法名
@@ -32,18 +32,17 @@
     -tsconfig.json
 
 ## 使用类组件开发
-
-定义类组件的方式 (以上面目录结构中的pageA举例)
+   * 定义类组件的方式 (以上面目录结构中的pageA举例)
 ```
     import { connect } from 'mizar/iso/connect';
     import * as css from './index.less';
     import ChildComponentA from './childComponentA';
     import ChildComponentB from './childComponentB';
     import ChildComponentC from './childComponentC';
-    
+
     class PageA extends React.Commponent {
-        public static async getInitialData(fetch, options) {
-            fetch({
+        public static async getInitialData(initFetch, options) {
+            const result = await initFetch({
                 url: "/api/path/method/hahah",
                 params: {
                     paramId: options.params.id,
@@ -54,7 +53,12 @@
             }).catch(e => {
                 console.log("fetch error出错:", e);
             })
-            return {};
+            return {
+                data: result.data || {
+                    text: "server init text",
+                    count: 2222,
+                }; // 仅如此举例，result数据结构要看接口响应内容
+            };
         }
         constructor(props) {
             super(props);
@@ -62,16 +66,121 @@
         componentDidMount() {
         }
         public render() {
-            return (<div className={(css as any).articleName>
+            return (<div className={css.articleName>
+                <h2>{this.props.data.count}</h2>
                 <ChildComponentA />
                 <ChildComponentB />
                 <ChildComponentC />
+                <div>
+                    <a className="hh-aa" href="#" onClick={(e) => {
+                        e.preventDefault();
+                        this.addCounting();
+                    }}>增加counting</a>
+                </div>
             </div>);
         }
+
+        private addCounting() {
+            this.props.dispatch({
+                type:"vAddCount",
+                data: {
+                    count: 333333
+                }
+            });
+        }
+    }
+
+    export default connect()(PageA, [childComponentA, childComponentB]);
+```
+
+不限定必须使用类组件的开发形式，也可以使用函数组件。
+
+## 使用函数组件开发
+   * 还是上面那个pageA举例，函数式组件开发可以像这样：
+```
+    import { connect } from 'mizar/iso/connect';
+    import * as css from './index.less';
+    import ChildComponentA from './childComponentA';
+    import ChildComponentB from './childComponentB';
+    import ChildComponentC from './childComponentC';
+    
+    function PageA(props) {
+        return (<div className={css.articleName>
+            <h2>{props.data.count}</h2>
+            <ChildComponentA />
+            <ChildComponentB />
+            <ChildComponentC />
+            <div>
+                <a className="hh-aa" href="#" onClick={(e) => {
+                    e.preventDefault();
+                    addCounting(props);
+                }}>增加counting</a>
+            </div>
+        </div>);
+    }
+
+    PageA.getInitialData = async function getInitialData(initFetch, options) {
+        const result = await initFetch({
+            url: "/api/path/method/hahah",
+            params: {
+                paramId: options.params.id,
+                queryId: options.query.id
+            }
+        }).then(data => {
+            console.log("拿到data:", data);
+        }).catch(e => {
+            console.log("fetch error出错:", e);
+        })
+        return {
+            data: result.data || {
+                text: "server init text",
+                count: 2222,
+            }; // 仅如此举例，result数据结构要看接口响应内容
+        };
+    }
+
+    function addCounting(props) {
+        props.dispatch({
+            type:"vAddCount",
+            data: {
+                count: 333333
+            }
+        });
     }
     
     export default connect()(PageA, [childComponentA, childComponentB]);
 ```
+   * PageA的reducer.ts内容如下：
+```
+    export default function (state = {
+        data: {
+            text: "client init loading...",
+            count: -1,
+        },
+    }, action) {
+        switch (action.type) {
+            case "vAddCount":
+                return {
+                    ...state,
+                    data: {
+                        ...state.data,
+                        ...action.data,
+                        count: state.data.count + action.data.count,
+                    },
+                };
+            default:
+                return {
+                    ...state,
+                    data: {
+                        ...state.data,
+                        ...action.data,
+                    },
+                };
+        }
+    }
+```
+
+
 ### 1. 在服务端渲染时，如需要服务端获取初始数据的能力，需要具备公共的静态方法getInitialData。方法名不可更改。
    getInitialData入参两个：
    * fetch用于发送http请求，不可自行引入其他http请求工具，仅可用此入参。配置方式同axios。
@@ -79,7 +188,7 @@
 
 
 ### 2. 客户端启动入口配置
-   /src/isomorphic/entry/index.ts内容：
+   * /src/isomorphic/entry/index.ts内容：
 ```
     import { bootstrap } from "mizar/iso/bootstrap";
     import articleRouter from "../routers/article";
@@ -122,8 +231,8 @@
     export default pageRouter;
 ```
 
-### 4. 要支持redux，需要使用connect
-   * 因为采用类组件+redux，所以需要使用connect，应用框架导出了两个connect，{ connect, reduxConnect} from 'mizar/iso/connect'。
+### 4. 要支持redux，需使用connect()
+   * 该应用框架采用react-redux的connect来支持redux，导出了两个connect，{ connect, reduxConnect} from 'mizar/iso/connect'。
    * reduxConnect是redux提供的原始connect高阶函数，connect是该框架基于reduxConnect进行的包装，用于进行组件、reducer、dispatch的关联，同时实现页面级组件的子组件需要服务端获取初始数据的支持。
    * connect用法：
        1. connect入参同redux connect，调用connect()后返回一个函数；
@@ -159,7 +268,7 @@
 ```
 
 ### 5. 服务端启动入口配置
-   /src/server/index.ts内容：
+   * /src/server/index.ts内容：
 ```
     import { bootstrap } from "mizar/server/bootstrap";
     import clientRouter from "../isomorphic/routers/index";

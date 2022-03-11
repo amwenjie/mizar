@@ -5,7 +5,7 @@ import { loadingId, pageInit } from "../../../../config";
 import { reduxConnect } from "../../../connect";
 import { getInitialData, getMatchedComponent } from "../../metaCollector";
 import getMatchedBranch from "../../getMatchedBranch";
-import getLoading from "../FetchLoading";
+import getLoading from "../Loading";
 
 const FetchLoading = getLoading(loadingId);
 
@@ -41,7 +41,7 @@ function RouteContainer(props) {
     }, [pathname, search]);
     return (<>
         <Routes router={props.pageRouter} />
-        <FetchLoading />
+        <div className="loading-container"><FetchLoading /></div>
     </>);
 }
 

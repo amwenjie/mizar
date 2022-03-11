@@ -6,7 +6,7 @@ import { RouteMatch } from "react-router-dom";
 import { StaticRouter } from "react-router-dom/server";
 import { createStore } from "redux";
 import { loadingId } from "../../config";
-import { getReducerName as getLoadingReducerName } from "../../iso/libs/components/FetchLoading";
+import { getReducerName as getLoadingReducerName } from "../../iso/libs/components/Loading";
 import RouteContainer from "../../iso/libs/components/RouteContainer";
 import { getMatchedComponent, getRootReducer } from "../../iso/libs/metaCollector";
 import { IInitialRenderData, IMetaProps, IPageRouter } from "../../interface";
@@ -24,11 +24,10 @@ import path from "path";
 import { getPublicPath } from "../utils/getConfig";
 
 const clientStatsFile = path.resolve("." + getPublicPath() + "stats.json");
-const serverStatsFile = path.resolve("./stats.json");
-if (!fs.existsSync(clientStatsFile) || !fs.existsSync(serverStatsFile)) {
-    throw new Error("server/stats.json and client/stats.json must exist，nor application couldn't deploy");
+if (!fs.existsSync(clientStatsFile)) {
+    throw new Error("client/stats.json must exist，nor application couldn't deploy");
 }
-const extractorConf = { statsFile: clientStatsFile, entrypoints: fs.readJSONSync(path.resolve("./clientEntry.json")) };
+const extractorConf = { statsFile: clientStatsFile, entrypoints: ["index"] };
 
 export const createScriptTag = (url: string) => `<script defer src="${url}"></script>`;
 
@@ -51,7 +50,6 @@ export async function getHtmlMeta(extractor: ChunkExtractor): Promise<IMetaProps
     logger.debug("meta: ", meta);
     return meta;
 }
-
 
 function getMetaData(pageInitialState) {
     const meta: { title?, description?, keywords? } = {};

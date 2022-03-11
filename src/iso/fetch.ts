@@ -3,7 +3,7 @@ import events from "events";
 import { IFetchConfig } from "../interface";
 import { loadingId } from "../config";
 import { getStore } from "./getStore";
-import { hideLoading as loadingHideAction, showLoading as loadingShowAction } from "./libs/components/FetchLoading/actions";
+import { hideLoading as hideFetchLoading, showLoading as showFetchLoading } from "./libs/components/Loading/actions";
 import getLogger from "./utils/logger";
 
 declare const IS_SERVER_RUNTIME;
@@ -68,7 +68,7 @@ export const fetchWithRequestObject = (httpRequest) => async (config: IFetchConf
     } else {
         // 客户端浏览器环境
 
-        if (!config.noLoading) {
+        if (config.showLoading) {
             // 显示loading
             showLoading();
         }
@@ -76,12 +76,11 @@ export const fetchWithRequestObject = (httpRequest) => async (config: IFetchConf
             withCredentials: true,
             ...config,
         };
-        delete finalOptions.noLoading;
-        if (!config.noLoading) {
+        delete finalOptions.showLoading;
+        if (config.showLoading) {
             return new Promise((resolve, reject) => {
                 axios(finalOptions)
                     .then(response => {
-
                         hideLoading();
                         resolve(response);
                     })
@@ -98,14 +97,14 @@ export const fetchWithRequestObject = (httpRequest) => async (config: IFetchConf
 
 function showLoading() {
     loadingNumber++;
-    getStore().dispatch(loadingShowAction(loadingId));
+    getStore().dispatch(showFetchLoading(loadingId));
 }
 
 function hideLoading() {
     if (loadingNumber > 0) { 
         loadingNumber--;
         if (loadingNumber <= 0) {
-            getStore().dispatch(loadingHideAction(loadingId));
+            getStore().dispatch(hideFetchLoading(loadingId));
         }
     }
 }

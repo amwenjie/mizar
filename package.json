@@ -2,7 +2,7 @@
     "author": "wenjie",
     "dependencies": {
         "@loadable/server": "~5.15.2",
-        "axios": "~0.26.0",
+        "axios": "~0.26.1",
         "body-parser": "~1.19.2",
         "compression": "~1.7.4",
         "cookie-parser": "~1.4.6",
@@ -28,7 +28,7 @@
         "@types/react": "~17.0.37",
         "@types/react-dom": "~17.0.11",
         "@types/react-redux": "~7.1.20",
-        "alcor": "~0.1.54"
+        "alcor": "~0.1.55"
     },
     "license": "MIT",
     "name": "mizar",
@@ -49,5 +49,5 @@
     "scripts": {
         "build": "alcor pack"
     },
-    "version": "0.0.43"
+    "version": "0.0.44"
 }

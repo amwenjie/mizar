@@ -49,5 +49,5 @@ export interface IPageRouter {
 }
 
 export interface IFetchConfig extends AxiosRequestConfig {
-    noLoading?: boolean;
+    showLoading?: boolean;
 }
