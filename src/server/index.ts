@@ -2,6 +2,7 @@ import BodyParser from "body-parser";
 import Compression from "compression";
 import CookieParser from "cookie-parser";
 import Express from "express";
+import helmet from "helmet";
 import * as Http from "http";
 import { createProxyMiddleware, Options as ProxyOptions } from "http-proxy-middleware";
 import * as net from "net";
@@ -220,6 +221,9 @@ export class WebServer {
      */
     private setMiddleware() {
         const features = {
+            helmet: () => {
+                this.setupHelmetFeature();
+            },
             access: () => {
                 this.setupAccessFeature();
             },
@@ -260,32 +264,34 @@ export class WebServer {
 
         const runnableFeatures = [];
 
-        runnableFeatures.push('access');
+        runnableFeatures.push("access");
+
+        runnableFeatures.push("helmet");
 
         if (this.options.compress) {
-            runnableFeatures.push('compress');
+            runnableFeatures.push("compress");
         }
 
         if (this.options.headers) {
-            runnableFeatures.push('headers');
+            runnableFeatures.push("headers");
         }
 
         if (this.options.cookieParser) {
-            runnableFeatures.push('cookieParser');
+            runnableFeatures.push("cookieParser");
         }
 
         if (this.options.proxy) {
-            runnableFeatures.push('proxy');
+            runnableFeatures.push("proxy");
         }
 
         if (this.options.bodyParser) {
-            runnableFeatures.push('bodyParser');
+            runnableFeatures.push("bodyParser");
         }
 
-        runnableFeatures.push('static');
+        runnableFeatures.push("static");
 
         if (this.options.middleware) {
-            runnableFeatures.push('middleware');
+            runnableFeatures.push("middleware");
         }
 
         // if (this.options.historyApiFallback) {
@@ -308,7 +314,7 @@ export class WebServer {
         if (this.options.access) {
             this.app.use(this.options.access);
         } else {
-            this.app.use(logger.connectLogger(logger.getLogger("http"), { level: 'auto' }));
+            this.app.use(logger.connectLogger(logger.getLogger("http"), { level: "auto", }));
         }
     }
 
@@ -318,6 +324,10 @@ export class WebServer {
         mws.forEach(mw => {
             this.app.use(mw);
         });
+    }
+
+    private setupHelmetFeature() {
+        this.app.use(helmet());
     }
 
     private setupCompressFeature() {

@@ -23,9 +23,9 @@ import fs from "fs-extra";
 import path from "path";
 import { getPublicPath } from "../utils/getConfig";
 
-const clientStatsFile = path.resolve("." + getPublicPath() + "stats.json");
+const clientStatsFile = path.resolve("." + getPublicPath() + "loadable-stats.json");
 if (!fs.existsSync(clientStatsFile)) {
-    throw new Error("client/stats.json must exist，nor application couldn't deploy");
+    throw new Error("client/loadable-stats.json must exist，nor application couldn't deploy");
 }
 const extractorConf = { statsFile: clientStatsFile, entrypoints: ["index"] };
 
