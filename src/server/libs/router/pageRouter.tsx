@@ -41,7 +41,7 @@ export default class PageRouter extends Router {
                     return next();
                 }
                 logger.info("match router branch.");
-                const htmlString: string = await getResponsePage(req, this.pageRouter, matchedRoute[matchedRoute.length - 1]);;
+                const htmlString: string = await getResponsePage(req, res, this.pageRouter, matchedRoute[matchedRoute.length - 1]);;
                 logger.info("渲染完成，准备响应页面给客户端");
                 res.end(htmlString, "utf8");
             } catch (err) {

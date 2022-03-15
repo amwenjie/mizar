@@ -1,8 +1,9 @@
 import BodyParser from "body-parser";
 import Compression from "compression";
 import CookieParser from "cookie-parser";
+import crypto from "crypto";
 import Express from "express";
-import helmet from "helmet";
+import helmet, { type HelmetOptions } from "helmet";
 import * as Http from "http";
 import { createProxyMiddleware, Options as ProxyOptions } from "http-proxy-middleware";
 import * as net from "net";
@@ -65,6 +66,7 @@ interface IWebServerOption {
     proxy?: string | IServerProxyRouter | IServerProxyOption[];
     middleware?: any;
     static?: IStaticOption[];
+    secureHeaderOptions?: HelmetOptions;
     onServerClosed?: () => void;
     onListening?: (server: net.Server) => void;
 }
@@ -266,8 +268,6 @@ export class WebServer {
 
         runnableFeatures.push("access");
 
-        runnableFeatures.push("helmet");
-
         if (this.options.compress) {
             runnableFeatures.push("compress");
         }
@@ -292,6 +292,10 @@ export class WebServer {
 
         if (this.options.middleware) {
             runnableFeatures.push("middleware");
+        }
+
+        if (this.options.secureHeaderOptions !== false) {
+            runnableFeatures.push("helmet");
         }
 
         // if (this.options.historyApiFallback) {
@@ -327,7 +331,33 @@ export class WebServer {
     }
 
     private setupHelmetFeature() {
-        this.app.use(helmet());
+        const options = {
+            ...(this.options.secureHeaderOptions || {}),
+            contentSecurityPolicy: {
+                ...((this.options.secureHeaderOptions || {}).contentSecurityPolicy || {}),
+                // directives: {
+                //     scriptSrc: ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`],
+                // },
+                directives: {
+                    ...(((this.options.secureHeaderOptions || {}).contentSecurityPolicy || {}).directives || {}),
+                    scriptSrc: [
+                        "'self'",
+                        (req, res) => {
+                            const fsResponsiveNonce = crypto.randomBytes(16).toString('base64');
+                            res.locals.fsResponsiveNonce = fsResponsiveNonce;
+                            return `'nonce-${fsResponsiveNonce}'`;
+                        },
+                        (req, res) => {
+                            const csDataNonce = crypto.randomBytes(16).toString('base64');
+                            res.locals.csDataNonce = csDataNonce;
+                            return `'nonce-${res.locals.csDataNonce}'`;
+                        },
+                    ].concat(
+                        (((this.options.secureHeaderOptions || {}).contentSecurityPolicy || {}).directives || {}).scriptSrc || []),
+                },
+            }
+        };
+        this.app.use(helmet(options));
     }
 
     private setupCompressFeature() {

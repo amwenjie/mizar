@@ -1,4 +1,4 @@
-import { type Request } from "express";
+import { type Request, type Response } from "express";
 import React, { ReactElement } from "react";
 import ReactDomServer from "react-dom/server";
 import { Provider } from "react-redux";
@@ -73,7 +73,7 @@ export function getComRenderString(com: ReactElement) {
     return ReactDomServer.renderToString(com);
 }
 
-export async function getResponsePage(req: Request, pageRouter: IPageRouter[], matchedRoute: RouteMatch): Promise<string> {
+export async function getResponsePage(req: Request, res: Response, pageRouter: IPageRouter[], matchedRoute: RouteMatch): Promise<string> {
     const notSSR = checkNotSSR(req.query);
     let children = "";
     let preloadData: any = {};
@@ -107,7 +107,7 @@ export async function getResponsePage(req: Request, pageRouter: IPageRouter[], m
         </Provider>);
     }
 
-    return getHtmlString({
+    return getHtmlString(req, res, {
         isCSR: notSSR,
         initialState: preloadData,
         meta,

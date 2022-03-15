@@ -1,4 +1,35 @@
-export default function getHtmlString(props): string {
+import { type Request, type Response } from "express";
+
+let afsFn;
+
+function getClientStoreData(initialState, isCSR) {
+    return `;window.__INITIAL_STATE__=${JSON.stringify(initialState || {}).replace(/</g, "\\u003c")};${isCSR ? ";window.__isCSR__=" + JSON.stringify(isCSR) + ";" : ""}`;
+}
+
+function getAutoFontSizeFn(calcRootFontSize) {
+    if (typeof afsFn === "undefined") {
+        afsFn = `${typeof calcRootFontSize === "number"
+            ? ['(function () {',
+                'function setRootFontSize() {',
+                'var rootElement = document.documentElement;',
+                'var styleElement = document.createElement("style");',
+                'var dpr = Number(window.devicePixelRatio.toFixed(5)) || 1;',
+                'var rootFontSize = rootElement.clientWidth / ',
+                calcRootFontSize / 100,
+                ';rootElement.setAttribute("data-dpr", dpr.toString());',
+                'rootElement.style.fontSize = rootFontSize + "px";',
+                // 'rootElement.firstElementChild.appendChild(styleElement);',
+                // 'styleElement.innerHTML = "html{font-size:" + rootFontSize + "px!important;}";',
+                '}setRootFontSize();',
+                'window.addEventListener("resize", setRootFontSize);',
+                '}());'].join('')
+            : typeof calcRootFontSize === "function"
+                ? "(" + calcRootFontSize.toString() + "());" : ""}`;
+    }
+    return afsFn;
+}
+
+export default function getHtmlString(req: Request, res: Response, props): string {
         const {
             isCSR = true,
             initialState,
@@ -17,6 +48,9 @@ export default function getHtmlString(props): string {
             calcRootFontSize,
         } = meta;
 
+        const clientStore = getClientStoreData(initialState, isCSR);
+
+        const rfs = getAutoFontSizeFn(calcRootFontSize);
         return `<html>
     <head>
         <meta charSet="UTF-8" /><meta httpEquiv="Content-Type" content="text/html; charset=UTF-8" /><title>${title}</title><meta httpEquiv="x-ua-compatible" content="ie=edge" />
@@ -26,33 +60,15 @@ export default function getHtmlString(props): string {
                 '" rel="icon" /><link href="',
                 '" rel="shortcut icon" /><link href="',
                 '" rel="bookmark" />'].join(favicon)
-            : ""}${links.join("")}${styles.join("")}
-        <script>${
-            typeof calcRootFontSize === "number"
-                ? ['(function () {',
-                    'function setRootFontSize() {',
-                    'var rootElement = document.documentElement;',
-                    'var styleElement = document.createElement("style");',
-                    'var dpr = Number(window.devicePixelRatio.toFixed(5)) || 1;',
-                    'var rootFontSize = rootElement.clientWidth / ',
-                    calcRootFontSize / 100,
-                    ';',
-                    'rootElement.setAttribute("data-dpr", dpr.toString());',
-                    'rootElement.firstElementChild.appendChild(styleElement);',
-                    'styleElement.innerHTML = "html{font-size:" + rootFontSize + "px!important;}";',
-                    '}',
-                    'setRootFontSize();',
-                    'window.addEventListener("resize", setRootFontSize);',
-                    '}());'].join('')
-                : typeof calcRootFontSize === "function"
-                    ? "(" + calcRootFontSize.toString() + "());" : ""
-        }</script>
+            : ""}${links.join("")}${styles.join("")}${rfs ? [
+            `<script nonce="${res.locals.fsResponsiveNonce}">`,
+            '</script>'].join(rfs) : ""}
     </head>
     <body>
         <div id="app">
             ${children}
         </div>
-        <script>;window.__INITIAL_STATE__=${JSON.stringify(initialState || {}).replace(/</g, "\\u003c")};${isCSR ? ";window.__isCSR__=" + JSON.stringify(isCSR) + ";" : ""}</script>${scripts.join("")}
+        <script nonce="${res.locals.csDataNonce}">${clientStore}</script>${scripts.join("")}
     </body>
 </html>`;
     }
