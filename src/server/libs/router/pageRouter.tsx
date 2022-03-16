@@ -20,9 +20,7 @@ export default class PageRouter extends Router {
     }
 
     public setRouter() {
-        this.router.use(async (req: Express.Request, res: Express.Response, next) => {
-            res.setHeader("Content-Type", "text/html; charset=UTF-8");
-            res.write("<!DOCTYPE html>");
+        this.router.use(async (req: Express.Request, res: Express.Response) => {
             res.on('finish', () => {
                 logger.info("响应完成.");
             });
@@ -37,13 +35,15 @@ export default class PageRouter extends Router {
 
                 if (!matchedRoute) {
                     logger.warn(`not match any router branch. originalUrl: ${originalUrl}, path: ${path}`);
-                    // 找不到匹配的页面，由业务自己处理
-                    return next();
+                    res.status(404).end();
+                    return;
                 }
+                res.setHeader("Content-Type", "text/html; charset=utf-8");
+                res.write("<!DOCTYPE html>");
                 logger.info("match router branch.");
                 const htmlString: string = await getResponsePage(req, res, this.pageRouter, matchedRoute[matchedRoute.length - 1]);;
                 logger.info("渲染完成，准备响应页面给客户端");
-                res.end(htmlString, "utf8");
+                res.end(htmlString, "utf-8");
             } catch (err) {
                 res.end(getErrorPageRenderString(), "utf-8");
                 logger.error("服务端路由处理时出现异常: ", err.message, " ; stack: ", err.stack);

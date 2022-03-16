@@ -552,14 +552,13 @@ export class WebServer {
         if (!this.checkServerStarted()) {
             await this.bootstrapAsyncBefore();
             this.ready();
-            // this.app.set("view engine", "ejs");
-            // this.app.set("views", Path.resolve("view"));
             // this.setCloseHandle();
             await this.listen(this.options.port, this.options.hostname);
             log.info(this.name, "bootstrapAsync", "port", this.options.port);
         }
         return this;
     }
+
     /**
      * 挂载该Web服务器的router点
      * @param router

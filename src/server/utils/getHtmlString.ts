@@ -10,6 +10,7 @@ function getAutoFontSizeFn(calcRootFontSize) {
     if (typeof afsFn === "undefined") {
         afsFn = `${typeof calcRootFontSize === "number"
             ? ['(function () {',
+                'var debc;',
                 'function setRootFontSize() {',
                 'var rootElement = document.documentElement;',
                 'var styleElement = document.createElement("style");',
@@ -21,7 +22,7 @@ function getAutoFontSizeFn(calcRootFontSize) {
                 // 'rootElement.firstElementChild.appendChild(styleElement);',
                 // 'styleElement.innerHTML = "html{font-size:" + rootFontSize + "px!important;}";',
                 '}setRootFontSize();',
-                'window.addEventListener("resize", setRootFontSize);',
+                'window.addEventListener("resize", function () { clearTimeout(debc); debc = setTimeout(setRootFontSize, 500); });',
                 '}());'].join('')
             : typeof calcRootFontSize === "function"
                 ? "(" + calcRootFontSize.toString() + "());" : ""}`;
@@ -53,9 +54,9 @@ export default function getHtmlString(req: Request, res: Response, props): strin
         const rfs = getAutoFontSizeFn(calcRootFontSize);
         return `<html>
     <head>
-        <meta charSet="UTF-8" /><meta httpEquiv="Content-Type" content="text/html; charset=UTF-8" /><title>${title}</title><meta httpEquiv="x-ua-compatible" content="ie=edge" />
-        <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1,user-scalable=no" /><meta name="keywords" content="${keywords}" /><meta name="description" content="${description}" />
-        ${metas.join("")}${favicon
+        <meta charSet="utf-8" /><meta httpEquiv="content-type" content="text/html; charset=utf-8" /><title>${title}</title><meta httpEquiv="x-ua-compatible" content="ie=edge" />
+        ${keywords ? ['<meta name="keywords" content="', '" />'].join(keywords) : ""}${keywords ? ['<meta name="description" content="', '" />'].join(description) : ""}
+        <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1,user-scalable=no" />${metas.join("")}${favicon
             ? ['<link href="',
                 '" rel="icon" /><link href="',
                 '" rel="shortcut icon" /><link href="',
@@ -65,10 +66,7 @@ export default function getHtmlString(req: Request, res: Response, props): strin
             '</script>'].join(rfs) : ""}
     </head>
     <body>
-        <div id="app">
-            ${children}
-        </div>
-        <script nonce="${res.locals.csDataNonce}">${clientStore}</script>${scripts.join("")}
+        <div id="app">${children}</div><script nonce="${res.locals.csDataNonce}">${clientStore}</script>${scripts.join("")}
     </body>
 </html>`;
     }
