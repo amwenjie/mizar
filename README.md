@@ -20,15 +20,16 @@
                     -interface.ts    页面组件内所有的ts定义文件
                 -pageB
                     - ...
-            -public   存放一些非模块化的的内容，所需要用到的文件需要在服务端启动入口配置meta中加入，会在服务端渲染出的html中用标签引入
+            -typings
+                -*.d.ts    同构目录中，css\module-federation模块等类型定义
+            -tsconfig.json
+        -public   存放一些非模块化的的内容，所需要用到的文件需要在服务端启动入口配置meta中加入，会在服务端渲染出的html中用标签引入
         -server   应用的服务端代码
             -apis   服务端node api存放目录，规则是请求路径已/apis/开头，文件名为方法名
                 -api-name.ts
             -index.ts   服务端启动入口
-        -tsconfig.json
-    -typings
-        -*.d.ts    同构目录中，css\module-federation模块等类型定义
     -package.json
+    -tsconfig.json
     -tslint.json
 
 ## 使用类组件开发
