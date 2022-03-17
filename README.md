@@ -3,7 +3,7 @@
 ## 使用此框架的应用程序，需要使用alcor打包编译工具。应用目录结构应为：
     -config   用于存放配置文件的目录
         -app.json   用于配置应用的运行时信息，比如该应用的node服务启动端口、cdn地址等
-        -configure.json   用于配置应用的编译时信息，比如是否启用tslint、stylelint的配置、less-loader的配置等
+        -configure.json   用于配置应用的编译时信息，比如是否启用eslint、配置stylelint、配置less-loader等
     -src   应用代码源文件目录
         -isomorphic    同构内容所在目录，组件会被在客户端或服务端执行，需要注意执行环境特有能力的使用
             -index.ts    客户端启动入口
@@ -20,16 +20,16 @@
                     -interface.ts    页面组件内所有的ts定义文件
                 -pageB
                     - ...
-            -typings
-                -*.d.ts    同构目录中，css\module-federation模块等类型定义
-            -public   存放一些非模块化的的内容，每个文件会被直接用link或script引入
+            -public   存放一些非模块化的的内容，所需要用到的文件需要在服务端启动入口配置meta中加入，会在服务端渲染出的html中用标签引入
         -server   应用的服务端代码
             -apis   服务端node api存放目录，规则是请求路径已/apis/开头，文件名为方法名
                 -api-name.ts
             -index.ts   服务端启动入口
+        -tsconfig.json
+    -typings
+        -*.d.ts    同构目录中，css\module-federation模块等类型定义
     -package.json
     -tslint.json
-    -tsconfig.json
 
 ## 使用类组件开发
    * 定义类组件的方式 (以上面目录结构中的pageA举例)

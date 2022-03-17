@@ -24,7 +24,7 @@
         "esModuleInterop": true,
         "typeRoots": [
             "../node_modules/@types",
-            "typings"
+            "../typings"
         ]
     }
 }
