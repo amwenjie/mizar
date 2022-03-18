@@ -3,7 +3,7 @@ import events from "events";
 import { IFetchConfig } from "../interface";
 import { loadingId } from "../config";
 import { getStore } from "./getStore";
-import { hideLoading as hideFetchLoading, showLoading as showFetchLoading } from "./libs/components/Loading/actions";
+import { hideLoading as hideFetchLoading, showLoading as showFetchLoading } from "./components/Loading/actions";
 import getLogger from "./utils/logger";
 
 declare const IS_SERVER_RUNTIME;

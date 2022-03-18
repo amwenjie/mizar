@@ -1,5 +1,5 @@
 import React from "react";
-import { connect } from "../../../connect";
+import { connect } from "../../connect";
 import { IProps } from "./interfaces";
 import reducer from "./reducer";
 import * as style from "./index.css";

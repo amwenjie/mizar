@@ -5,7 +5,7 @@ import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { IPageRouter } from "../interface";
 import { getStore } from "./getStore";
-import RouteContainer from "./libs/components/RouteContainer";
+import RouteContainer from "./components/RouteContainer";
 import appState from "./libs/state";
 
 export function bootstrap(pageRouter: IPageRouter[]) {

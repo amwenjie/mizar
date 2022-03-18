@@ -1,10 +1,10 @@
 import { parse } from "query-string";
 import React, { useEffect } from "react";
 import { useLocation, useRoutes } from "react-router-dom";
-import { loadingId, pageInit } from "../../../../config";
-import { reduxConnect } from "../../../connect";
-import { getInitialData, getMatchedComponent } from "../../metaCollector";
-import getMatchedBranch from "../../getMatchedBranch";
+import { loadingId, pageInit } from "../../../config";
+import { reduxConnect } from "../../connect";
+import { getInitialData, getMatchedComponent } from "../../libs/metaCollector";
+import getMatchedBranch from "../../libs/getMatchedBranch";
 import getLoading from "../Loading";
 
 const FetchLoading = getLoading(loadingId);
