@@ -28,6 +28,7 @@
             -apis   服务端node api存放目录，规则是请求路径已/apis/开头，文件名为方法名
                 -api-name.ts
             -index.ts   服务端启动入口
+        -tsconfig.json
     -package.json
     -tsconfig.json
     -tslint.json
@@ -291,8 +292,50 @@
     const webserver = new WebServer({}: IWebServerOption);
     bootstrap(webserver)(...);
 ```
-   * 比如，想要替换框架自带的日志记录功能，同时启用响应压缩、cookie和body格式化：
+   * WebServer构造函数接收一个可选配置对象参数：
 ```
+    interface IWebServerOption {
+        access?: any;
+        compress?: boolean;
+        cookieParser?: boolean;
+        bodyParser?: boolean | IBodyParserOption;
+        headers?: string;
+        hostname?: "local-ip" | "local-ipv4" | "local-ipv6";
+        port?: number;
+        proxy?: string | {[path: string]: string;} | { path: string; config: Options; }[];
+        middleware?: any;
+        static?: IStaticOption[];
+        secureHeaderOptions?: HelmetOptions | false;
+        corsOptions?: CorsOptions | CorsOptionsDelegate | ISingleRouteCorsOption[];
+        onServerClosed?: () => void;
+        onListening?: (server: net.Server) => void;
+    }
+    
+    interface IBodyParserOption {
+        raw?: boolean | BodyParser.Options;
+        json?: boolean | BodyParser.OptionsJson;
+        text?: boolean | BodyParser.OptionsText;
+        urlencoded?: boolean | BodyParser.OptionsUrlencoded;
+    }
+    
+    interface IStaticOption {
+        path: string[];
+        directory: string;
+        staticOption?: ServeStatic.ServeStaticOptions;
+        isInternal?: true;
+    }
+    
+    interface ISingleRouteCorsOption {
+        path: string;
+        corsOptions: CorsOptions | CorsOptionsDelegate;
+    }
+```
+   * 其中的bodyParser、cookieParser默认为开启状态，secureHeaderOptions默认启用，具体响应策略可debug看响应头
+
+   * 示例：
+```
+    1. 想要替换框架自带的日志记录功能，同时启用响应压缩：
+
     ...
     import * as path from 'path';
     import * as YLogger from 'yog-log';
@@ -312,7 +355,7 @@
         }
     })
     const conf = {  
-        app: 'article-h5',
+        app: 'app-name',
         log_path: path.join(__dirname, 'log'),
         intLevel: 16,
         debug: 1
@@ -321,44 +364,30 @@
     const server = new WebServer({
         access: YLogger(conf), // access是http请求log
         compress: true,
-        bodyParser: true,
-        cookieParser: true,
     });
 
     server.useMiddleware(YLogger(conf));
 
     bootstrap(server)(...);
-```
-   * WebServer构造函数接收一个可选配置对象参数：
-```
-    interface IWebServerOption {
-        access?: any;
-        compress?: boolean;
-        cookieParser?: boolean;
-        bodyParser?: boolean | IBodyParserOption;
-        headers?: string;
-        hostname?: "local-ip" | "local-ipv4" | "local-ipv6";
-        port?: number;
-        proxy?: string | {[path: string]: string;} | { path: string; config: Options; }[];
-        middleware?: any;
-        static?: IStaticOption[];
-        onServerClosed?: () => void;
-        onListening?: (server: net.Server) => void;
-    }
     
-    interface IBodyParserOption {
-        raw?: boolean | BodyParser.Options;
-        json?: boolean | BodyParser.OptionsJson;
-        text?: boolean | BodyParser.OptionsText;
-        urlencoded?: boolean | BodyParser.OptionsUrlencoded;
-    }
-    
-    interface IStaticOption {
-        path: string[];
-        directory: string;
-        staticOption?: ServeStatic.ServeStaticOptions;
-        isInternal?: true;
-    }
+    2. 配置响应头中的安全策略和CORS响应策略：
+
+    ...
+    const server = new WebServer({
+        secureHeaderOptions: false, // 关闭响应头中安全策略输出
+        secureHeaderOptions: {
+            contentSecurityPolicy: {}, // 配置响应头中CSP相关策略
+        },
+        corsOptions: {}, // 配置对所有请求响应的cors策略
+        corsOptions: [{
+            path: "specific-path",
+            corsOptions: {},
+        }], // 遍历数组，对每个对象中指定path的请求响应对应的cors配置策略
+    });
+
+    server.useMiddleware(YLogger(conf));
+
+    bootstrap(server)(...);
 ```
 
 ### 6. 支持动态路由（server端api）

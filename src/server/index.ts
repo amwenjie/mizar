@@ -1,6 +1,7 @@
 import BodyParser from "body-parser";
 import Compression from "compression";
 import CookieParser from "cookie-parser";
+import cors, { type CorsOptions, type CorsOptionsDelegate } from "cors";
 import crypto from "crypto";
 import Express from "express";
 import helmet, { type HelmetOptions } from "helmet";
@@ -55,6 +56,12 @@ interface IServerProxyOption {
     path: string;
     config: IProxyConfig
 }
+
+interface ISingleRouteCorsOption {
+    path: string;
+    corsOptions: CorsOptions | CorsOptionsDelegate;
+}
+
 interface IWebServerOption {
     access?: any;
     compress?: boolean;
@@ -66,7 +73,8 @@ interface IWebServerOption {
     proxy?: string | IServerProxyRouter | IServerProxyOption[];
     middleware?: any;
     static?: IStaticOption[];
-    secureHeaderOptions?: HelmetOptions;
+    secureHeaderOptions?: HelmetOptions | false;
+    corsOptions?: CorsOptions | CorsOptionsDelegate | ISingleRouteCorsOption[];
     onServerClosed?: () => void;
     onListening?: (server: net.Server) => void;
 }
@@ -226,6 +234,9 @@ export class WebServer {
             helmet: () => {
                 this.setupHelmetFeature();
             },
+            cors: () => {
+                this.setupCorsFeature();
+            },
             access: () => {
                 this.setupAccessFeature();
             },
@@ -298,6 +309,10 @@ export class WebServer {
             runnableFeatures.push("helmet");
         }
 
+        if (this.options.corsOptions) {
+            runnableFeatures.push("cors");
+        }
+
         // if (this.options.historyApiFallback) {
         //     runnableFeatures.push('historyApiFallback', 'middleware');
         //     if (this.options.static) {
@@ -328,6 +343,16 @@ export class WebServer {
         mws.forEach(mw => {
             this.app.use(mw);
         });
+    }
+
+    private setupCorsFeature() {
+        if (Array.isArray(this.options.corsOptions)) {
+            this.options.corsOptions.forEach((config: ISingleRouteCorsOption) => {
+                this.app.use(config.path, cors(config.corsOptions));
+            });
+        } else {
+            this.app.use(cors(this.options.corsOptions));
+        }
     }
 
     private setupHelmetFeature() {
