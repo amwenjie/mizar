@@ -1,7 +1,7 @@
-import getLogger from "./utils/logger";
-import WebServer from "./index";
-import { getApiRouter, getPageRouter } from "./libs/getRouter";
-import { IPageRouter, IGetMetaFn, IMetaProps } from "../interface";
+import getLogger from "./utils/logger.js";
+import WebServer from "./index.js";
+import { getApiRouter, getPageRouter } from "./libs/getRouter.js";
+import { type IPageRouter, type IGetMetaFn, type IMetaProps } from "../interface.js";
 // import { getPublicPath } from "./utils/getConfig";
 
 // declare let __webpack_public_path__: string;

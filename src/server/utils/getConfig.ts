@@ -1,5 +1,5 @@
 import fs from "fs-extra";
-import { IAppConf } from "../../interface";
+import { IAppConf } from "../../interface.js";
 const appConfJSON = fs.readJSONSync("./config/app.json");
 let publicPath = "";
 declare const IS_DEBUG_MODE;

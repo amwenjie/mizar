@@ -1,7 +1,7 @@
 import React from "react";
-import { connect } from "../../connect";
-import { IProps } from "./interfaces";
-import reducer from "./reducer";
+import { connect } from "../../connect.js";
+import { IProps } from "./interface.js";
+import reducer from "./reducer.js";
 import * as style from "./index.css";
 
 export function Loading(props: IProps) {

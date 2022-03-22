@@ -1,6 +1,6 @@
 import { applyMiddleware, compose, createStore } from "redux";
 import thunk from "redux-thunk";
-import { getRootReducer } from "./libs/metaCollector";
+import { getRootReducer } from "./libs/metaCollector.js";
 
 declare const IS_SERVER_RUNTIME;
 let store;
@@ -18,9 +18,10 @@ export function getStore() {
             (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ ?
                 (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({
                 }) : compose;
+        const thunkMW = typeof thunk === "function" ? thunk : thunk.default;
         store = createStore(getRootReducer(),
             initialState,
-            composeEnhancers(applyMiddleware(thunk)),
+            composeEnhancers(applyMiddleware(thunkMW)),
         );
         return store;
     }

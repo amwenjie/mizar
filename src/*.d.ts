@@ -3,6 +3,8 @@ declare module '*.css' {
     export default content;
 }
 declare module 'redux-thunk' {
-    const thunk: any;
+    const thunk: {
+        default: (...args) => any;
+    } | ((...args) => any);
     export default thunk;
 }

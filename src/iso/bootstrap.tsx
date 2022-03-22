@@ -3,10 +3,10 @@ import React from "react";
 import ReactDom from "react-dom";
 import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
-import { IPageRouter } from "../interface";
-import { getStore } from "./getStore";
-import RouteContainer from "./components/RouteContainer";
-import appState from "./libs/state";
+import { IPageRouter } from "../interface.js";
+import { getStore } from "./getStore.js";
+import RouteContainer from "./components/RouteContainer/index.js";
+import appState from "./libs/state.js";
 
 export function bootstrap(pageRouter: IPageRouter[]) {
     return async (id: string = "app") => {

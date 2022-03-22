@@ -1,10 +1,9 @@
 import fs from "fs-extra";
-import Path from "path";
+import path from "path";
 import klaw from "klaw";
-import getLogger from "./logger";
+import getLogger from "./logger.js";
 
 const logger = getLogger().getLogger("server/utils/getApis");
-
 const apisBasePath = "./apis";
 
 async function getApiPath(entry): Promise<string[]> {
@@ -39,7 +38,7 @@ async function getApiPath(entry): Promise<string[]> {
 }
 
 export default async function () {
-    const apiPath = Path.resolve(apisBasePath);
+    const apiPath = path.resolve(apisBasePath);
     if (!fs.existsSync(apiPath)) {
         return null;
     }
@@ -49,7 +48,7 @@ export default async function () {
     // });
     if (files && files.length) {
         let apis = {};
-        files.forEach(url => {
+        files.forEach(async url => {
             const file = `${apisBasePath}${url}.js`;
             logger.debug("file: ", file);
             if (!fs.existsSync(file)) {
@@ -57,7 +56,7 @@ export default async function () {
                 return;
             }
             try {
-                const instance = require(/* webpackIgnore: true */ file);
+                const instance = await import(/* webpackIgnore: true */ file);
                 logger.debug('api url: ', url);
                 const methods = Object.keys(instance).filter(k => typeof instance[k] === "function");
                 logger.debug('api methods: ', methods);

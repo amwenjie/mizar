@@ -1,6 +1,6 @@
-import StringUtil from "./stringUtil";
+import StringUtil from "./stringUtil.js";
 
-export class DateUtil {
+class DateUtil {
 
     /**
      * 格式化时间
@@ -85,4 +85,5 @@ export class DateUtil {
         return num;
     }
 }
+
 export default DateUtil;

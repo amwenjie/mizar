@@ -1,6 +1,6 @@
-import { IGetMetaFn, IMetaProps } from "../../interface";
-import getLogger from "../utils/logger";
-import checkPositivePath from "../utils/checkPositivePath";
+import { IGetMetaFn, IMetaProps } from "../../interface.js";
+import getLogger from "../utils/logger.js";
+import checkPositivePath from "../utils/checkPositivePath.js";
 
 const logger = getLogger().getLogger("server/libs/handleMeta");
 

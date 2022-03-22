@@ -1,10 +1,10 @@
-import { IGetMetaFn, IMetaProps } from "../../interface";
-import getLogger from "./../utils/logger";
-import { getPublicPath } from "../utils/getConfig";
-import handleMeta from "./handleMeta";
-import PageRouter from "./router/pageRouter";
-import ApiRouter from "./router/apiRouter";
-import getApis from "../utils/getApis"
+import { IGetMetaFn, IMetaProps } from "../../interface.js";
+import getLogger from "./../utils/logger.js";
+import { getPublicPath } from "../utils/getConfig.js";
+import handleMeta from "./handleMeta.js";
+import PageRouter from "./router/pageRouter.js";
+import ApiRouter from "./router/apiRouter.js";
+import getApis from "../utils/getApis.js"
 
 const logger = getLogger().getLogger("server/getRouter");
 

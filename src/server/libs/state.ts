@@ -1,4 +1,4 @@
-import { IMetaProps } from "../../interface";
+import { IMetaProps } from "../../interface.js";
 const state: {
     apis: object;
     meta: IMetaProps;

@@ -1,8 +1,8 @@
 import Express from "express";
-import getLogger from "../../utils/logger";
+import getLogger from "../../utils/logger.js";
 const logger = getLogger().getLogger("server/libs/router/index");
 
-export class Router {
+class Router {
     protected router: Express.Router = Express.Router();
     
     public getRouter(): Express.Router {
@@ -18,5 +18,6 @@ export class Router {
         logger.warn("未重载setRouter方法");
     }
 }
+
 
 export default Router;

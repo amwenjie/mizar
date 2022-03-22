@@ -1,24 +1,21 @@
 {
+    "ts-node": {
+        "esm": true
+    },
     "compilerOptions": {
         "target": "es3",
         "traceResolution": false,
-        "lib": [
-            "ES2015",
-            "ES2016",
-            "ES2017",
-            "ES2019",
-            "ES2020",
-            "dom"
-        ],
         "importHelpers": true,
+        "noEmitHelpers": false,
         "allowJs": false,
-        "baseUrl": "src",
+        "baseUrl": ".",
         "outDir": "../dist",
         "pretty": false,
-        "module": "CommonJS",
+        "module": "esnext",
+        "moduleResolution": "node",
         "jsx": "react",
         "declaration": true,
-        "sourceMap": true,
+        "sourceMap": false,
         "noImplicitAny": false,
         "noFallthroughCasesInSwitch": false,
         "esModuleInterop": true,

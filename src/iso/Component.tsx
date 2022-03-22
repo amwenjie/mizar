@@ -7,23 +7,4 @@ class Component<P, S, SS = any> extends React.Component<P, S, SS> {
     }
 }
 
-export function importReqAuthCom(comPath, condition) {
-    if (IS_SERVER_RUNTIME) {
-
-    } else {
-        
-        const fetch = require("../iso/fetch").default;
-        
-        fetch({
-            noLoading: true,
-            method: "post",
-            url: "/api/getReqAuthCom",
-            data: {
-                condition,
-                comPath,
-            },
-        });
-    }
-}
-
 export default Component;

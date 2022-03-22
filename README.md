@@ -190,10 +190,10 @@
 
 
 ### 2. 客户端启动入口配置
-   * /src/isomorphic/entry/index.ts内容：
+   * /src/isomorphic/index.ts内容：
 ```
     import { bootstrap } from "mizar/iso/bootstrap";
-    import articleRouter from "../routers/article";
+    import articleRouter from "./routers/article";
 
     bootstrap(articleRouter)();
 ```
@@ -466,12 +466,12 @@
 
 ### 8. 页面组件内跳转功能、url参数获取说明
    * 由于mizar 不同版本使用的react-router版本不同，两个主要功能需要特殊说明
-    1. 跳转功能
-        * mizar 版本 <= 0.0.30 ，可用this.props.history.push("")，进行跳转
-        * mizar 版本 >= 0.0.31 ，需要将跳转功能封装函数组件（function component），其中使用useNavigate，进跳转
-    2. url参数获取
-        * mizar 版本 <= 0.0.30 ，可用this.props.match，获取url param参数
-        * mizar 版本 >= 0.0.31 ，需要提供一个函数组件（function component），其中使用useParams来获取url param参数
+      1. 跳转功能
+          * mizar 版本 <= 0.0.30 ，可用this.props.history.push("")，进行跳转
+          * mizar 版本 >= 0.0.31 ，需要将跳转功能封装函数组件（function component），其中使用useNavigate，进跳转
+      2. url参数获取
+          * mizar 版本 <= 0.0.30 ，可用this.props.match，获取url param参数
+          * mizar 版本 >= 0.0.31 ，需要提供一个函数组件（function component），其中使用useParams来获取url param参数
    * 举例：
 ```
     mizar 版本 <= 0.0.30

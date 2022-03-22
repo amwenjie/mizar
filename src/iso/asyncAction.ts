@@ -1,4 +1,4 @@
-import getLogger from "./utils/logger";
+import getLogger from "./utils/logger.js";
 const logger = getLogger().getLogger("iso/asyncAction");
 
 export default actionFn => (...args) => async dispatch => {

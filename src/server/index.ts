@@ -12,10 +12,10 @@ import internalIp from "internal-ip";
 import Path from "path";
 import ServeStatic from "serve-static";
 import { URL } from "url";
-import { getPort, getPublicPath } from "./utils/getConfig";
-import getLogger from "./utils/logger";
-import setupExitSignals from "./utils/setupExitSignals";
-import checkPositivePath from "./utils/checkPositivePath";
+import { getPort, getPublicPath } from "./utils/getConfig.js";
+import getLogger from "./utils/logger.js";
+import setupExitSignals from "./utils/setupExitSignals.js";
+import checkPositivePath from "./utils/checkPositivePath.js";
 
 declare const IS_DEBUG_MODE;
 declare const DEV_PROXY_CONFIG;
@@ -28,9 +28,9 @@ const protocalPortMap = {
     "wss:": 443,
 };
 
-if (IS_DEBUG_MODE) {
-    require("source-map-support").install();
-}
+// if (IS_DEBUG_MODE) {
+//     (await import("source-map-support")).install();
+// }
 
 interface IBodyParserOption {
     raw?: boolean | BodyParser.Options;
@@ -83,7 +83,8 @@ const logger = getLogger();
 // const log = getLogger("server/index");
 
 const log = logger.getLogger("server/index");
-export class WebServer {
+
+class WebServer {
     private state = false;
     private options: any;
     private routers: (Express.RequestHandler | Express.ErrorRequestHandler)[];
@@ -299,14 +300,14 @@ export class WebServer {
             runnableFeatures.push("bodyParser");
         }
 
+        if (this.options.secureHeaderOptions !== false) {
+            runnableFeatures.push("helmet");
+        }
+
         runnableFeatures.push("static");
 
         if (this.options.middleware) {
             runnableFeatures.push("middleware");
-        }
-
-        if (this.options.secureHeaderOptions !== false) {
-            runnableFeatures.push("helmet");
         }
 
         if (this.options.corsOptions) {
@@ -357,14 +358,11 @@ export class WebServer {
 
     private setupHelmetFeature() {
         const options = {
-            ...(this.options.secureHeaderOptions || {}),
+            ...this.options?.secureHeaderOptions,
             contentSecurityPolicy: {
-                ...((this.options.secureHeaderOptions || {}).contentSecurityPolicy || {}),
-                // directives: {
-                //     scriptSrc: ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`],
-                // },
+                ...this.options.secureHeaderOptions?.contentSecurityPolicy,
                 directives: {
-                    ...(((this.options.secureHeaderOptions || {}).contentSecurityPolicy || {}).directives || {}),
+                    ...this.options.secureHeaderOptions?.contentSecurityPolicy?.directives,
                     scriptSrc: [
                         "'self'",
                         (req, res) => {
@@ -377,8 +375,7 @@ export class WebServer {
                             res.locals.csDataNonce = csDataNonce;
                             return `'nonce-${res.locals.csDataNonce}'`;
                         },
-                    ].concat(
-                        (((this.options.secureHeaderOptions || {}).contentSecurityPolicy || {}).directives || {}).scriptSrc || []),
+                    ].concat(this.options.secureHeaderOptions?.contentSecurityPolicy?.directives?.scriptSrc || []),
                 },
             }
         };

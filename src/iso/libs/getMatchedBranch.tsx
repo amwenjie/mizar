@@ -1,5 +1,5 @@
 import { matchRoutes } from "react-router-dom";
-import { IPageRouter } from "../../interface";
+import { IPageRouter } from "../../interface.js";
 
 export function checkElementIsLoadable(element): boolean {
     if (element && typeof element.preload === "function" && typeof element.load === "function") {

@@ -1,8 +1,8 @@
 import { connect as reduxConnect, type ConnectedComponent } from "react-redux";
-import { registerRedux } from "./libs/metaCollector";
-import getLogger from "./utils/logger";
 import { Reducer } from "redux";
-import { type ComponentType, type ElementType } from "react";
+import { ReactElement, type ComponentType, type ElementType } from "react";
+import { registerRedux } from "./libs/metaCollector.js";
+import getLogger from "./utils/logger.js";
 
 const logger = getLogger().getLogger("iso/connect");
 
@@ -88,7 +88,7 @@ function getReduxComponent<TStateProps, TDispatchProps, TOwnProps>(
     mapDispatchToProps,
     mergeProps,
     options,
-    component: ElementType,
+    component,
 ): ConnectedComponent<ComponentType<any>, any> {
     // 先去池子里找
     const findedComponentEntity = componentEntityList.find(
@@ -103,7 +103,7 @@ function getReduxComponent<TStateProps, TDispatchProps, TOwnProps>(
             mapDispatchToProps,
             mergeProps,
             options
-        )(component as ComponentType);
+        )(component);
         componentEntityList.push({ reduxComponent, component });
         return reduxComponent;
     }

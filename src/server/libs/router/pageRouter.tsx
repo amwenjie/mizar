@@ -1,14 +1,14 @@
 import Express from "express";
 import { matchRoutes } from "react-router-dom";
-import getPathForRouterMatch from "../../utils/getPathForRouterMatch";
-import getLogger from "../../utils/logger";
-import { getErrorPageRenderString, getResponsePage } from "../pageRender";
-import state from "../state";
-import Router from "./index";
+import getPathForRouterMatch from "../../utils/getPathForRouterMatch.js";
+import getLogger from "../../utils/logger.js";
+import { getErrorPageRenderString, getResponsePage } from "../pageRender.js";
+import state from "../state.js";
+import Router from "./index.js";
 
 const logger = getLogger().getLogger("server/libs/router/pageRouter");
 
-export default class PageRouter extends Router {
+class PageRouter extends Router {
     private pageRouter;
     
     protected router: Express.Router = Express.Router();
@@ -51,3 +51,5 @@ export default class PageRouter extends Router {
         });
     }
 }
+
+export default PageRouter;

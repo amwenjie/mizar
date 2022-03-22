@@ -1,7 +1,7 @@
 import Express from "express";
-import state from "../state";
-import getLogger from "../../utils/logger";
-import Router from "./index";
+import state from "../state.js";
+import getLogger from "../../utils/logger.js";
+import Router from "./index.js";
 
 // const logger = getLogger("server/libs/router/pageRouter");
 const logger = getLogger().getLogger("server/libs/router/apiRouter");
@@ -10,7 +10,7 @@ function isFunction(fn) {
     return typeof fn === "function";
 }
 
-export default class ApiRouter extends Router {
+class ApiRouter extends Router {
     private apis = [];
     protected router: Express.Router = Express.Router();
 
@@ -64,3 +64,5 @@ export default class ApiRouter extends Router {
         return routers;
     }
 }
+
+export default ApiRouter;

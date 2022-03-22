@@ -1,27 +1,27 @@
+import { ChunkExtractor } from '@loadable/server';
 import { type Request, type Response } from "express";
+import fs from "fs-extra";
+import path from "path";
 import React, { ReactElement } from "react";
 import ReactDomServer from "react-dom/server";
 import { Provider } from "react-redux";
 import { RouteMatch } from "react-router-dom";
 import { StaticRouter } from "react-router-dom/server";
 import { createStore } from "redux";
-import { loadingId } from "../../config";
-import { getReducerName as getLoadingReducerName } from "../../iso/components/Loading";
-import RouteContainer from "../../iso/components/RouteContainer";
-import { getMatchedComponent, getRootReducer } from "../../iso/libs/metaCollector";
-import { IInitialRenderData, IMetaProps, IPageRouter } from "../../interface";
-import getHtmlString from "../utils/getHtmlString";
-import getLogger from "../utils/logger";
-import checkNotSSR from "../utils/checkNotSSR";
-import getSSRInitialData from "../utils/getSSRInitialData";
-import state from "./state";
+import { loadingId } from "../../config/index.js";
+import { getReducerName as getLoadingReducerName } from "../../iso/components/Loading/index.js";
+import RouteContainer from "../../iso/components/RouteContainer/index.js";
+import { getMatchedComponent, getRootReducer } from "../../iso/libs/metaCollector.js";
+import { IInitialRenderData, IMetaProps, IPageRouter } from "../../interface.js";
+import getHtmlString from "../utils/getHtmlString.js";
+import getLogger from "../utils/logger.js";
+import checkNotSSR from "../utils/checkNotSSR.js";
+import { getPublicPath } from "../utils/getConfig.js";
+import getSSRInitialData from "../utils/getSSRInitialData.js";
+import state from "./state.js";
 
 const logger = getLogger().getLogger("server/libs/pageRender");
 
-import { ChunkExtractor } from '@loadable/server';
-import fs from "fs-extra";
-import path from "path";
-import { getPublicPath } from "../utils/getConfig";
 
 const clientStatsFile = path.resolve("." + getPublicPath() + "loadable-stats.json");
 if (!fs.existsSync(clientStatsFile)) {

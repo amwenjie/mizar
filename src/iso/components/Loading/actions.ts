@@ -1,4 +1,4 @@
-import { hideLoading as vHideLoading, showLoading as vShowLoading } from "./constants";
+import { hideLoading as vHideLoading, showLoading as vShowLoading } from "./constants.js";
 
 export function showLoading(id = "") {
     return {

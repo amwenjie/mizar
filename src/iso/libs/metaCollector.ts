@@ -1,12 +1,12 @@
 import React from "react";
 import { combineReducers } from "redux";
 import { RouteMatch } from "react-router-dom";
-import { pageInit } from "../../config";
-import { IInitialRenderData, IPageRouter } from "../../interface";
-import { getStore } from "../getStore";
-import { fetchWithRequestObject } from "../fetch";
-import getLogger from "../utils/logger";
-import appState from "./state";
+import { pageInit } from "../../config/index.js";
+import { IInitialRenderData, IPageRouter } from "../../interface.js";
+import { getStore } from "../getStore.js";
+import { fetchWithRequestObject } from "../fetch.js";
+import getLogger from "../utils/logger.js";
+import appState from "./state.js";
 
 const logger = getLogger().getLogger("iso/libs/metaCollector");
 

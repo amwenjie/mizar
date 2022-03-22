@@ -1,10 +1,11 @@
 import axios from "axios";
 import events from "events";
-import { IFetchConfig } from "../interface";
-import { loadingId } from "../config";
-import { getStore } from "./getStore";
-import { hideLoading as hideFetchLoading, showLoading as showFetchLoading } from "./components/Loading/actions";
-import getLogger from "./utils/logger";
+import { type RequestMethod } from "node-mocks-http";
+import { IFetchConfig } from "../interface.js";
+import { loadingId } from "../config/index.js";
+import { getStore } from "./getStore.js";
+import { hideLoading as hideFetchLoading, showLoading as showFetchLoading } from "./components/Loading/actions.js";
+import getLogger from "./utils/logger.js";
 
 declare const IS_SERVER_RUNTIME;
 const logger = getLogger().getLogger("iso/fetch");
@@ -16,8 +17,12 @@ export const fetchWithRequestObject = (httpRequest) => async (config: IFetchConf
     }
 
     if (IS_SERVER_RUNTIME) {
-        const httpMock = require("node-mocks-http");
-        const apiController = require("../server/libs/apiController").default;
+        const path = await import(/* webpackIgnore: true */ "path");
+        const { fileURLToPath } = await import(/* webpackIgnore: true */ "url");
+        const __filename = fileURLToPath(import.meta.url);
+        const __dirname = path.dirname(__filename);
+        const httpMock = await import(/* webpackIgnore: true */ "node-mocks-http");
+        const apiController = (await import(/* webpackIgnore: true */ path.resolve(__dirname, "../server/libs/apiController.js"))).default;
 
         // 是nodejs环境
         let data;
@@ -39,7 +44,7 @@ export const fetchWithRequestObject = (httpRequest) => async (config: IFetchConf
             }
             // 请求本地API
             const mockRequest = httpMock.createRequest({
-                method: config.method.toUpperCase() || "GET",
+                method: (config.method.toUpperCase() || "GET") as RequestMethod,
                 url,
                 query: config.params || {},
                 body: config.data || {},

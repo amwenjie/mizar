@@ -1,5 +1,5 @@
-import { hideLoading, showLoading } from "./constants";
-import initialState from "./initialState";
+import { hideLoading, showLoading } from "./constants.js";
+import initialState from "./initialState.js";
 
 export default (id: string) => {
     return (state = initialState, action) => {

@@ -32,8 +32,16 @@
         "@types/react": "~17.0.37",
         "@types/react-dom": "~17.0.11",
         "@types/react-redux": "~7.1.20",
-        "alcor": "~0.1.57"
+        "@types/source-map-support": "~0.5.4",
+        "alcor": "0.1.61"
     },
+    "keywords": [
+        "ssr",
+        "spa",
+        "mpa",
+        "react",
+        "isomorphic"
+    ],
     "license": "MIT",
     "name": "mizar",
     "peerDependencies": {
@@ -45,7 +53,8 @@
         "react-router-dom": "~6.2.1",
         "redux": "~4.1.2",
         "redux-thunk": "~2.4.1",
-        "tslib": "~2.3.1"
+        "tslib": "~2.3.1",
+        "typescript": "~4.6.2"
     },
     "repository": {
         "type": "git",
@@ -54,5 +63,6 @@
     "scripts": {
         "build": "alcor pack"
     },
-    "version": "0.0.48"
+    "type": "module",
+    "version": "0.0.49"
 }

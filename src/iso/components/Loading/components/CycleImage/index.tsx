@@ -1,5 +1,5 @@
 import React from "react";
-import { IProps, IState } from "./interface";
+import { IProps, IState } from "./interface.js";
 
 class CycleImage extends React.Component<IProps, IState> {
 
