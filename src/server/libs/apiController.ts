@@ -26,7 +26,7 @@ function getMatchedApiPath(path: string): {
     return null;
 }
 
-export default async (req, res, next = logger.error) => {
+export default async (req, res) => {
     logger.info("api req.path", req.path);
     logger.info("api req.body", req.body);
     logger.info("api req.query", req.query);
@@ -56,8 +56,7 @@ export default async (req, res, next = logger.error) => {
     try {
         await api(req, res);
     } catch (e) {
-        logger.error("api execute error : " + apiPath);
-        logger.error(e);
-        next(e);
+        logger.error("api execute error : " + apiPath, e);
+        res.status(500).end();
     }
 };

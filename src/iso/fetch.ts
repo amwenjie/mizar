@@ -4,6 +4,7 @@ import httpMock, { type RequestMethod } from "node-mocks-http";
 import { IFetchConfig } from "../interface.js";
 import { loadingId } from "../config/index.js";
 import apiController from "../server/libs/apiController.js";
+import httpResCodeMap from "../server/utils/httpResCodeMap.js";
 import { getStore } from "./getStore.js";
 import { hideLoading as hideFetchLoading, showLoading as showFetchLoading } from "./components/Loading/actions.js";
 import getLogger from "./utils/logger.js";
@@ -58,15 +59,21 @@ export const fetchWithRequestObject = (httpRequest) => async (config: IFetchConf
                         } else {
                             data = mockResponse._getData();
                         }
+                        const status = mockResponse._getStatusCode();
                         const res = {
                             data,
-                            status: mockResponse._getStatusCode(),
+                            status,
                             headers: mockResponse._getHeaders(),
-                            statusText: mockResponse._getStatusMessage(),
+                            statusText: httpResCodeMap[status],
                         };
-                        resolve(res);
+                        
+                        if (status !== 200) {
+                            reject(res)
+                        } else {
+                            resolve(res);
+                        }
                     });
-                    apiController(mockRequest, mockResponse, reject);
+                    apiController(mockRequest, mockResponse);
                 });
             })();
         }
