@@ -1,8 +1,9 @@
 import axios from "axios";
 import events from "events";
-import { type RequestMethod } from "node-mocks-http";
+import httpMock, { type RequestMethod } from "node-mocks-http";
 import { IFetchConfig } from "../interface.js";
 import { loadingId } from "../config/index.js";
+import apiController from "../server/libs/apiController.js";
 import { getStore } from "./getStore.js";
 import { hideLoading as hideFetchLoading, showLoading as showFetchLoading } from "./components/Loading/actions.js";
 import getLogger from "./utils/logger.js";
@@ -17,13 +18,6 @@ export const fetchWithRequestObject = (httpRequest) => async (config: IFetchConf
     }
 
     if (IS_SERVER_RUNTIME) {
-        const path = await import(/* webpackIgnore: true */ "path");
-        const { fileURLToPath } = await import(/* webpackIgnore: true */ "url");
-        const __filename = fileURLToPath(import.meta.url);
-        const __dirname = path.dirname(__filename);
-        const httpMock = await import(/* webpackIgnore: true */ "node-mocks-http");
-        const apiController = (await import(/* webpackIgnore: true */ path.resolve(__dirname, "../server/libs/apiController.js"))).default;
-
         // 是nodejs环境
         let data;
         let url = config.url;
@@ -57,9 +51,8 @@ export const fetchWithRequestObject = (httpRequest) => async (config: IFetchConf
                     const mockResponse = httpMock.createResponse({
                         eventEmitter: events.EventEmitter,
                     });
-                    mockResponse.addListener("send", () => {
-                        const ct = mockResponse.getHeader("content-type") as string;
-                        if (ct && /json/.test(ct)) {
+                    mockResponse.addListener("end", () => {
+                        if (mockResponse._isJSON()) {
                             resolve(mockResponse._getJSONData());
                             return;
                         }

@@ -30,12 +30,13 @@ export default async (req, res, next = logger.error) => {
     logger.info("api req.path", req.path);
     logger.info("api req.body", req.body);
     logger.info("api req.query", req.query);
+    const method = req.method;
     let apiPath = req.path; // .replace(/^\//, "");
     // 根据path找到并调用对应的api方法
     // apiPath期望的形式: path/method
     if (!/^(?:\/[A-Za-z][A-Za-z0-9]*?)+$/.test(apiPath)) {
-        // 不合法的api请求，交给错误中间件兜底
-        next(new Error("不合法的API请求: " + apiPath));
+        res.status(404).end();
+        logger.warn("不合法的API请求: " + apiPath);
         return;
     }
     const matched = getMatchedApiPath(apiPath);
@@ -45,14 +46,18 @@ export default async (req, res, next = logger.error) => {
         };
         apiPath = matched.apiPath;
     }
-    const api = state.apis[apiPath];
+    const apiMap = state.apis[apiPath];
+    const api = apiMap ? (apiMap[method] || apiMap.all) : null;
     if (typeof api !== "function") {
-        next(new Error("该API不存在: " + apiPath));
+        res.status(404).end();
+        logger.warn("服务端请求的API不存在: " + apiPath);
         return;
     }
     try {
         await api(req, res);
     } catch (e) {
+        logger.error("api execute error : " + apiPath);
+        logger.error(e);
         next(e);
     }
 };

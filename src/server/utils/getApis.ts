@@ -1,6 +1,7 @@
 import fs from "fs-extra";
 import path from "path";
 import klaw from "klaw";
+import isFunction from "../../iso/utils/isFunction.js";
 import getLogger from "./logger.js";
 
 const logger = getLogger().getLogger("server/utils/getApis");
@@ -13,10 +14,10 @@ async function getApiPath(entry): Promise<string[]> {
         const walk = klaw(entry, {
             depthLimit: -1,
         });
-        walk.on("data", async (state) => {
-            const isFile = state.stats.isFile();
-            const isDir = state.stats.isDirectory();
-            const src = state.path;
+        walk.on("data", file => {
+            const isFile = file.stats.isFile();
+            const isDir = file.stats.isDirectory();
+            const src = file.path;
             logger.debug('klaw src: ', src);
             logger.debug('klaw isFile: ', isFile, " ; isDir: ", isDir);
             if (isFile && /\.js$/i.test(src)) {
@@ -48,27 +49,31 @@ export default async function () {
     // });
     if (files && files.length) {
         let apis = {};
-        files.forEach(async url => {
+        for (let i = 0, len = files.length; i < len; i++) {
+            const url = files[i];
             const file = `${apisBasePath}${url}.js`;
-            logger.debug("file: ", file);
+            logger.debug("api file uri: ", file);
             if (!fs.existsSync(file)) {
-                logger.error('file not exist: ', file);
-                return;
+                logger.error('api file not exist: ', file);
+                continue;
             }
             try {
                 const instance = await import(/* webpackIgnore: true */ file);
                 logger.debug('api url: ', url);
-                const methods = Object.keys(instance).filter(k => typeof instance[k] === "function");
+                const methods = Object.keys(instance).filter(k => {
+                    const fn = instance[k];
+                    return isFunction(fn) || isFunction(fn.default);
+                });
                 logger.debug('api methods: ', methods);
                 methods.forEach(method => {
                     // 先处理几种特殊导出方法： get\post\put\delete\default
                     if (!apis[url]) {
                         apis[url] = {};
                     }
-                    if (/^get$|^post$|^delete$|^put$/gi.test(method)) {
+                    if (/^(?:GET|POST|DELETE|PUT)$/gi.test(method)) {
                         apis[url][method] = instance[method];
                     } else if ("default" === method) {
-                        apis[url]["all"] = instance[method];
+                        apis[url]["all"] = isFunction(instance[method]) ? instance[method] : instance[method].default;
                     } else {
                         const childPath = `${url}/${method}`;
                         if (!apis[childPath]) {
@@ -80,7 +85,7 @@ export default async function () {
             } catch (e) {
                 logger.error(e);
             }
-        });
+        }
         return apis;
     }
     return null;
