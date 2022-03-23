@@ -1,0 +1,6 @@
+{
+    "name": "mizar",
+    "port": 8889,
+    "cdn": "/",
+    "assetsPathPrefix": "/"
+}

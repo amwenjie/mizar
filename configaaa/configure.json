@@ -1,0 +1,14 @@
+{
+    "debugPort": 9026,
+    "tslint": true,
+    "stylelint": true,
+    "postcss-loader": {
+
+    },
+    "less-loader": {
+
+    },
+    "sass-loader": {
+        
+    }
+}
