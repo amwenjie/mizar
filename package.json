@@ -64,5 +64,5 @@
         "build": "alcor pack"
     },
     "type": "module",
-    "version": "0.0.50"
+    "version": "0.0.51"
 }

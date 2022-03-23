@@ -52,11 +52,19 @@ export const fetchWithRequestObject = (httpRequest) => async (config: IFetchConf
                         eventEmitter: events.EventEmitter,
                     });
                     mockResponse.addListener("end", () => {
+                        let data;
                         if (mockResponse._isJSON()) {
-                            resolve(mockResponse._getJSONData());
-                            return;
+                            data = mockResponse._getJSONData();
+                        } else {
+                            data = mockResponse._getData();
                         }
-                        resolve(mockResponse._getData());
+                        const res = {
+                            data,
+                            status: mockResponse._getStatusCode(),
+                            headers: mockResponse._getHeaders(),
+                            statusText: mockResponse._getStatusMessage(),
+                        };
+                        resolve(res);
                     });
                     apiController(mockRequest, mockResponse, reject);
                 });
