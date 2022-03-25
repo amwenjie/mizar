@@ -3,7 +3,7 @@
 ## 使用此框架的应用程序，需要使用alcor打包编译工具。应用目录结构应为：
     -config   用于存放配置文件的目录
         -app.json   用于配置应用的运行时信息，比如该应用的node服务启动端口、cdn地址等
-        -configure.json   用于配置应用的编译时信息，比如是否启用eslint、配置stylelint、配置less-loader等
+        -configure.json   用于配置应用的编译时信息，比如配置eslint、配置stylelint、配置less-loader等
     -src   应用代码源文件目录
         -isomorphic    同构内容所在目录，组件会被在客户端或服务端执行，需要注意执行环境特有能力的使用
             -index.ts    客户端启动入口
@@ -29,6 +29,9 @@
                 -api-name.ts
             -index.ts   服务端启动入口
         -tsconfig.json
+    -.eslintignore
+    -.eslintrc.js
+    -.stylelintrc.json
     -package.json
     -tsconfig.json
     -tslint.json

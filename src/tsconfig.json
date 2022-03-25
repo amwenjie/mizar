@@ -5,6 +5,7 @@
     "compilerOptions": {
         "target": "es3",
         "traceResolution": false,
+        "removeComments": true,
         "importHelpers": true,
         "noEmitHelpers": false,
         "allowJs": false,
