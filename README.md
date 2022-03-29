@@ -34,7 +34,6 @@
     -.stylelintrc.json
     -package.json
     -tsconfig.json
-    -tslint.json
 
 ## 使用类组件开发
    * 定义类组件的方式 (以上面目录结构中的pageA举例)
@@ -225,7 +224,7 @@
         },
         {
             path: "/detail/video/:id",
-            element: AsyncCom,
+            element: <AsyncCom />,
         },
         {
             path: "*",
