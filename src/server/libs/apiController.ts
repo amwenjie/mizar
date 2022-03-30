@@ -19,7 +19,7 @@ function getMatchedApiPath(path: string): {
         if (isMatched) {
             return {
                 apiPath: p,
-                params: (matched as MatchResult).params,
+                params: matched.params,
             };
         }
     }

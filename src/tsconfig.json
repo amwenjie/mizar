@@ -1,29 +1,6 @@
 {
-    "ts-node": {
-        "esm": true
-    },
+    "extends": "../tsconfig.json",
     "compilerOptions": {
-        "target": "es3",
-        "traceResolution": false,
-        "removeComments": true,
-        "importHelpers": true,
-        "noEmitHelpers": false,
-        "allowJs": false,
-        "baseUrl": ".",
-        "outDir": "../dist",
-        "pretty": false,
-        "module": "esnext",
-        "moduleResolution": "node",
-        "jsx": "react",
-        "declaration": true,
-        "sourceMap": false,
-        "noImplicitAny": false,
-        "noFallthroughCasesInSwitch": false,
-        "allowSyntheticDefaultImports": true,
-        "esModuleInterop": true,
-        "typeRoots": [
-            "../node_modules/@types",
-            "../typings"
-        ]
+        "outDir": "../dist"
     }
 }

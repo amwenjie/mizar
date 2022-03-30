@@ -16,7 +16,7 @@ let defaultLogger: IGetLogger;
 let isConfigured = false;
 declare const IS_DEBUG_MODE;
 class Logger {
-    private suffix: string = "";
+    private suffix = "";
     private supportMethods = ["log", "info", "warn", "error"];
     constructor(suffix) {
         this.suffix = suffix;

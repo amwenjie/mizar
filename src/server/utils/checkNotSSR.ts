@@ -1,3 +1,3 @@
 export default function(query: any): boolean {
-    return ('_nossr' in query);
+    return ('_notssr' in query);
 }

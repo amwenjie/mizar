@@ -2,6 +2,7 @@ import { parse } from "query-string";
 import React, { useEffect } from "react";
 import { useLocation, useRoutes } from "react-router-dom";
 import { loadingId, pageInit } from "../../../config/index.js";
+import { IRouteContainerProps } from "../../../interface.js";
 import { reduxConnect } from "../../connect.js";
 import { getInitialData, getMatchedComponent } from "../../libs/metaCollector.js";
 import getMatchedBranch from "../../libs/getMatchedBranch.js";
@@ -13,7 +14,7 @@ function Routes(props) {
     return useRoutes(props.router);
 }
 
-function RouteContainer(props) {
+function RouteContainer(props: IRouteContainerProps) {
     const { pathname, search } = useLocation();
     useEffect(() => {
         const cb = async () => {

@@ -10,7 +10,7 @@ const apisBasePath = "./apis";
 async function getApiPath(entry): Promise<string[]> {
     return new Promise((resolve, reject) => {
         logger.debug("getApiFiles entry: ", entry);
-        let files: string[] = [];
+        const files: string[] = [];
         const walk = klaw(entry, {
             depthLimit: -1,
         });
@@ -43,12 +43,12 @@ export default async function () {
     if (!fs.existsSync(apiPath)) {
         return null;
     }
-    let files = await getApiPath(apiPath);
+    const files = await getApiPath(apiPath);
     // files.forEach(name => {
     //     console.debug(require(/* webpackIgnore: true */`./apis${name}.js`));
     // });
     if (files && files.length) {
-        let apis = {};
+        const apis = {};
         for (let i = 0, len = files.length; i < len; i++) {
             const url = files[i];
             const file = `${apisBasePath}${url}.js`;
@@ -58,7 +58,8 @@ export default async function () {
                 continue;
             }
             try {
-                const instance = await import(/* webpackIgnore: true */ file);
+                // import() use ./apis contact var:url not use var:file or var:apisBasePath, avoid webpack warning:Critical dependency: the request of a dependency is an expression
+                const instance = await import(/* webpackIgnore: true */ `./apis${url}.js`);
                 logger.debug('api url: ', url);
                 const methods = Object.keys(instance).filter(k => {
                     const fn = instance[k];

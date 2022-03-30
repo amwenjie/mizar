@@ -1,12 +1,12 @@
-import { ChunkExtractor } from '@loadable/server';
+import { ChunkExtractor } from "@loadable/server";
 import { type Request, type Response } from "express";
 import fs from "fs-extra";
 import path from "path";
 import React, { ReactElement } from "react";
-import ReactDomServer from "react-dom/server";
+import ReactDomServer from "react-dom/server.js";
 import { Provider } from "react-redux";
 import { RouteMatch } from "react-router-dom";
-import { StaticRouter } from "react-router-dom/server";
+import { StaticRouter } from "react-router-dom/server.js";
 import { createStore } from "redux";
 import { loadingId } from "../../config/index.js";
 import { getReducerName as getLoadingReducerName } from "../../iso/components/Loading/index.js";
@@ -83,7 +83,7 @@ export async function getResponsePage(req: Request, res: Response, pageRouter: I
     const jsx = extractor.collectChunks(matchedPageCom.element);
     let meta = await getHtmlMeta(extractor);
     if (notSSR) {
-        logger.info("请求参数携带_nossr的标志，跳过服务端首屏数据获取.");
+        logger.info("请求参数携带_notssr的标志，跳过服务端首屏数据获取.");
     } else {
         logger.info("准备进行首屏数据服务端获取.");
         const initialData: IInitialRenderData = await getSSRInitialData(matchedPageCom, req);
@@ -108,7 +108,7 @@ export async function getResponsePage(req: Request, res: Response, pageRouter: I
     }
 
     return getHtmlString(req, res, {
-        isCSR: notSSR,
+        onlyCSR: notSSR,
         initialState: preloadData,
         meta,
         children,

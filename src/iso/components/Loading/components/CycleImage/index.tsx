@@ -31,6 +31,7 @@ class CycleImage extends React.Component<IProps, IState> {
                     {
                         this.props.images.map((imageSrc, index) => (
                             <img
+                                key={index}
                                 src={imageSrc}
                                 style={{
                                     ...this.style,

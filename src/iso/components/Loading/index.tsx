@@ -29,4 +29,4 @@ export const getReducerName = (id: string) => {
 
 export default function (id: string) {
     return connect()(Loading, reducer(id), getReducerName(id));
-};
+}

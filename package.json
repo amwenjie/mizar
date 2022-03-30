@@ -13,7 +13,7 @@
         "http-proxy-middleware": "~2.0.3",
         "internal-ip": "~6.2.0",
         "klaw": "~4.0.1",
-        "log4js": "~6.4.2",
+        "log4js": "~6.4.4",
         "node-mocks-http": "~1.11.0",
         "path-to-regexp": "~6.2.0",
         "query-string": "~7.1.1"
@@ -61,5 +61,5 @@
         "build": "alcor pack"
     },
     "type": "module",
-    "version": "0.0.51"
+    "version": "0.0.52"
 }

@@ -2,8 +2,8 @@ import { type Request, type Response } from "express";
 
 let afsFn;
 
-function getClientStoreData(initialState, isCSR) {
-    return `;window.__INITIAL_STATE__=${JSON.stringify(initialState || {}).replace(/</g, "\\u003c")};${isCSR ? ";window.__isCSR__=" + JSON.stringify(isCSR) + ";" : ""}`;
+function getClientStoreData(initialState, onlyCSR) {
+    return `;window.__INITIAL_STATE__=${JSON.stringify(initialState || {}).replace(/</g, "\\u003c")};${onlyCSR ? ";window.__onlyCSR__=" + JSON.stringify(onlyCSR) + ";" : ""}`;
 }
 
 function getAutoFontSizeFn(calcRootFontSize) {
@@ -32,7 +32,7 @@ function getAutoFontSizeFn(calcRootFontSize) {
 
 export default function getHtmlString(req: Request, res: Response, props): string {
         const {
-            isCSR = true,
+            onlyCSR = true,
             initialState,
             children,
             meta,
@@ -49,7 +49,7 @@ export default function getHtmlString(req: Request, res: Response, props): strin
             calcRootFontSize,
         } = meta;
 
-        const clientStore = getClientStoreData(initialState, isCSR);
+        const clientStore = getClientStoreData(initialState, onlyCSR);
 
         const rfs = getAutoFontSizeFn(calcRootFontSize);
         return `<html>

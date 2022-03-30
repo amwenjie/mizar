@@ -66,7 +66,7 @@ export function getMatchedComponent(matchedRoute: RouteMatch): {
 export async function getInitialData(matchedPageCom, request): Promise<IInitialRenderData> {
     // 该方法根据路由和请求找到对应的组件获取初始数据。被client端RouterContainer和server端路由入口调用。
     if (matchedPageCom && matchedPageCom.element) {
-        let component = matchedPageCom.element;
+        const component = matchedPageCom.element;
         // if (typeof matchedPageCom.element.load === "function") {
         //     component = await component.load();
         // }

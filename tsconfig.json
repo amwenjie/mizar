@@ -1,0 +1,31 @@
+{
+    "ts-node": {
+        "esm": true
+    },
+    "compilerOptions": {
+        "target": "es2022",
+        "traceResolution": false,
+        "importHelpers": true,
+        "removeComments": true,
+        "noEmitHelpers": false,
+        "allowJs": false,
+        "baseUrl": ".",
+        "outDir": "dist",
+        "pretty": false,
+        "module": "es2022",
+        "jsx": "react",
+        "moduleResolution": "node",
+        "declaration": true,
+        "sourceMap": false,
+        "noImplicitAny": false,
+        "noFallthroughCasesInSwitch": false,
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "typeRoots": [
+            "node_modules/@types",
+            "typings"
+        ]
+    }
+}

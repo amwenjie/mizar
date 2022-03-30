@@ -9,8 +9,8 @@ import RouteContainer from "./components/RouteContainer/index.js";
 import appState from "./libs/state.js";
 
 export function bootstrap(pageRouter: IPageRouter[]) {
-    return async (id: string = "app") => {
-        const r = (window as any).__isCSR__ === false ? "hydrate" : "render";
+    return async (id = "app") => {
+        const r = (window as any).__onlyCSR__ === false ? "hydrate" : "render";
         loadableReady(() => {
             ReactDom[r](
                 <Provider store={getStore()} >

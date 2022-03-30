@@ -5,7 +5,7 @@ import { IInitialRenderData } from "../../interface.js";
 export default async function getSSRInitialData(matchedPageCom, req: Request): Promise<IInitialRenderData> {
     const initialData = await getInitialData(matchedPageCom, req);
     let preloadData: any = {};
-    let pageReducerName: string = "";
+    let pageReducerName = "";
     if (initialData.preloadData) {
         preloadData = initialData.preloadData;
     }

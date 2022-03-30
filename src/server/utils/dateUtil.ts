@@ -29,7 +29,7 @@ class DateUtil {
             format = format.replace(RegExp.$1, (date.getFullYear() + "").substr(4 - RegExp.$1.length));
         }
         for (const k in o) {
-            if (o.hasOwnProperty(k)) {
+            if (Object.prototype.hasOwnProperty.call(o, k)) {
                 let pad = "00";
                 if (k === "u+") {
                     pad = "000";

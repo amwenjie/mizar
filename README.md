@@ -297,6 +297,7 @@
    * WebServer构造函数接收一个可选配置对象参数：
 ```
     interface IWebServerOption {
+        notSSR?: boolean;
         access?: any;
         compress?: boolean;
         cookieParser?: boolean;

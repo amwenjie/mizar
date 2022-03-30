@@ -3,7 +3,7 @@ import Compression from "compression";
 import CookieParser from "cookie-parser";
 import cors, { type CorsOptions, type CorsOptionsDelegate } from "cors";
 import crypto from "crypto";
-import Express from "express";
+import Express, { type NextFunction, type Request, type Response } from "express";
 import helmet, { type HelmetOptions } from "helmet";
 import * as Http from "http";
 import { createProxyMiddleware, Options as ProxyOptions } from "http-proxy-middleware";
@@ -63,6 +63,7 @@ interface ISingleRouteCorsOption {
 }
 
 interface IWebServerOption {
+    notSSR?: boolean;
     access?: any;
     compress?: boolean;
     cookieParser?: boolean;
@@ -100,6 +101,7 @@ class WebServer {
             throw new Error("no port specified");
         }
         const defautlOptions: IWebServerOption = {
+            notSSR: false,
             port: getPort(),
         };
         this.options = {
@@ -200,23 +202,25 @@ class WebServer {
     }
 
     private async listen(port, hostname?: string) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                if (hostname === "local-ip") {
-                    hostname = await internalIp.v4() || await internalIp.v6() || "0.0.0.0";
-                } else if (hostname === "local-ipv4") {
-                    hostname = await internalIp.v4() || "0.0.0.0";
-                } else if (hostname === 'local-ipv6') {
-                    hostname = await internalIp.v6() || '::';
+        return new Promise((resolve, reject) => {
+            (async () => {
+                try {
+                    if (hostname === "local-ip") {
+                        hostname = await internalIp.v4() || await internalIp.v6() || "0.0.0.0";
+                    } else if (hostname === "local-ipv4") {
+                        hostname = await internalIp.v4() || "0.0.0.0";
+                    } else if (hostname === 'local-ipv6') {
+                        hostname = await internalIp.v6() || '::';
+                    }
+                    this.server.listen({
+                        port: port,
+                        host: hostname,
+                    });
+                    resolve("");
+                } catch (e) {
+                    reject(e);
                 }
-                this.server.listen({
-                    port: port,
-                    host: hostname,
-                });
-                resolve("");
-            } catch (e) {
-                reject(e);
-            }
+            })();
         });
     }
 
@@ -232,6 +236,9 @@ class WebServer {
      */
     private setMiddleware() {
         const features = {
+            notSSR: () => {
+                this.setNotSSRQueryFeature();
+            },
             helmet: () => {
                 this.setupHelmetFeature();
             },
@@ -325,8 +332,19 @@ class WebServer {
         //     runnableFeatures.push('staticServeIndex', 'staticWatch');
         // }
 
+        if (this.options.notSSR) {
+            runnableFeatures.push("notSSR");
+        }
+
         runnableFeatures.forEach((feature) => {
             features[feature]();
+        });
+    }
+
+    private setNotSSRQueryFeature() {
+        this.app.use((req: Request, res: Response, next: NextFunction) => {
+            req.query._notssr = "1";
+            next();
         });
     }
 

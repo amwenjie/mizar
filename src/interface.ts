@@ -1,4 +1,5 @@
 import { type AxiosRequestConfig } from "axios";
+import { ConnectedComponent } from "react-redux";
 export interface IGetMetaFn {
     (): IMetaProps;
 }
@@ -50,4 +51,10 @@ export interface IPageRouter {
 
 export interface IFetchConfig extends AxiosRequestConfig {
     showLoading?: boolean;
+}
+
+export interface IRouteContainerProps {
+    pageRouter: IPageRouter[];
+    dispatch?;
+    [key: string]: any;
 }
