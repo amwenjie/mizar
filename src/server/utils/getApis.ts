@@ -58,8 +58,7 @@ export default async function () {
                 continue;
             }
             try {
-                // import() use ./apis contact var:url not use var:file or var:apisBasePath, avoid webpack warning:Critical dependency: the request of a dependency is an expression
-                const instance = await import(/* webpackIgnore: true */ `./apis${url}.js`);
+                const instance = await import(/* webpackIgnore: true */ file);
                 logger.debug('api url: ', url);
                 const methods = Object.keys(instance).filter(k => {
                     const fn = instance[k];
