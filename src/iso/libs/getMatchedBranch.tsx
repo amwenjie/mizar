@@ -1,5 +1,6 @@
-import { matchRoutes } from "react-router-dom";
-import { IPageRouter } from "../../interface.js";
+import { type ReactNode } from "react";
+import { matchRoutes, type RouteMatch } from "react-router-dom";
+import { type IPageRouter } from "../../interface.js";
 
 export function checkElementIsLoadable(element): boolean {
     if (element && typeof element.preload === "function" && typeof element.load === "function") {
@@ -8,7 +9,7 @@ export function checkElementIsLoadable(element): boolean {
     return false;
 }
 
-export async function loadLoadableElement(element): Promise<JSX.Element|null> {
+export async function loadLoadableElement(element): Promise<ReactNode|null> {
     let RealCom;
     if (checkElementIsLoadable(element)) {
         RealCom = await element.load();
@@ -17,7 +18,7 @@ export async function loadLoadableElement(element): Promise<JSX.Element|null> {
     return element;
 }
 
-export default async function (pageRouter: IPageRouter[], path: string) {
+export default function (pageRouter: IPageRouter[], path: string): RouteMatch | null {
     const branch = matchRoutes(pageRouter, path);
     let matched = null;
     if (branch) {

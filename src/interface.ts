@@ -1,5 +1,5 @@
 import { type AxiosRequestConfig } from "axios";
-import { ConnectedComponent } from "react-redux";
+import { type Params } from "react-router-dom";
 export interface IGetMetaFn {
     (): IMetaProps;
 }
@@ -58,3 +58,9 @@ export interface IRouteContainerProps {
     dispatch?;
     [key: string]: any;
 }
+
+export interface IMatchedRouteCom {
+    element: React.ReactNode;
+    pageComName?: string;
+    params?: Params;
+ }

@@ -2,7 +2,7 @@ import { parse } from "query-string";
 import React, { useEffect } from "react";
 import { useLocation, useRoutes } from "react-router-dom";
 import { loadingId, pageInit } from "../../../config/index.js";
-import { IRouteContainerProps } from "../../../interface.js";
+import { type IRouteContainerProps } from "../../../interface.js";
 import { reduxConnect } from "../../connect.js";
 import { getInitialData, getMatchedComponent } from "../../libs/metaCollector.js";
 import getMatchedBranch from "../../libs/getMatchedBranch.js";
@@ -19,7 +19,7 @@ function RouteContainer(props: IRouteContainerProps) {
     useEffect(() => {
         const cb = async () => {
             // 当在浏览器端用无刷新的形式切换页面时，该函数被触发
-            const matchedBranch = await getMatchedBranch(props.pageRouter, pathname);
+            const matchedBranch = getMatchedBranch(props.pageRouter, pathname);
             if (!matchedBranch) {
                 window.location.reload();
                 return;

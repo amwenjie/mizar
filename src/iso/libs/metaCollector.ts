@@ -1,8 +1,8 @@
 import React from "react";
 import { combineReducers } from "redux";
-import { RouteMatch } from "react-router-dom";
+import { type Params, type RouteMatch } from "react-router-dom";
 import { pageInit } from "../../config/index.js";
-import { IInitialRenderData, IPageRouter } from "../../interface.js";
+import { type IInitialRenderData, type IMatchedRouteCom, type IPageRouter } from "../../interface.js";
 import { getStore } from "../getStore.js";
 import { fetchWithRequestObject } from "../fetch.js";
 import getLogger from "../utils/logger.js";
@@ -49,21 +49,21 @@ export function getRootReducer(): any {
 }
 
 export function getMatchedComponent(matchedRoute: RouteMatch): {
-    element: React.ElementType;
+    element: React.ReactNode;
     pageComName?: string;
-    params?: any;
+    params?: Params;
  } | null {
     if (matchedRoute.route.element) {
         return {
             params: matchedRoute.params,
-            element: matchedRoute.route.element as React.ElementType,
+            element: matchedRoute.route.element as React.ReactNode,
             pageComName: (matchedRoute.route as IPageRouter).name,
         };
     }
     return null;
 }
 
-export async function getInitialData(matchedPageCom, request): Promise<IInitialRenderData> {
+export async function getInitialData(matchedPageCom: IMatchedRouteCom, request): Promise<IInitialRenderData> {
     // 该方法根据路由和请求找到对应的组件获取初始数据。被client端RouterContainer和server端路由入口调用。
     if (matchedPageCom && matchedPageCom.element) {
         const component = matchedPageCom.element;

@@ -1,10 +1,10 @@
 import { type Request } from "express";
 import { getInitialData } from "../../iso/libs/metaCollector.js";
-import { IInitialRenderData } from "../../interface.js";
+import { type IInitialRenderData, type IMatchedRouteCom } from "../../interface.js";
 
-export default async function getSSRInitialData(matchedPageCom, req: Request): Promise<IInitialRenderData> {
+export default async function getSSRInitialData(matchedPageCom: IMatchedRouteCom , req: Request): Promise<IInitialRenderData> {
     const initialData = await getInitialData(matchedPageCom, req);
-    let preloadData: any = {};
+    let preloadData: unknown = {};
     let pageReducerName = "";
     if (initialData.preloadData) {
         preloadData = initialData.preloadData;

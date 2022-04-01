@@ -2,30 +2,29 @@ import { ChunkExtractor } from "@loadable/server";
 import { type Request, type Response } from "express";
 import fs from "fs-extra";
 import path from "path";
-import React, { ReactElement } from "react";
+import React, { type ReactElement } from "react";
 import ReactDomServer from "react-dom/server.js";
 import { Provider } from "react-redux";
-import { RouteMatch } from "react-router-dom";
+import { type RouteMatch } from "react-router-dom";
 import { StaticRouter } from "react-router-dom/server.js";
 import { createStore } from "redux";
 import { loadingId } from "../../config/index.js";
 import { getReducerName as getLoadingReducerName } from "../../iso/components/Loading/index.js";
 import RouteContainer from "../../iso/components/RouteContainer/index.js";
 import { getMatchedComponent, getRootReducer } from "../../iso/libs/metaCollector.js";
-import { IInitialRenderData, IMetaProps, IPageRouter } from "../../interface.js";
+import { type IInitialRenderData, type IMetaProps, type IPageRouter } from "../../interface.js";
 import getHtmlString from "../utils/getHtmlString.js";
 import getLogger from "../utils/logger.js";
 import checkNotSSR from "../utils/checkNotSSR.js";
-import { getPublicPath } from "../utils/getConfig.js";
 import getSSRInitialData from "../utils/getSSRInitialData.js";
 import state from "./state.js";
 
 const logger = getLogger().getLogger("server/libs/pageRender");
 
 
-const clientStatsFile = path.resolve("." + getPublicPath() + "loadable-stats.json");
+const clientStatsFile = path.resolve("./loadable-stats.json");
 if (!fs.existsSync(clientStatsFile)) {
-    throw new Error("client/loadable-stats.json must exist，nor application couldn't deploy");
+    throw new Error("./loadable-stats.json must exist，nor application couldn't deploy");
 }
 const extractorConf = { statsFile: clientStatsFile, entrypoints: ["index"] };
 
@@ -80,7 +79,7 @@ export async function getResponsePage(req: Request, res: Response, pageRouter: I
     let pageReducerName = "";
     const matchedPageCom = getMatchedComponent(matchedRoute);
     const extractor = new ChunkExtractor(extractorConf);
-    const jsx = extractor.collectChunks(matchedPageCom.element);
+    const jsx = extractor.collectChunks(matchedPageCom.element as JSX.Element);
     let meta = await getHtmlMeta(extractor);
     if (notSSR) {
         logger.info("请求参数携带_notssr的标志，跳过服务端首屏数据获取.");

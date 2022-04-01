@@ -1,5 +1,6 @@
 import Express from "express";
 import { matchRoutes } from "react-router-dom";
+import { type IMetaProps, type IPageRouter } from "../../../interface.js";
 import getPathForRouterMatch from "../../utils/getPathForRouterMatch.js";
 import getLogger from "../../utils/logger.js";
 import { getErrorPageRenderString, getResponsePage } from "../pageRender.js";
@@ -9,11 +10,11 @@ import Router from "./index.js";
 const logger = getLogger().getLogger("server/libs/router/pageRouter");
 
 class PageRouter extends Router {
-    private pageRouter;
+    private pageRouter: IPageRouter[];
     
     protected router: Express.Router = Express.Router();
 
-    public constructor(pageRouter, meta) {
+    public constructor(pageRouter: IPageRouter[], meta: IMetaProps) {
         super();
         state.meta = meta;
         this.pageRouter = pageRouter;
@@ -41,7 +42,7 @@ class PageRouter extends Router {
                 res.setHeader("Content-Type", "text/html; charset=utf-8");
                 res.write("<!DOCTYPE html>");
                 logger.info("match router branch.");
-                const htmlString: string = await getResponsePage(req, res, this.pageRouter, matchedRoute[matchedRoute.length - 1]);;
+                const htmlString: string = await getResponsePage(req, res, this.pageRouter, matchedRoute[matchedRoute.length - 1]);
                 logger.info("渲染完成，准备响应页面给客户端");
                 res.end(htmlString, "utf-8");
             } catch (err) {
