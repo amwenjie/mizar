@@ -21,7 +21,6 @@ import state from "./state.js";
 
 const logger = getLogger().getLogger("server/libs/pageRender");
 
-
 const clientStatsFile = path.resolve("./loadable-stats.json");
 if (!fs.existsSync(clientStatsFile)) {
     throw new Error("./loadable-stats.json must exist，nor application couldn't deploy");
@@ -50,8 +49,8 @@ export async function getHtmlMeta(extractor: ChunkExtractor): Promise<IMetaProps
     return meta;
 }
 
-function getMetaData(pageInitialState) {
-    const meta: { title?, description?, keywords? } = {};
+function getMetaData(pageInitialState: IMetaProps) {
+    const meta: IMetaProps = {};
     if (pageInitialState.title) {
         meta.title = pageInitialState.title;
     }
