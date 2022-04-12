@@ -14,11 +14,11 @@ import ServeStatic from "serve-static";
 import { URL } from "url";
 import { getPort, getPublicPath } from "./utils/getConfig.js";
 import getLogger from "./utils/logger.js";
-import setupExitSignals from "./utils/setupExitSignals.js";
 import checkPositivePath from "./utils/checkPositivePath.js";
 
-declare const IS_DEBUG_MODE;
+declare const IS_DEBUG_MODE: boolean;
 declare const DEV_PROXY_CONFIG;
+declare const DEV_STATIC_HR_SERVE: boolean;
 
 const protocalPortMap = {
     "ftp:": 21,
@@ -112,7 +112,6 @@ class WebServer {
         this.setHealthCheck();
         this.errorEventHandler();
         this.createServer();
-        setupExitSignals(this);
     }
 
     private checkServerStarted(): boolean {
@@ -148,9 +147,14 @@ class WebServer {
         this.server = Http.createServer(this.app);
         // }
         this.server.on("error", e => {
-            log.error("server start error, please retry", e);
+            let emsg = "server start error: " + e.message;
+            if ((e as any).code === 'EADDRINUSE') {
+                emsg = `server cannot start, address in use: ${this.options.hostname || '127.0.0.1'}:${this.options.port}`;
+                console.error(emsg);
+            }
+            log.error(emsg);
             this.close();
-            throw new Error("server start error, please retry. " + e.message);
+            throw new Error(emsg);
         });
         this.server.on("listening", () => {
             this.state = true;
@@ -178,11 +182,11 @@ class WebServer {
     /**
      * 处理退出时的事件
      */
-    // private setCloseHandle() {
-    // process.once("SIGINT", () => {
-    //     this.close();
-    // });
-    // }
+    private setCloseHandle() {
+        process.once("SIGINT", () => {
+            this.close();
+        });
+    }
 
     private setHealthCheck() {
         this.app.get("/status", (req, res) => {
@@ -535,7 +539,9 @@ class WebServer {
         if (internalStatic && internalStatic.staticOption && internalStatic.isInternal) {
             staticOption = internalStatic.staticOption;
         }
-        this.options.static.splice(0, 0, this.getInteralStatic(staticOption));
+        if (!DEV_STATIC_HR_SERVE) {
+            this.options.static.splice(0, 0, this.getInteralStatic(staticOption));
+        }
         this.options.static.forEach(staticOption => {
             staticOption.path.forEach(path => {
                 if (!checkPositivePath(path)) {
@@ -592,7 +598,7 @@ class WebServer {
         if (!this.checkServerStarted()) {
             await this.bootstrapAsyncBefore();
             this.ready();
-            // this.setCloseHandle();
+            this.setCloseHandle();
             await this.listen(this.options.port, this.options.hostname);
             log.info(this.name, "bootstrapAsync", "port", this.options.port);
         }

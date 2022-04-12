@@ -23,7 +23,7 @@ const logger = getLogger().getLogger("server/libs/pageRender");
 
 const clientStatsFile = path.resolve("./loadable-stats.json");
 if (!fs.existsSync(clientStatsFile)) {
-    throw new Error("./loadable-stats.json must exist，nor application couldn't deploy");
+    throw new Error("application couldn't deploy without ./loadable-stats.json");
 }
 const extractorConf = { statsFile: clientStatsFile, entrypoints: ["index"] };
 

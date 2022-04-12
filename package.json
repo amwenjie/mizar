@@ -34,7 +34,7 @@
         "@types/react-redux": "~7.1.23",
         "@types/react-router": "~5.1.18",
         "@types/react-router-dom": "~5.3.3",
-        "alcor": "~0.1.63"
+        "alcor": "~0.1.66"
     },
     "keywords": [
         "ssr",
@@ -64,5 +64,5 @@
         "build": "alcor pack"
     },
     "type": "module",
-    "version": "0.0.52"
+    "version": "0.0.53"
 }
