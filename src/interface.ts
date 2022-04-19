@@ -23,10 +23,10 @@ export interface IMetaProps {
     keywords?: string;
     description?: string;
     favicon?: string;
-    styles?: string[];
-    scripts?: string[];
-    links?: any[];
-    metas?: any[];
+    styles?: (string|JSX.Element)[];
+    scripts?: (string|JSX.Element)[];
+    links?: (string|JSX.Element)[];
+    metas?: JSX.Element[];
     calcRootFontSize?: number | (() => void);
     loading?: boolean | object;
 }

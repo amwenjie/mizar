@@ -7,11 +7,11 @@ import getLogger from "./logger.js";
 const logger = getLogger().getLogger("server/utils/getApis");
 const apisBasePath = "./apis";
 
-async function getApiPath(entry): Promise<string[]> {
+async function getApiPath(apiContext: string): Promise<string[]> {
     return new Promise((resolve, reject) => {
-        logger.debug("getApiFiles entry: ", entry);
+        logger.debug("getApiFiles apiContext: ", apiContext);
         const files: string[] = [];
-        const walk = klaw(entry, {
+        const walk = klaw(apiContext, {
             depthLimit: -1,
         });
         walk.on("data", file => {
@@ -21,9 +21,9 @@ async function getApiPath(entry): Promise<string[]> {
             logger.debug('klaw src: ', src);
             logger.debug('klaw isFile: ', isFile, " ; isDir: ", isDir);
             if (isFile && /\.js$/i.test(src)) {
-                files.push(src.replace(`${entry}`, "").replace(".js", ""));
+                files.push(src); // .replace(apiContext, "").replace(".js", ""));
             }
-            // else if (isDir && src.replace(entry, "")) {
+            // else if (isDir && src.replace(apiContext, "")) {
             //     files = files.concat(await getApiFiles(state.path));
             // }
         });
@@ -39,26 +39,27 @@ async function getApiPath(entry): Promise<string[]> {
 }
 
 export default async function () {
-    const apiPath = path.resolve(apisBasePath);
-    if (!fs.existsSync(apiPath)) {
+    const apiContext = path.resolve(apisBasePath);
+    if (!fs.existsSync(apiContext)) {
         return null;
     }
-    const files = await getApiPath(apiPath);
+    const files = await getApiPath(apiContext);
     // files.forEach(name => {
     //     console.debug(require(/* webpackIgnore: true */`./apis${name}.js`));
     // });
     if (files && files.length) {
         const apis = {};
         for (let i = 0, len = files.length; i < len; i++) {
-            const url = files[i];
-            const file = `${apisBasePath}${url}.js`;
+            const file = files[i];
+            const url = file.replace(apiContext, "").replace(".js", "");
             logger.debug("api file uri: ", file);
             if (!fs.existsSync(file)) {
                 logger.error('api file not exist: ', file);
                 continue;
             }
             try {
-                const instance = await import(/* webpackIgnore: true */ file);
+                // eslint-disable-next-line @typescript-eslint/no-var-requires
+                const instance = require(file);
                 logger.debug('api url: ', url);
                 const methods = Object.keys(instance).filter(k => {
                     const fn = instance[k];

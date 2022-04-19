@@ -15,7 +15,7 @@ export function bootstrap(server: WebServer = new WebServer(
         cookieParser: true,
     }
 )) {
-    return async function (pageRouter: IPageRouter[], getMeta?: IGetMetaFn | IMetaProps) {
+    return async function (pageRouter: IPageRouter[], getMeta?: IGetMetaFn | IMetaProps): Promise<WebServer> {
         try {
             // __webpack_public_path__ = getPublicPath();
 
@@ -28,6 +28,7 @@ export function bootstrap(server: WebServer = new WebServer(
             server.useRouter(pr.getRouter());
 
             await server.bootstrapAsync();
+            return server;
         } catch (e) {
             logger.error("启动错误", e);
         }

@@ -42,9 +42,9 @@ class PageRouter extends Router {
                 res.setHeader("Content-Type", "text/html; charset=utf-8");
                 res.write("<!DOCTYPE html>");
                 logger.info("match router branch.");
-                const htmlString: string = await getResponsePage(req, res, this.pageRouter, matchedRoute[matchedRoute.length - 1]);
-                logger.info("渲染完成，准备响应页面给客户端");
-                res.end(htmlString, "utf-8");
+                const htmlPipableStream = await getResponsePage(req, res, this.pageRouter, matchedRoute[matchedRoute.length - 1]);
+                logger.info("stream准备完成，准备响应页面给客户端");
+                htmlPipableStream.pipe(res);
             } catch (err) {
                 res.end(getErrorPageRenderString(), "utf-8");
                 logger.error("服务端路由处理时出现异常: ", err.message, " ; stack: ", err.stack);
