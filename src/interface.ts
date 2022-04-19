@@ -1,4 +1,5 @@
 import { type AxiosRequestConfig } from "axios";
+import { type ReactNode } from "react";
 import { type Params } from "react-router-dom";
 export interface IGetMetaFn {
     (): IMetaProps;
@@ -56,11 +57,12 @@ export interface IFetchConfig extends AxiosRequestConfig {
 export interface IRouteContainerProps {
     pageRouter: IPageRouter[];
     dispatch?;
+    children?: ReactNode;
     [key: string]: any;
 }
 
 export interface IMatchedRouteCom {
-    element: React.ReactNode;
+    element: ReactNode;
     pageComName?: string;
     params?: Params;
  }

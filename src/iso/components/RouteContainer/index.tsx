@@ -2,7 +2,7 @@ import { parse } from "query-string";
 import React, { useEffect } from "react";
 import { useLocation, useRoutes } from "react-router-dom";
 import { loadingId, pageInit } from "../../../config/index.js";
-import { type IRouteContainerProps } from "../../../interface.js";
+import { type IPageRouter, type IRouteContainerProps } from "../../../interface.js";
 import { reduxConnect } from "../../connect.js";
 import { getInitialData, getMatchedComponent } from "../../libs/metaCollector.js";
 import getMatchedBranch from "../../libs/getMatchedBranch.js";
@@ -10,8 +10,21 @@ import getLoading from "../Loading/index.js";
 
 const FetchLoading = getLoading(loadingId);
 
-function Routes(props) {
+function Routes(props: {
+    router: IPageRouter[];
+    children?: React.ReactNode;
+}) {
     return useRoutes(props.router);
+}
+
+function ScrollToTop() {
+    const { pathname } = useLocation();
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [pathname]);
+
+    return null;
 }
 
 function RouteContainer(props: IRouteContainerProps) {
@@ -41,6 +54,7 @@ function RouteContainer(props: IRouteContainerProps) {
         cb();
     }, [pathname, search]);
     return (<>
+        <ScrollToTop />
         <Routes router={props.pageRouter} />
         <div className="loading-container"><FetchLoading /></div>
     </>);
