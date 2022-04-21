@@ -1,6 +1,7 @@
 {
     "author": "wenjie",
     "dependencies": {
+        "@loadable/component": "~5.15.2",
         "@loadable/server": "~5.15.2",
         "axios": "~0.26.1",
         "body-parser": "~1.20.0",
@@ -34,7 +35,7 @@
         "@types/react-dom": "~18.0.1",
         "@types/react-router": "~5.1.18",
         "@types/react-router-dom": "~5.3.3",
-        "alcor": "~1.0.0"
+        "alcor": "~1.0.1"
     },
     "keywords": [
         "ssr",
@@ -46,7 +47,6 @@
     "license": "MIT",
     "name": "mizar",
     "peerDependencies": {
-        "@loadable/component": "~5.15.2",
         "react": "~18.0.0",
         "react-dom": "~18.0.0",
         "react-redux": "~8.0.0",
@@ -64,5 +64,5 @@
         "build": "alcor pack"
     },
     "type": "module",
-    "version": "1.0.1"
+    "version": "1.0.2"
 }

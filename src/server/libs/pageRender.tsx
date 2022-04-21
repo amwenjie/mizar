@@ -98,8 +98,8 @@ let afsFn;
 
 function getAutoFontSizeFn(calcRootFontSize) {
     if (typeof afsFn === "undefined") {
-        afsFn = `${typeof calcRootFontSize === "number"
-            ? ['(function () {',
+        if (typeof calcRootFontSize === "number") {
+            afsFn = ['(function () {',
                 'var debc;',
                 'function setRootFontSize() {',
                 'var rootElement = document.documentElement;',
@@ -113,9 +113,13 @@ function getAutoFontSizeFn(calcRootFontSize) {
                 // 'styleElement.innerHTML = "html{font-size:" + rootFontSize + "px!important;}";',
                 '}setRootFontSize();',
                 'window.addEventListener("resize", function () { clearTimeout(debc); debc = setTimeout(setRootFontSize, 500); });',
-                '}());'].join('')
-            : typeof calcRootFontSize === "function"
-                ? "(" + calcRootFontSize.toString() + "());" : ""}`;
+                '}());'
+            ].join('');
+        } else if (typeof calcRootFontSize === "function") {
+            afsFn = "(" + calcRootFontSize.toString() + "());";
+        } else {
+            afsFn = "";
+        }
     }
     return afsFn;
 }
@@ -148,7 +152,7 @@ function getHtmlJSX(props) {
             <meta httpEquiv="content-type" content="text/html; charset=utf-8" />
             <title>{title}</title>
             <meta httpEquiv="x-ua-compatible" content="ie=edge" />
-            {keywords && <meta name="keywords" content={keywords} />},
+            {keywords && <meta name="keywords" content={keywords} />}
             {description && <meta name="description" content={description} />}
             <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1,user-scalable=no" />
             {metas}
@@ -157,11 +161,11 @@ function getHtmlJSX(props) {
                 <link key="l2" href={favicon} rel="shortcut icon" />,
                 <link key="l3" href={favicon} rel="bookmark" />]}
             {links}
-            {styles}
             {rfs && <script
                 nonce={resLocals.fsResponsiveNonce}
                 dangerouslySetInnerHTML={{__html: rfs}}
             ></script>}
+            {styles}
         </head>
         <body>
             <div id="app">

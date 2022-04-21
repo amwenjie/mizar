@@ -65,4 +65,4 @@ export interface IMatchedRouteCom {
     element: ReactNode;
     pageComName?: string;
     params?: Params;
- }
+}
