@@ -1,4 +1,4 @@
-import { parse } from "query-string";
+import queryString from "query-string";
 import React, { useEffect } from "react";
 import { useLocation, useRoutes } from "react-router-dom";
 import { loadingId, pageInit } from "../../../config/index.js";
@@ -41,7 +41,7 @@ function RouteContainer(props: IRouteContainerProps) {
             const { preloadData, pageReducerName, pageComName } = await getInitialData(matchedPageCom,
                 {
                     baseUrl: pathname,
-                    query: parse(search),
+                    query: queryString.parse(search),
                 },
             );
             Object.keys(preloadData).forEach(name => {

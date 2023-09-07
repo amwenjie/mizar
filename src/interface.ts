@@ -1,8 +1,15 @@
 import { type AxiosRequestConfig } from "axios";
+import { IRouterHandler, Router } from "express";
 import { type ReactNode } from "react";
-import { type Params } from "react-router-dom";
+import { RouteObject, type Params} from "react-router-dom";
 export interface IGetMetaFn {
     (): IMetaProps;
+}
+
+export interface IDynamicRoute {
+    [path: string]: IDynamicRoute | {
+        [method: string]: Function | any;
+    };
 }
 
 export interface IAppConf {
@@ -41,14 +48,20 @@ export interface IRootContainerProps {
     isCSR?: boolean;
 }
 
-export interface IPageRouter {
+export type IPageRouter = RouteObject & {
     caseSensitive?: boolean;
     children?: IPageRouter[];
-    element?: React.ReactNode;
-    index?: boolean;
     path?: string;
     name?: string;
+    element?: React.ReactNode; // | LoadableComponent<DefaultComponent<any>>;
 }
+// {
+//     caseSensitive?: boolean;
+//     children?: IPageRouter[];
+//     element?: React.ReactNode;
+//     path?: string;
+//     name?: string;
+// }
 
 export interface IFetchConfig extends AxiosRequestConfig {
     showLoading?: boolean;

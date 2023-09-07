@@ -1,6 +1,6 @@
-import { IMetaProps } from "../../interface.js";
+import { IDynamicRoute, IMetaProps, } from "../../interface.js";
 const state: {
-    apis: object;
+    apis: IDynamicRoute;
     meta: IMetaProps;
 } = {
     apis: {},

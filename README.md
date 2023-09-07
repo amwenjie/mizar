@@ -21,7 +21,7 @@
                 -pageB
                     - ...
             -typings
-                -*.d.ts    同构目录中，css\module-federation模块等类型定义
+                -externals.d.ts    同构目录中，css\module-federation模块等类型定义
             -tsconfig.json
         -public   存放一些非模块化的的内容，所需要用到的文件需要在服务端启动入口配置meta中加入，会在服务端渲染出的html中用标签引入
         -server   应用的服务端代码

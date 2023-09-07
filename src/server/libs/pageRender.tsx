@@ -1,4 +1,5 @@
 import { ChunkExtractor } from "@loadable/server";
+import { configureStore } from "@reduxjs/toolkit";
 import { type Request, type Response } from "express";
 import fs from "fs-extra";
 import path from "path";
@@ -7,7 +8,6 @@ import ReactDomServer from "react-dom/server";
 import { Provider } from "react-redux";
 import { type RouteMatch } from "react-router-dom";
 import { StaticRouter } from "react-router-dom/server";
-import { createStore } from "redux";
 import { loadingId } from "../../config/index.js";
 import { getReducerName as getLoadingReducerName } from "../../iso/components/Loading/index.js";
 import RouteContainer from "../../iso/components/RouteContainer/index.js";
@@ -47,7 +47,8 @@ export function getHtmlMeta(extractor: ChunkExtractor): IMetaProps {
         ...state.meta,
     };
     let styleIndex = meta.styles.length;
-    let scriptIndex = meta.styles.length;
+    let scriptIndex = meta.scripts.length;
+    let linkIndex = meta.links.length;
     meta.styles = meta.styles
         .map(createStyleElement)
         .concat(extractor.getStyleElements(() => {
@@ -66,7 +67,13 @@ export function getHtmlMeta(extractor: ChunkExtractor): IMetaProps {
             })
             // .replace(/\s+async\s+/ig, " defer ")
         );
-    // meta.links = meta.links.concat(extractor.getLinkTags());
+    meta.links = meta.links.concat(extractor.getLinkElements(
+        () => {
+            return {
+                key: "lnk" + linkIndex++
+            };
+        }
+    ));
 
     logger.debug("meta: ", meta);
     return meta;
@@ -156,11 +163,11 @@ function getHtmlJSX(props) {
             {description && <meta name="description" content={description} />}
             <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1,user-scalable=no" />
             {metas}
+            {links}
             {favicon && [
                 <link key="l1" href={favicon} rel="icon" />,
                 <link key="l2" href={favicon} rel="shortcut icon" />,
                 <link key="l3" href={favicon} rel="bookmark" />]}
-            {links}
             {rfs && <script
                 nonce={resLocals.fsResponsiveNonce}
                 dangerouslySetInnerHTML={{__html: rfs}}
@@ -203,7 +210,10 @@ export async function getResponsePage(
         pageReducerName = initialData.pageReducerName;
         logger.info("首屏数据服务端获取完成，准备进行服务端渲染.");
 
-        const store = createStore(getRootReducer(), preloadData);
+        const store = configureStore({
+            reducer: getRootReducer(),
+            preloadedState: preloadData,
+        });
 
         preloadData[getLoadingReducerName(loadingId)] = state.meta.loading;
 
@@ -225,5 +235,10 @@ export async function getResponsePage(
         meta,
         resLocals: res.locals,
         children,
-    }));
+    }), { 
+        onError: (err) => {
+            res.end(getErrorPageRenderString(), "utf-8");
+            console.error(err);
+        }
+    });
 }

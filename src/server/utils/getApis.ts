@@ -3,6 +3,7 @@ import path from "path";
 import klaw from "klaw";
 import isFunction from "../../iso/utils/isFunction.js";
 import getLogger from "./logger.js";
+import { IDynamicRoute } from "src/interface.js";
 
 const logger = getLogger().getLogger("server/utils/getApis");
 const apisBasePath = "./apis";
@@ -38,7 +39,7 @@ async function getApiPath(apiContext: string): Promise<string[]> {
     });
 }
 
-export default async function () {
+export default async function (): Promise<IDynamicRoute | null> {
     const apiContext = path.resolve(apisBasePath);
     if (!fs.existsSync(apiContext)) {
         return null;
@@ -51,7 +52,7 @@ export default async function () {
         const apis = {};
         for (let i = 0, len = files.length; i < len; i++) {
             const file = files[i];
-            const url = file.replace(apiContext, "").replace(".js", "");
+            const url = file.replace(apiContext, "").replace(".js", "").replace(/\\+/g, '/').replace(/\/\(([^\)]+?)\)\//g, '/:$1/');
             logger.debug("api file uri: ", file);
             if (!fs.existsSync(file)) {
                 logger.error('api file not exist: ', file);
