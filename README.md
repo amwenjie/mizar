@@ -29,8 +29,7 @@
                 -api-name.ts
             -index.ts   服务端启动入口
         -tsconfig.json
-    -.eslintignore
-    -.eslintrc.js
+    -.eslint.config.js
     -.stylelintrc.json
     -package.json
     -tsconfig.json

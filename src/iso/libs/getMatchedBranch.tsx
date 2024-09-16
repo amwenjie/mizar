@@ -1,6 +1,6 @@
-import { type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { matchRoutes, type RouteMatch } from "react-router-dom";
-import { type IPageRouter } from "../../interface.js";
+import type { IPageRouter } from "../../interface.js";
 
 export function checkElementIsLoadable(element): boolean {
     if (element && typeof element.preload === "function" && typeof element.load === "function") {

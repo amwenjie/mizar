@@ -1,8 +1,8 @@
 import React from "react";
 import { combineReducers } from "redux";
-import { type Params, type RouteMatch } from "react-router-dom";
+import type { Params, RouteMatch } from "react-router-dom";
 import { pageInit } from "../../config/index.js";
-import { type IInitialRenderData, type IMatchedRouteCom, type IPageRouter } from "../../interface.js";
+import type { IInitialRenderData, IMatchedRouteCom, IPageRouter } from "../../interface.js";
 import { getStore } from "../getStore.js";
 import { fetchWithRequestObject } from "../fetch.js";
 import getLogger from "../utils/logger.js";

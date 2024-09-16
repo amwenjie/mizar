@@ -1,7 +1,8 @@
 {
-    "ts-node": {
-        "esm": true
-    },
+    "include": [
+        "src",
+        "typings",
+    ],
     "compilerOptions": {
         "target": "es2022",
         "traceResolution": false,
@@ -12,9 +13,9 @@
         "baseUrl": ".",
         "outDir": "dist",
         "pretty": false,
-        "module": "es2022",
+        "module": "ESNext",
         "jsx": "react",
-        "moduleResolution": "node",
+        "moduleResolution": "Bundler",
         "declaration": true,
         "sourceMap": false,
         "noImplicitAny": false,

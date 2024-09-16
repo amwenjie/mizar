@@ -1,6 +1,6 @@
 import Express from "express";
 import { matchRoutes } from "react-router-dom";
-import { type IMetaProps, type IPageRouter } from "../../../interface.js";
+import type { IMetaProps, IPageRouter } from "../../../interface.js";
 import getPathForRouterMatch from "../../utils/getPathForRouterMatch.js";
 import getLogger from "../../utils/logger.js";
 import { getErrorPageRenderString, getResponsePage } from "../pageRender.js";

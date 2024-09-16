@@ -13,7 +13,6 @@ function getMatchedApiPath(path: string): {
         const p = pathArr[i];
         const matched = match(p, {
             decode: decodeURIComponent,
-            encode: encodeURI,
         })(path);
         const isMatched = matched !== false;
         if (isMatched) {

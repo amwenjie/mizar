@@ -6,9 +6,9 @@ import crypto from "crypto";
 import Express, { type NextFunction, type Request, type Response } from "express";
 import helmet, { type HelmetOptions } from "helmet";
 import * as Http from "http";
-import { createProxyMiddleware, Options as ProxyOptions } from "http-proxy-middleware";
+import { createProxyMiddleware, type Options as ProxyOptions } from "http-proxy-middleware";
 import * as net from "net";
-import internalIp from "internal-ip";
+import {internalIpV6, internalIpV4} from "internal-ip";
 import Path from "path";
 import ServeStatic from "serve-static";
 import { URL } from "url";
@@ -146,9 +146,9 @@ class WebServer {
         // } else {
         this.server = Http.createServer(this.app);
         // }
-        this.server.on("error", e => {
+        this.server.on("error", (e: any) => {
             let emsg = "server start error: " + e.message;
-            if ((e as any).code === 'EADDRINUSE') {
+            if (e.code === 'EADDRINUSE') {
                 emsg = `server cannot start, address in use: ${this.options.hostname || '127.0.0.1'}:${this.options.port}`;
                 console.error(emsg);
             }
@@ -210,11 +210,11 @@ class WebServer {
             (async () => {
                 try {
                     if (hostname === "local-ip") {
-                        hostname = await internalIp.v4() || await internalIp.v6() || "0.0.0.0";
+                        hostname = await internalIpV4() || await internalIpV6() || "0.0.0.0";
                     } else if (hostname === "local-ipv4") {
-                        hostname = await internalIp.v4() || "0.0.0.0";
+                        hostname = await internalIpV4() || "0.0.0.0";
                     } else if (hostname === 'local-ipv6') {
-                        hostname = await internalIp.v6() || '::';
+                        hostname = await internalIpV6() || '::';
                     }
                     this.server.listen({
                         port: port,
@@ -429,11 +429,13 @@ class WebServer {
             pathRewrite: {
                 "^/proxy": "",
             },
-            onError: (err, req, res, target) => {
+            on: {
+                error: (err, req, res: Http.ServerResponse, target) => {
                 res.writeHead(500, {
                     "Content-Type": "text/plain",
                 });
                 res.end("proxying request error: " + err.message);
+            },
             },
             ...config,
         };
@@ -442,7 +444,7 @@ class WebServer {
             opt.changeOriginReferer = false;
         }
         if (opt.changeOriginReferer !== false) {
-            opt.onProxyReq = this.changeProxyReqReferer;
+            opt.on.proxyReq = this.changeProxyReqReferer;
         }
         return createProxyMiddleware(opt);
     }

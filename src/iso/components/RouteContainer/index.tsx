@@ -2,7 +2,7 @@ import queryString from "query-string";
 import React, { useEffect } from "react";
 import { useLocation, useRoutes } from "react-router-dom";
 import { loadingId, pageInit } from "../../../config/index.js";
-import { type IPageRouter, type IRouteContainerProps } from "../../../interface.js";
+import type { IPageRouter, IRouteContainerProps } from "../../../interface.js";
 import { reduxConnect } from "../../connect.js";
 import { getInitialData, getMatchedComponent } from "../../libs/metaCollector.js";
 import getMatchedBranch from "../../libs/getMatchedBranch.js";

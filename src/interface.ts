@@ -1,6 +1,6 @@
-import { type AxiosRequestConfig } from "axios";
+import type { AxiosRequestConfig } from "axios";
 import { IRouterHandler, Router } from "express";
-import { type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { RouteObject, type Params} from "react-router-dom";
 export interface IGetMetaFn {
     (): IMetaProps;
