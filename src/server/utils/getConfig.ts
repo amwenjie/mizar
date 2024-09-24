@@ -1,8 +1,14 @@
 import fs from "fs-extra";
 import { IAppConf } from "../../interface.js";
-const appConfJSON = fs.readJSONSync("./config/app.json");
+import getLogger from "./logger.js";
+
 let publicPath = "";
 declare const IS_DEBUG_MODE;
+
+const logger = getLogger();
+const log = logger.getLogger("server/utils/getConfig");
+let appConfJSON = null;
+
 export function getPublicPath(): string {
     if (publicPath === "") {
         const cdn = IS_DEBUG_MODE ? '/' : getCDN();
@@ -12,7 +18,7 @@ export function getPublicPath(): string {
 }
 
 export function getPort(): number {
-    return getAppConf().port;
+    return getAppConf().port || 8889;
 }
 
 export function getCDN(): string {
@@ -20,6 +26,14 @@ export function getCDN(): string {
 }
 
 export function getAppConf(): IAppConf {
+    if (!appConfJSON) {
+        try {
+            appConfJSON = fs.readJSONSync("./config/app.json");
+        } catch (e) {
+            log.error(e);
+            appConfJSON = {};
+        }
+    }
     return appConfJSON;
 }
 

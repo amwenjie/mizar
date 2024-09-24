@@ -79,3 +79,16 @@ export interface IMatchedRouteCom {
     pageComName?: string;
     params?: Params;
 }
+
+export interface IGetLogger {
+    getLogger(category?: string): ILogger;
+    [propName: string]: any;
+}
+
+export interface ILogger {
+    info: (...args: any) => void;
+    log: (...args: any) => void;
+    warn: (...args: any) => void;
+    error: (...args: any) => void;
+    [propName: string]: any;
+}

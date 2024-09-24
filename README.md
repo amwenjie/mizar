@@ -20,15 +20,17 @@
                     -interface.ts    页面组件内所有的ts定义文件
                 -pageB
                     - ...
-            -typings
-                -externals.d.ts    同构目录中，css\module-federation模块等类型定义
             -tsconfig.json
         -public   存放一些非模块化的的内容，所需要用到的文件需要在服务端启动入口配置meta中加入，会在服务端渲染出的html中用标签引入
         -server   应用的服务端代码
             -apis   服务端node api存放目录，规则是请求路径已/apis/开头，文件名为方法名
                 -api-name.ts
             -index.ts   服务端启动入口
+        -federate  如果要作为微应用被其他应用调用，需要有src/federate目录，具体使用见alcor/packages/micro-frontend-template
+            -index.ts
         -tsconfig.json
+    -typings
+        -externals.d.ts    同构目录中，css\module-federation模块等类型定义
     -.eslint.config.js
     -.stylelintrc.json
     -package.json
@@ -69,7 +71,7 @@
         componentDidMount() {
         }
         public render() {
-            return (<div className={css.articleName>
+            return (<div className={css.articleName}>
                 <h2>{this.props.data.count}</h2>
                 <ChildComponentA />
                 <ChildComponentB />
@@ -108,7 +110,7 @@
     import ChildComponentC from './childComponentC';
     
     function PageA(props) {
-        return (<div className={css.articleName>
+        return (<div className={css.articleName}>
             <h2>{props.data.count}</h2>
             <ChildComponentA />
             <ChildComponentB />
@@ -514,4 +516,43 @@
             </div>);
         }
     }
+```
+
+### 9. 支持微前端组件的构建和使用
+   * 仅支持客户端渲染远程组件
+   * 配置说明：
+```
+    host-app：
+    /config/configure.json中需要增加federation字段,配置需要用到的的其他应用提供的组件信息:
+
+    ...
+    "federation": {
+        "name": "hostapp",
+        "remotes": {
+            "micro_1": "micro_1@http://localhost:8891/static/client/federate/micro_1_remote.js"
+        }
+    }
+    ...
+
+    remote-app：
+    /config/configure.json 中需要增加federation字段,配置导出用于被其他应用使用的组件信息:
+
+    ...
+    "federation": {
+        "name": "micro_1",
+        "filename": "micro_1_remote.js",
+        "exposes": {
+            "./counting": "./src/isomorphic/common/components/Counting",
+            "./PageA": "./src/isomorphic/pages/PageA",
+            "./PageB": "./src/isomorphic/pages/PageB"
+        },
+        "shared": [
+            {
+            "react": "~17.0.2",
+            "react-dom": "~17.0.2",
+            "react-redux": "~7.2.4",
+            "redux": "~4.1.0",
+        }]
+    }
+    ...
 ```

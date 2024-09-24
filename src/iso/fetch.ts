@@ -1,5 +1,4 @@
 import axios from "axios";
-import events from "events";
 import httpMock, { type RequestMethod } from "node-mocks-http";
 import { IFetchConfig } from "../interface.js";
 import { loadingId } from "../config/index.js";
@@ -46,11 +45,12 @@ export const fetchWithRequestObject = (httpRequest) => async (config: IFetchConf
                 cookies: httpRequest && httpRequest.cookies,
                 headers: httpRequest && httpRequest.headers,
             });
+            const ee = await import("node:events");
 
             data = await (async () => {
                 return new Promise((resolve, reject) => {
                     const mockResponse = httpMock.createResponse({
-                        eventEmitter: events.EventEmitter,
+                        eventEmitter: ee.EventEmitter,
                     });
                     mockResponse.addListener("end", () => {
                         let data;

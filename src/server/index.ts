@@ -1,17 +1,18 @@
+import fs from "fs-extra";
 import BodyParser from "body-parser";
 import Compression from "compression";
 import CookieParser from "cookie-parser";
 import cors, { type CorsOptions, type CorsOptionsDelegate } from "cors";
-import crypto from "crypto";
+import crypto from "node:crypto";
 import Express, { type NextFunction, type Request, type Response } from "express";
 import helmet, { type HelmetOptions } from "helmet";
-import * as Http from "http";
+import * as Http from "node:http";
 import { createProxyMiddleware, type Options as ProxyOptions } from "http-proxy-middleware";
-import * as net from "net";
-import {internalIpV6, internalIpV4} from "internal-ip";
-import Path from "path";
+import * as net from "node:net";
+import { internalIpV6, internalIpV4 } from "internal-ip";
+import path from "node:path";
 import ServeStatic from "serve-static";
-import { URL } from "url";
+import { URL } from "node:url";
 import { getPort, getPublicPath } from "./utils/getConfig.js";
 import getLogger from "./utils/logger.js";
 import checkPositivePath from "./utils/checkPositivePath.js";
@@ -166,17 +167,33 @@ class WebServer {
     }
 
     private getInteralStatic(staticOption = {}) {
-        const staticRootPath = getPublicPath();
+        let staticRootPath = getPublicPath();
+        let no_end_slash = staticRootPath.replace(/\/$/, "");
+        let directory = path.resolve(staticRootPath.replace(/^\//, ""));
         log.info("setStatic recieve staticRootPath: ", staticRootPath);
-        const path = staticRootPath.replace(/\/$/, "");
-        const directory = Path.resolve(staticRootPath.replace(/^\//, ""));
-        log.info("static path : ", path);
-        log.info("static directory : ", directory);
-        return {
-            path: [path],
-            directory: directory,
-            staticOption,
-        };
+
+        if (!DEV_STATIC_HR_SERVE) {
+            log.info("static path : ", no_end_slash);
+            log.info("static directory : ", directory);
+            return {
+                path: [no_end_slash],
+                directory,
+                staticOption,
+            };
+        } else {
+            staticRootPath += "federate";
+            directory = path.resolve(staticRootPath.replace(/^\//, ""));
+            log.info("static path : ", staticRootPath);
+            log.info("static directory : ", directory);
+            if (fs.existsSync(directory)) {
+                return {
+                    path: [staticRootPath],
+                    directory,
+                    staticOption,
+                };
+            }
+            return null;
+        }
     }
 
     /**
@@ -413,13 +430,16 @@ class WebServer {
     }
 
     private changeProxyReqReferer(proxyReq: Http.ClientRequest, req: Express.Request, res: Express.Response) {
-        const refererURL = new URL(req.header("Referer"));
-        const hostStr = proxyReq.getHeader("Host") as string;
-        refererURL.host = hostStr;
-        if (hostStr.indexOf(":") === -1) {
-            refererURL.port = protocalPortMap[refererURL.protocol];
+        const ref = req.get("Referer");
+        if (ref) {
+            const refererURL = new URL(req.header("Referer"));
+            const hostStr = proxyReq.getHeader("Host") as string;
+            refererURL.host = hostStr;
+            if (hostStr.indexOf(":") === -1) {
+                refererURL.port = protocalPortMap[refererURL.protocol];
+            }
+            proxyReq.setHeader("Referer", refererURL.href);
         }
-        proxyReq.setHeader("Referer", refererURL.href);
     }
 
     private getProxyMW(config: IProxyConfig) {
@@ -431,11 +451,11 @@ class WebServer {
             },
             on: {
                 error: (err, req, res: Http.ServerResponse, target) => {
-                res.writeHead(500, {
-                    "Content-Type": "text/plain",
-                });
-                res.end("proxying request error: " + err.message);
-            },
+                    res.writeHead(500, {
+                        "Content-Type": "text/plain",
+                    });
+                    res.end("proxy request error: " + err.message);
+                },
             },
             ...config,
         };
@@ -541,15 +561,19 @@ class WebServer {
         if (internalStatic && internalStatic.staticOption && internalStatic.isInternal) {
             staticOption = internalStatic.staticOption;
         }
-        if (!DEV_STATIC_HR_SERVE) {
-            this.options.static.splice(0, 0, this.getInteralStatic(staticOption));
+        const clientStatic = this.getInteralStatic(staticOption);
+        if (clientStatic) {
+            this.options.static.splice(0, 0, clientStatic);
         }
         this.options.static.forEach(staticOption => {
             staticOption.path.forEach(path => {
                 if (!checkPositivePath(path)) {
+                    const handler = Express.static(staticOption.directory, staticOption.staticOptions);
                     this.app.use(
                         path,
-                        Express.static(staticOption.directory, staticOption.staticOptions)
+                        (req, res, next) => {
+                            handler(req, res, next);
+                        }
                     );
                 }
             });
@@ -582,10 +606,17 @@ class WebServer {
             const proxConfig = DEV_PROXY_CONFIG;
             if (proxConfig && Array.isArray(proxConfig)) {
                 proxConfig.forEach((proxy: IServerProxyOption) => {
-                    this.app.use(proxy.path, this.getProxyMW({
-                        pathRewrite: undefined,
-                        ...proxy.config,
-                    }));
+                    this.app.use(
+                        proxy.path,
+                        this.getProxyMW({
+                            pathRewrite: undefined,
+                            pathFilter: (path) => {
+                                debugger;
+                                return !path.match("^/federate/");
+                            },
+                            ...proxy.config,
+                        })
+                    );
                 });
             }
         }
@@ -647,7 +678,7 @@ class WebServer {
     // public setStatic(staticRootPath, staticOption = {}) {
     //     log.info("setStatic recieve staticRootPath: ", staticRootPath);
     //     const path = staticRootPath.replace(/\/$/, "");
-    //     const directory = Path.resolve(staticRootPath.replace(/^\//, ""));
+    //     const directory = path.resolve(staticRootPath.replace(/^\//, ""));
     //     log.info("static path : ", path);
     //     log.info("static directory : ", directory);
     //     if (Object.prototype.toString.call(this.options.static) !== "[object Array]") {

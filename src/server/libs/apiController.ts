@@ -1,6 +1,6 @@
 import { match, MatchResult } from "path-to-regexp";
-import state from "./state.js";
 import getLogger from "../utils/logger.js";
+import state from "./state.js";
 
 const logger = getLogger().getLogger("server/libs/apiController");
 

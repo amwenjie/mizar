@@ -1,17 +1,18 @@
 {
     "include": [
-        "src",
+        "src/**/*",
         "typings",
+        "eslint.config.js"
     ],
     "compilerOptions": {
         "target": "es2022",
         "traceResolution": false,
         "importHelpers": true,
-        "removeComments": true,
+        "removeComments": false,
         "noEmitHelpers": false,
         "allowJs": false,
-        "baseUrl": ".",
-        "outDir": "dist",
+        "rootDir": "./src",
+        "outDir": "./dist",
         "pretty": false,
         "module": "ESNext",
         "jsx": "react",

@@ -2,7 +2,7 @@ import { ChunkExtractor } from "@loadable/server";
 import { configureStore } from "@reduxjs/toolkit";
 import type { Request, Response } from "express";
 import fs from "fs-extra";
-import path from "path";
+import path from "node:path";
 import React from "react";
 import ReactDomServer from "react-dom/server";
 import { Provider } from "react-redux";

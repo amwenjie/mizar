@@ -1,12 +1,16 @@
 import fs from "fs-extra";
-import path from "path";
+import { createRequire } from "node:module";
+import path from "node:path";
 import klaw from "klaw";
+import os from "node:os";
+import { pathToFileURL } from 'node:url';
+import { IDynamicRoute } from "../../interface.js";
 import isFunction from "../../iso/utils/isFunction.js";
 import getLogger from "./logger.js";
-import { IDynamicRoute } from "src/interface.js";
 
 const logger = getLogger().getLogger("server/utils/getApis");
 const apisBasePath = "./apis";
+const isWin = os.type() === "Windows_NT";
 
 async function getApiPath(apiContext: string): Promise<string[]> {
     return new Promise((resolve, reject) => {
@@ -21,7 +25,7 @@ async function getApiPath(apiContext: string): Promise<string[]> {
             const src = file.path;
             logger.debug('klaw src: ', src);
             logger.debug('klaw isFile: ', isFile, " ; isDir: ", isDir);
-            if (isFile && /\.cjs$/i.test(src)) {
+            if (isFile && /\.js$/i.test(src)) {
                 files.push(src); // .replace(apiContext, "").replace(".js", ""));
             }
             // else if (isDir && src.replace(apiContext, "")) {
@@ -52,17 +56,15 @@ export default async function (): Promise<IDynamicRoute | null> {
         const apis = {};
         for (let i = 0, len = files.length; i < len; i++) {
             const file = files[i];
-            const url = file.replace(apiContext, "").replace(".cjs", "").replace(/\\+/g, '/').replace(/\/\(([^\)]+?)\)\//g, '/:$1/');
+            const url = file.replace(apiContext, "").replace(".js", "").replace(/\\+/g, '/').replace(/(\/?)\(([^)]+?)\)/g, '$1:$2');
             logger.debug("api file uri: ", file);
+            logger.debug("api url: ", url);
             if (!fs.existsSync(file)) {
                 logger.error('api file not exist: ', file);
                 continue;
             }
             try {
-                // const instance = await import(file); // require(file);
-                // eslint-disable-next-line @typescript-eslint/no-var-requires
-                const instance = require(file);
-                logger.debug('api url: ', url);
+                const instance = await import(/* webpackIgnore: true */"./" + path.relative(path.resolve("."), file).replace(/\\+/g, "/"));
                 const methods = Object.keys(instance).filter(k => {
                     const fn = instance[k];
                     return isFunction(fn) || isFunction(fn.default);
