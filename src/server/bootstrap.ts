@@ -9,12 +9,7 @@ import type { IPageRouter, IGetMetaFn, IMetaProps } from "../interface.js";
 const logger = getLogger().getLogger("server/boostrap");
 // const logger = getLogger("server/boostrap")
 
-export function bootstrap(server: WebServer = new WebServer(
-    {
-        bodyParser: true,
-        cookieParser: true,
-    }
-)) {
+export function bootstrap(server: WebServer = new WebServer()) {
     return async function (pageRouter: IPageRouter[], getMeta?: IGetMetaFn | IMetaProps): Promise<WebServer> {
         try {
             // __webpack_public_path__ = getPublicPath();

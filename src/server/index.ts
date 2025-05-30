@@ -104,6 +104,8 @@ class WebServer {
         const defautlOptions: IWebServerOption = {
             notSSR: false,
             port: getPort(),
+            bodyParser: true,
+            cookieParser: true,
         };
         this.options = {
             ...defautlOptions,
@@ -520,7 +522,7 @@ class WebServer {
                 urlencodedOpt = this.options.bodyParser.urlencoded;
             }
         }
-        if (typeof this.options.bodyParser === "boolean") {
+        if (this.options.bodyParser === true) {
             this.app.use(Express.raw(rawOpt));
             this.app.use(Express.json(jsonOpt));
             this.app.use(Express.text(textOpt));
@@ -611,7 +613,6 @@ class WebServer {
                         this.getProxyMW({
                             pathRewrite: undefined,
                             pathFilter: (path) => {
-                                debugger;
                                 return !path.match("^/federate/");
                             },
                             ...proxy.config,

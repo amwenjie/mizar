@@ -10,6 +10,13 @@ import getLoading from "../Loading/index.js";
 
 const FetchLoading = getLoading(loadingId);
 
+declare const IS_SERVER_RUNTIME;
+
+let isFirstSSR = true;
+if (!IS_SERVER_RUNTIME) {
+    isFirstSSR = !(window as any).__onlyCSR__;
+}
+
 function Routes(props: {
     router: IPageRouter[];
     children?: React.ReactNode;
@@ -51,6 +58,10 @@ function RouteContainer(props: IRouteContainerProps) {
                 document.title = preloadData[pageReducerName].title;
             }
         };
+        if (isFirstSSR) {
+            isFirstSSR = false;
+            return;
+        }
         cb();
     }, [pathname, search]);
     return (<>

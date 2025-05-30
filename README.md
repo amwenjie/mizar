@@ -448,7 +448,7 @@
                 path: "/ajax",
                 config: {
                     target: "http://target.com",
-                    changeOrigin: false, // 显示的关闭代理转发请求的时候更改请求头中的Host和Referer
+                    changeOrigin: false, // 显式的关闭代理转发请求的时候更改请求头中的Host和Referer
                     pathRewrite: {
                         "^/proxy/ajax": "",
                     },
